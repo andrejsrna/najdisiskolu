@@ -8,7 +8,7 @@ export default async function proxy(req: NextRequest) {
 
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
 
-  if (!userId && (pathname === "/" || isAdmin)) {
+  if (!userId && isAdmin) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("from", pathname);
@@ -25,5 +25,5 @@ export default async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/admin/:path*", "/login"],
+  matcher: ["/admin/:path*", "/login"],
 };
