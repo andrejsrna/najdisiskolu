@@ -14,8 +14,22 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const user = await requireUser();
   const isSchool = user.role === Role.SKOLA;
 
-  const pendingSections = ["Tagy", "Priestory", "Badge", "Veľtrhy", "Blog", "Nastavenia"];
-  if (user.role === Role.ADMIN) pendingSections.push("Používatelia");
+  const items: { href: string; label: string }[] = [{ href: "/admin", label: "Prehľad" }];
+  if (isSchool) {
+    items.push({ href: "/admin/skoly", label: "Moja škola" });
+  } else {
+    items.push(
+      { href: "/admin/skoly", label: "Školy" },
+      { href: "/admin/tagy", label: "Tagy" },
+      { href: "/admin/priestory", label: "Priestory" },
+      { href: "/admin/veltrhy", label: "Veľtrhy" },
+      { href: "/admin/blog", label: "Blog" },
+      { href: "/admin/nastavenia", label: "Nastavenia" },
+    );
+  }
+  if (user.role === Role.ADMIN) {
+    items.push({ href: "/admin/pouzivatelia", label: "Používatelia" });
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -26,42 +40,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         </div>
         <nav className="flex-1 px-3 py-4">
           <ul className="space-y-1 text-sm">
-            <li>
-              <Link
-                href="/admin"
-                className="block rounded-lg bg-slate-900 px-3 py-2 font-medium text-white"
-              >
-                Prehľad
-              </Link>
-            </li>
-            {!isSchool && (
-              <li>
+            {items.map((item) => (
+              <li key={item.href + item.label}>
                 <Link
-                  href="/admin/skoly"
+                  href={item.href}
                   className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
                 >
-                  Školy
+                  {item.label}
                 </Link>
-              </li>
-            )}
-            {isSchool && (
-              <li>
-                <Link
-                  href="/admin/skoly"
-                  className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
-                >
-                  Moja škola
-                </Link>
-              </li>
-            )}
-            {pendingSections.map((item) => (
-              <li key={item}>
-                <span className="flex items-center justify-between rounded-lg px-3 py-2 text-slate-400">
-                  {item}
-                  <span className="text-[10px] uppercase tracking-wide text-slate-300">
-                    čoskoro
-                  </span>
-                </span>
               </li>
             ))}
           </ul>
