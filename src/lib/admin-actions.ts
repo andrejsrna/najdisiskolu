@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/session";
-import { Role, type PostType } from "@/generated/prisma/enums";
+import { Role, PostType } from "@/generated/prisma/enums";
 import { parseRole, canManageRole } from "@/lib/roles";
 
 const str = (v: FormDataEntryValue | null): string | null => {
@@ -102,14 +102,12 @@ export async function savePost(formData: FormData) {
   const id = str(formData.get("id"));
   const title = str(formData.get("title"));
   if (!title) return;
-  const type = (str(formData.get("type")) ?? "NEWS") as PostType;
-  const schoolId = str(formData.get("schoolId"));
   const data = {
     title,
-    type,
+    type: PostType.NEWS,
     body: str(formData.get("body")) ?? "",
     coverUrl: str(formData.get("coverUrl")),
-    schoolId: schoolId || null,
+    schoolId: null,
     published: formData.has("published"),
     publishedAt: formData.has("published") ? new Date() : null,
   };
@@ -125,6 +123,39 @@ export async function deletePost(id: string) {
   await assertStaff();
   await prisma.post.delete({ where: { id } });
   revalidatePath("/admin/blog");
+}
+
+/* ================= RECENZIE (príbehy „Moja stredná je super") ================= */
+
+export async function saveReview(formData: FormData) {
+  await assertStaff();
+  const id = str(formData.get("id"));
+  const name = str(formData.get("name"));
+  if (!name) return;
+  const schoolId = str(formData.get("schoolId"));
+  const data = {
+    name,
+    age: str(formData.get("age")),
+    quote: str(formData.get("quote")) ?? "",
+    photoUrl: str(formData.get("photoUrl")),
+    schoolId: schoolId || null,
+    published: formData.has("published"),
+    sort: num(formData.get("sort")) ?? 0,
+  };
+  if (id) {
+    await prisma.review.update({ where: { id }, data });
+  } else {
+    await prisma.review.create({ data });
+  }
+  revalidatePath("/admin/recenzie");
+  revalidatePath("/");
+}
+
+export async function deleteReview(id: string) {
+  await assertStaff();
+  await prisma.review.delete({ where: { id } });
+  revalidatePath("/admin/recenzie");
+  revalidatePath("/");
 }
 
 /* ================= NASTAVENIA ================= */

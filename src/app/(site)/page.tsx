@@ -7,7 +7,7 @@ const fmtDate = (d: Date) =>
   d.toLocaleDateString("sk-SK", { day: "numeric", month: "long", year: "numeric" });
 
 export default async function HomePage() {
-  const [settingsRows, tags, schools, posts] = await Promise.all([
+  const [settingsRows, tags, schools, reviews, news] = await Promise.all([
     prisma.setting.findMany(),
     prisma.tag.findMany({ orderBy: { label: "asc" } }),
     prisma.school.findMany({
@@ -15,8 +15,13 @@ export default async function HomePage() {
       include: { tags: true, odbory: true },
       orderBy: { name: "asc" },
     }),
-    prisma.post.findMany({
+    prisma.review.findMany({
       where: { published: true },
+      include: { school: { select: { name: true } } },
+      orderBy: { sort: "asc" },
+    }),
+    prisma.post.findMany({
+      where: { published: true, type: "NEWS" },
       include: { school: { select: { name: true } } },
       orderBy: { publishedAt: "desc" },
     }),
@@ -59,8 +64,7 @@ export default async function HomePage() {
     tags: s.tags.map((t) => ({ code: t.code, label: t.label })),
   }));
 
-  const stories = posts.filter((p) => p.type === "SUPER");
-  const news = posts.filter((p) => p.type === "NEWS");
+  const stories = reviews;
 
   return (
     <>
@@ -114,9 +118,17 @@ export default async function HomePage() {
                   <div className="g3">
                     {stories.map((s) => (
                       <div className="story" key={s.id}>
-                        <div className="ph img">PORTRÉT</div>
-                        <div className="q">{s.body}</div>
-                        <div className="who">{s.title}</div>
+                        {s.photoUrl ? (
+                          <img src={s.photoUrl} alt={s.name} className="img" style={{ height: 200, width: "100%", objectFit: "cover" }} />
+                        ) : (
+                          <div className="ph img">PORTRÉT</div>
+                        )}
+                        <div className="q">{s.quote}</div>
+                        <div className="who">
+                          {s.name}
+                          {s.age ? `, ${s.age}` : ""}
+                          {s.school ? ` · ${s.school.name}` : ""}
+                        </div>
                       </div>
                     ))}
                   </div>

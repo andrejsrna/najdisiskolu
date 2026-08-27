@@ -1,6 +1,7 @@
 // Seed — vytvorí kompletný obsah (44 škôl + odbory + projekty + tagy + priestory +
-// veľtrhy + posty + settings + používateľov) z prisma/seed-data.json.
+// veľtrhy + recenzie + posty + settings + používateľov) z prisma/seed-data.json.
 // Idempotentné: ak už DB obsahuje školy, seed sa preskočí.
+// Migruje aj legacy SUPER posty → model Review (vždy, idempotentne).
 // Opätovný export dát: npx tsx scripts/export-seed.ts
 import "dotenv/config";
 import { readFileSync } from "node:fs";
@@ -39,19 +40,48 @@ type SeedSchool = {
   badges: { label: string; kind: string; note: string | null }[];
 };
 
+type SeedReview = {
+  name: string; age: string | null; quote: string; photoUrl: string | null;
+  published: boolean; sort: number; schoolSlug: string | null;
+};
+
 type SeedData = {
   tags: { code: string; label: string }[];
   priestory: { name: string }[];
   settings: { key: string; value: unknown }[];
   schools: SeedSchool[];
   veltrhy: { city: string; date: string | null; time: string; place: string; address: string; description: string | null; extra: string | null; schoolSlugs: string[] }[];
+  reviews: SeedReview[];
   posts: { type: string; title: string; body: string; coverUrl: string | null; published: boolean; publishedAt: string | null; schoolSlug: string | null }[];
 };
 
 const toDate = (s: string | null | undefined) => (s ? new Date(`${s}T00:00:00`) : null);
 
+/** Legacy: staré SUPER posty → nový model Review (idempotentné, beží vždy). */
+async function migrateSuperPosts() {
+  const supers = await prisma.post.findMany({ where: { type: "SUPER" } });
+  if (supers.length === 0) return;
+  for (const p of supers) {
+    // title: "Adam, 21 · SPŠ technická Trnava"
+    const m = p.title.match(/^([^,]+),\s*([^·]+?)\s*·/);
+    const name = m ? m[1].trim() : p.title;
+    const age = m ? m[2].trim() : null;
+    await prisma.review.create({
+      data: {
+        name, age, quote: p.body, photoUrl: p.coverUrl,
+        schoolId: p.schoolId, published: p.published, sort: 0,
+      },
+    });
+  }
+  await prisma.post.deleteMany({ where: { type: "SUPER" } });
+  console.log(`✓ migrovaných ${supers.length} príbehov (SUPER → Review)`);
+}
+
 async function main() {
   const data: SeedData = JSON.parse(readFileSync("prisma/seed-data.json", "utf-8"));
+
+  // Vždy migruj legacy SUPER posty (bezpečné aj na prázdnej DB).
+  await migrateSuperPosts();
 
   if ((await prisma.school.count()) > 0) {
     console.log("ℹ️ DB už obsahuje školy — seed preskočený.");
@@ -115,21 +145,35 @@ async function main() {
   }
   console.log(`✓ ${data.veltrhy.length} veľtrhov`);
 
-  // 4. Posty (príbehy + články)
+  // 4. Recenzie (príbehy „Moja stredná je super")
+  const schoolIdBySlug = new Map<string, string>();
+  for (const r of data.reviews) {
+    if (r.schoolSlug && !schoolIdBySlug.has(r.schoolSlug)) {
+      const school = await prisma.school.findUnique({ where: { slug: r.schoolSlug }, select: { id: true } });
+      if (school) schoolIdBySlug.set(r.schoolSlug, school.id);
+    }
+    await prisma.review.create({
+      data: {
+        name: r.name, age: r.age, quote: r.quote, photoUrl: r.photoUrl,
+        published: r.published, sort: r.sort,
+        schoolId: r.schoolSlug ? schoolIdBySlug.get(r.schoolSlug) ?? null : null,
+      },
+    });
+  }
+  console.log(`✓ ${data.reviews.length} recenzií`);
+
+  // 5. Posty (články „Dobré správy zo školstva")
   for (const p of data.posts) {
     await prisma.post.create({
       data: {
         type: p.type as PostType, title: p.title, body: p.body, coverUrl: p.coverUrl,
-        published: p.published, publishedAt: toDate(p.publishedAt),
-        schoolId: p.schoolSlug
-          ? (await prisma.school.findUnique({ where: { slug: p.schoolSlug }, select: { id: true } }))?.id ?? null
-          : null,
+        published: p.published, publishedAt: toDate(p.publishedAt), schoolId: null,
       },
     });
   }
   console.log(`✓ ${data.posts.length} postov`);
 
-  // 5. Používatelia (3 roly) — demo heslo „najdi2026"
+  // 6. Používatelia (3 roly) — demo heslo „najdi2026"
   const pass = await bcrypt.hash("najdi2026", 10);
   await prisma.user.createMany({
     data: [
@@ -150,6 +194,7 @@ async function main() {
     schools: await prisma.school.count(),
     odbory: await prisma.odbor.count(),
     projects: await prisma.project.count(),
+    reviews: await prisma.review.count(),
     posts: await prisma.post.count(),
   };
   console.log("✅ Seed dokončený:", counts);

@@ -1,6 +1,6 @@
 // Export celého obsahu DB → prisma/seed-data.json (idempotentný seed).
 // Spustenie: npx tsx scripts/export-seed.ts
-// Pri exporte doplní aj demo príbehy („Moja stredná je super") a články („Dobré správy").
+// Pri exporte doplní aj demo príbehy (recenzie) a články („Dobré správy"), ak žiadne nie sú.
 import "dotenv/config";
 import { writeFileSync } from "node:fs";
 import { PrismaClient } from "../src/generated/prisma/client";
@@ -13,34 +13,45 @@ const prisma = new PrismaClient({
 const d10 = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : null);
 
 async function main() {
-  // 1. Doplniť demo posty (príbehy + články), ak ešte žiadne nie sú.
-  if ((await prisma.post.count()) === 0) {
-    const bySlug = async (slug: string) =>
-      (await prisma.school.findUnique({ where: { slug }, select: { id: true } }))?.id ?? null;
+  const bySlug = async (slug: string) =>
+    (await prisma.school.findUnique({ where: { slug }, select: { id: true } }))?.id ?? null;
+
+  // 1. Doplniť demo recenzie (príbehy), ak ešte žiadne nie sú.
+  if ((await prisma.review.count()) === 0) {
     const [tech, holleho, podnik] = await Promise.all([
       bySlug("stredna-priemyselna-skola-technicka"),
       bySlug("gymnazium-jana-holleho"),
       bySlug("stredna-odborna-skola-podnikania-v-remeslach-a-sluzbach"),
     ]);
+    await prisma.review.createMany({
+      data: [
+        { name: "Adam", age: "21", quote: "„Bál som sa, že strojárina je len o špine.\"", schoolId: tech, published: true, sort: 0 },
+        { name: "Nina", age: "19", quote: "„Gymnázium ma naučilo učiť sa.\"", schoolId: holleho, published: true, sort: 1 },
+        { name: "Sára", age: "22", quote: "„Po troch rokoch som mala vlastný salón.\"", schoolId: podnik, published: true, sort: 2 },
+      ],
+    });
+    console.log("✓ doplnené demo recenzie (3 príbehy)");
+  }
+
+  // 2. Doplniť demo články („Dobré správy"), ak ešte žiadne nie sú.
+  if ((await prisma.post.count()) === 0) {
     await prisma.post.createMany({
       data: [
-        { type: "SUPER", title: "Adam, 21 · SPŠ technická Trnava", body: "„Bál som sa, že strojárina je len o špine.\"", schoolId: tech, published: true, publishedAt: new Date("2026-08-15") },
-        { type: "SUPER", title: "Nina, 19 · Gymnázium Jána Hollého", body: "„Gymnázium ma naučilo učiť sa.\"", schoolId: holleho, published: true, publishedAt: new Date("2026-08-14") },
-        { type: "SUPER", title: "Sára, 22 · SOŠ podnikania v remeslách a službách Senica", body: "„Po troch rokoch som mala vlastný salón.\"", schoolId: podnik, published: true, publishedAt: new Date("2026-08-13") },
         { type: "NEWS", title: "Sem príde titulok článku o dianí na župných školách", body: "", published: true, publishedAt: new Date("2026-08-12") },
         { type: "NEWS", title: "Sem príde titulok článku o dianí na župných školách", body: "", published: true, publishedAt: new Date("2026-08-07") },
         { type: "NEWS", title: "Sem príde titulok článku o dianí na župných školách", body: "", published: true, publishedAt: new Date("2026-08-01") },
       ],
     });
-    console.log("✓ doplnené demo posty (3 príbehy + 3 články)");
+    console.log("✓ doplnené demo články (3)");
   }
 
-  // 2. Export všetkých dát.
+  // 3. Export všetkých dát.
   const schools = await prisma.school.findMany({
     include: { tags: true, priestory: true, odbory: true, projects: true, dods: true, downloads: true, badges: true },
   });
   const veltrhy = await prisma.veltrh.findMany({ include: { schools: true } });
-  const posts = await prisma.post.findMany({ include: { school: { select: { slug: true } } } });
+  const reviews = await prisma.review.findMany({ include: { school: { select: { slug: true } } }, orderBy: { sort: "asc" } });
+  const posts = await prisma.post.findMany({ where: { type: "NEWS" }, orderBy: { publishedAt: "desc" } });
 
   const data = {
     tags: (await prisma.tag.findMany({ orderBy: { code: "asc" } })).map((t) => ({ code: t.code, label: t.label })),
@@ -79,15 +90,19 @@ async function main() {
       city: v.city, date: d10(v.date), time: v.time, place: v.place, address: v.address,
       description: v.description, extra: v.extra, schoolSlugs: v.schools.map((s) => s.slug),
     })),
+    reviews: reviews.map((r) => ({
+      name: r.name, age: r.age, quote: r.quote, photoUrl: r.photoUrl,
+      published: r.published, sort: r.sort, schoolSlug: r.school?.slug ?? null,
+    })),
     posts: posts.map((p) => ({
       type: p.type, title: p.title, body: p.body, coverUrl: p.coverUrl,
-      published: p.published, publishedAt: d10(p.publishedAt), schoolSlug: p.school?.slug ?? null,
+      published: p.published, publishedAt: d10(p.publishedAt), schoolSlug: null,
     })),
   };
 
   writeFileSync("prisma/seed-data.json", JSON.stringify(data, null, 2), "utf-8");
   console.log(
-    `✓ export hotový: ${data.schools.length} škôl, ${data.posts.length} postov, ${data.veltrhy.length} veľtrhov, ${data.tags.length} tagov`,
+    `✓ export hotový: ${data.schools.length} škôl, ${data.reviews.length} recenzií, ${data.posts.length} postov, ${data.veltrhy.length} veľtrhov, ${data.tags.length} tagov`,
   );
   await prisma.$disconnect();
 }

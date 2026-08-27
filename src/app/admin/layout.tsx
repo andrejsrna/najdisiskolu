@@ -23,6 +23,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       { href: "/admin/tagy", label: "Tagy" },
       { href: "/admin/priestory", label: "Priestory" },
       { href: "/admin/veltrhy", label: "Veľtrhy" },
+      { href: "/admin/recenzie", label: "Recenzie" },
       { href: "/admin/blog", label: "Blog" },
       { href: "/admin/nastavenia", label: "Nastavenia" },
     );

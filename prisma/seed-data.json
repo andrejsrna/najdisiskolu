@@ -6521,34 +6521,36 @@
       "schoolSlugs": []
     }
   ],
-  "posts": [
+  "reviews": [
     {
-      "type": "SUPER",
-      "title": "Adam, 21 · SPŠ technická Trnava",
-      "body": "„Bál som sa, že strojárina je len o špine.\"",
-      "coverUrl": null,
+      "name": "Adam",
+      "age": "21",
+      "quote": "„Bál som sa, že strojárina je len o špine.\"",
+      "photoUrl": null,
       "published": true,
-      "publishedAt": "2026-08-15",
+      "sort": 0,
       "schoolSlug": "stredna-priemyselna-skola-technicka"
     },
     {
-      "type": "SUPER",
-      "title": "Nina, 19 · Gymnázium Jána Hollého",
-      "body": "„Gymnázium ma naučilo učiť sa.\"",
-      "coverUrl": null,
+      "name": "Nina",
+      "age": "19",
+      "quote": "„Gymnázium ma naučilo učiť sa.\"",
+      "photoUrl": null,
       "published": true,
-      "publishedAt": "2026-08-14",
+      "sort": 0,
       "schoolSlug": "gymnazium-jana-holleho"
     },
     {
-      "type": "SUPER",
-      "title": "Sára, 22 · SOŠ podnikania v remeslách a službách Senica",
-      "body": "„Po troch rokoch som mala vlastný salón.\"",
-      "coverUrl": null,
+      "name": "Sára",
+      "age": "22",
+      "quote": "„Po troch rokoch som mala vlastný salón.\"",
+      "photoUrl": null,
       "published": true,
-      "publishedAt": "2026-08-13",
+      "sort": 0,
       "schoolSlug": "stredna-odborna-skola-podnikania-v-remeslach-a-sluzbach"
-    },
+    }
+  ],
+  "posts": [
     {
       "type": "NEWS",
       "title": "Sem príde titulok článku o dianí na župných školách",

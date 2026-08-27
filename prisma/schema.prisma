@@ -124,6 +124,7 @@ model School {
   veltrhy   Veltrh[]
   users     User[]
   posts     Post[]
+  reviews   Review[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -267,6 +268,26 @@ model Post {
   updatedAt   DateTime  @updatedAt
 
   @@index([type, published])
+}
+
+// ============ REVIEW (príbehy „Moja stredná je super") ============
+
+model Review {
+  id       String @id @default(cuid())
+  name     String // meno autora, napr. "Adam"
+  age      String? // vek / ročník, napr. "21"
+  quote    String @db.Text // citát / text príbehu
+
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+
+  photoUrl String? // portrét (R2)
+
+  published Boolean @default(true)
+  sort      Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ============ SETTING (hero + štatistiky + skrytý link) ============
