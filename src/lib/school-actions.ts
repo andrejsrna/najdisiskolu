@@ -55,6 +55,12 @@ export async function updateSchoolBasic(
 ) {
   await assertCanEditSchool(schoolId);
   const tagCodes = formData.getAll("tags").map(String);
+  const languageCodes = formData.getAll("languages").map(String);
+  const csv = (k: string) =>
+    String(formData.get(k) ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
 
   await prisma.school.update({
     where: { id: schoolId },
@@ -62,6 +68,9 @@ export async function updateSchoolBasic(
       name: String(formData.get("name") ?? "").trim(),
       city: String(formData.get("city") ?? "").trim(),
       district: String(formData.get("district") ?? "").trim(),
+      languages: languageCodes,
+      foreignLanguages: csv("foreignLanguages"),
+      supportTeam: csv("supportTeam"),
       website: str(formData.get("website")),
       email: str(formData.get("email")),
       phone: str(formData.get("phone")),

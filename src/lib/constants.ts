@@ -24,3 +24,14 @@ export const ROLE_LABEL: Record<string, string> = {
   SCHOLSTVO: "Odbor školstva",
   SKOLA: "Škola",
 };
+
+export const LANGUAGE_OPTIONS = [
+  { value: "sk", label: "slovenský" },
+  { value: "hu", label: "maďarský" },
+  { value: "en", label: "anglický (bilingválne)" },
+  { value: "ru", label: "ruský (bilingválne)" },
+] as const;
+
+export const LANGUAGE_LABEL: Record<string, string> = Object.fromEntries(
+  LANGUAGE_OPTIONS.map((o) => [o.value, o.label]),
+);

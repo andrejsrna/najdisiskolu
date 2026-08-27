@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { COMPLETION_LABEL } from "@/lib/constants";
+import { COMPLETION_LABEL, LANGUAGE_LABEL } from "@/lib/constants";
+import { PrintButton } from "./PrintButton";
 
 const fmtDate = (d: Date) =>
   d.toLocaleDateString("sk-SK", { day: "numeric", month: "long", year: "numeric" });
@@ -30,6 +31,12 @@ export default async function SchoolPage({
   const totalAccepts = school.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0);
   const maxApplied = school.odbory.reduce((m, o) => Math.max(m, o.appliedLastYear ?? 0), 0);
   const dod = school.dods[0];
+  const dodIcal = dod ? dod.date.toISOString().slice(0, 10).replace(/-/g, "") : "";
+  const gcalUrl = dod
+    ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+        `Deň otvorených dverí — ${school.name}`,
+      )}&dates=${dodIcal}/${dodIcal}&ctz=Europe/Bratislava`
+    : "";
 
   return (
     <>
@@ -177,9 +184,52 @@ export default async function SchoolPage({
             <div className="sidebox dod">
               <div className="lbl">Deň otvorených dverí</div>
               <div style={{ fontSize: 26, fontWeight: 800, marginBottom: 2 }}>{fmtDate(dod.date)}</div>
-              {dod.time && <div>{dod.time}</div>}
+              {dod.time && <div style={{ fontSize: 13.5, color: "var(--ink2)", margin: "4px 0 14px" }}>{dod.time}</div>}
+              <a className="btn sm full" href={gcalUrl} target="_blank" rel="noopener noreferrer">
+                Pridať do kalendára
+              </a>
             </div>
           )}
+
+          <div className="sidebox">
+            <a className="btn solid full" style={{ marginBottom: 10 }} href="https://eprihlasky.iedu.sk/" target="_blank" rel="noopener noreferrer">
+              Podať prihlášku →
+            </a>
+            {school.email && (
+              <a className="btn full" style={{ marginBottom: 10 }} href={`mailto:${school.email}`}>
+                Napísať škole
+              </a>
+            )}
+            <PrintButton />
+          </div>
+
+          <div className="sidebox">
+            <div className="lbl">Rýchly prehľad</div>
+            <div className="kv">
+              <div><span>Okres</span><b>{school.district}</b></div>
+              <div><span>Zameranie</span><b>{school.tags.map((t) => t.label).join(", ")}</b></div>
+              <div>
+                <span>Ukončenie</span>
+                <b>{hasMat && hasVl ? "maturita + výučný list" : hasMat ? "maturita" : "výučný list"}</b>
+              </div>
+              <div><span>Jazyk</span><b>{school.languages.map((l) => LANGUAGE_LABEL[l] ?? l).join(", ")}</b></div>
+              {school.accessibility && !/^nie/i.test(school.accessibility) && (
+                <div><span>Bezbariérovosť</span><b>{school.accessibility}</b></div>
+              )}
+              {school.hasDual && <div><span>Duálne vzdelávanie</span><b>áno</b></div>}
+              {school.hasNadstavba && <div><span>Nadstavbové štúdium</span><b>áno</b></div>}
+              {school.internatInfo && !/^(nie|nemá|neposkyt|neponúk)/i.test(school.internatInfo) && (
+                <div><span>Ubytovanie</span><b>{school.internatInfo}</b></div>
+              )}
+              {school.foreignLanguages.length > 0 && (
+                <div><span>Cudzie jazyky</span><b>{school.foreignLanguages.join(", ")}</b></div>
+              )}
+              {school.hasNativeSpeaker && <div><span>Native speaker</span><b>áno</b></div>}
+              {school.supportTeam.length > 0 && (
+                <div><span>Podporný tím</span><b>{school.supportTeam.join(", ")}</b></div>
+              )}
+            </div>
+          </div>
 
           <div className="sidebox">
             <div className="lbl">Kontakt</div>

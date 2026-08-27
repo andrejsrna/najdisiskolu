@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
-import { DISTRICTS, COMPLETION_OPTIONS, COMPLETION_LABEL } from "@/lib/constants";
+import { DISTRICTS, COMPLETION_OPTIONS, COMPLETION_LABEL, LANGUAGE_OPTIONS } from "@/lib/constants";
 import {
   updateSchoolBasic,
   addOdbor,
@@ -189,6 +189,33 @@ export default async function SchoolEditPage({
                 </label>
               ))}
             </div>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className={label}>Vyučovací jazyk</label>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {LANGUAGE_OPTIONS.map((l) => (
+                <label key={l.value} className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    name="languages"
+                    value={l.value}
+                    defaultChecked={school.languages.includes(l.value)}
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
+                  {l.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className={label}>Cudzie jazyky (čiarkou)</label>
+            <input name="foreignLanguages" defaultValue={school.foreignLanguages.join(", ")} placeholder="anglický, nemecký, francúzsky" className={input} />
+          </div>
+          <div>
+            <label className={label}>Podporný tím (čiarkou)</label>
+            <input name="supportTeam" defaultValue={school.supportTeam.join(", ")} placeholder="školský psychológ, kariérny poradca" className={input} />
           </div>
 
           <div className="sm:col-span-2">

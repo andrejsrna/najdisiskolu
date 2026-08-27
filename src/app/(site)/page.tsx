@@ -3,14 +3,22 @@ import { FilterExplorer } from "./FilterExplorer";
 
 export const dynamic = "force-dynamic";
 
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString("sk-SK", { day: "numeric", month: "long", year: "numeric" });
+
 export default async function HomePage() {
-  const [settingsRows, tags, schools] = await Promise.all([
+  const [settingsRows, tags, schools, posts] = await Promise.all([
     prisma.setting.findMany(),
     prisma.tag.findMany({ orderBy: { label: "asc" } }),
     prisma.school.findMany({
       where: { isPublished: true },
       include: { tags: true, odbory: true },
       orderBy: { name: "asc" },
+    }),
+    prisma.post.findMany({
+      where: { published: true },
+      include: { school: { select: { name: true } } },
+      orderBy: { publishedAt: "desc" },
     }),
   ]);
 
@@ -51,6 +59,9 @@ export default async function HomePage() {
     tags: s.tags.map((t) => ({ code: t.code, label: t.label })),
   }));
 
+  const stories = posts.filter((p) => p.type === "SUPER");
+  const news = posts.filter((p) => p.type === "NEWS");
+
   return (
     <>
       {/* HERO */}
@@ -69,18 +80,72 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ŠTATISTIKY */}
-      <div className="creds">
-        {creds.map((c) => (
-          <div className="cred" key={c.t}>
-            <div className="n">{c.n}</div>
-            <div className="t">{c.t}</div>
+      {/* TIMEBAR + ŠTATISTIKY */}
+      <section className="band-ink">
+        <div className="timebar">
+          <strong>⏱ Prihlášky na stredné školy: <span className="hl">do 20. februára 2027</span></strong>
+          <span>Teraz je čas chodiť na dni otvorených dverí →</span>
+        </div>
+        <div className="wrap">
+          <div className="creds">
+            {creds.map((c) => (
+              <div className="cred" key={c.t}>
+                <div className="n">{c.n}</div>
+                <div className="t">{c.t}</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      </section>
 
       {/* FILTER + RESULTS (klientsky interaktívny) */}
       <FilterExplorer schools={schoolData} tags={tagData} />
+
+      {/* HOME MODULY: príbehy + blog */}
+      {(stories.length > 0 || news.length > 0) && (
+        <section className="band-page">
+          <div className="wrap">
+            <div id="homeModules">
+              {stories.length > 0 && (
+                <div className="modul">
+                  <div className="mhead">
+                    <h3>Moja stredná je super</h3>
+                  </div>
+                  <div className="g3">
+                    {stories.map((s) => (
+                      <div className="story" key={s.id}>
+                        <div className="ph img">PORTRÉT</div>
+                        <div className="q">{s.body}</div>
+                        <div className="who">{s.title}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {news.length > 0 && (
+                <>
+                  <div className="rule hand" aria-hidden="true" />
+                  <div className="modul">
+                    <div className="mhead">
+                      <h3>Dobré správy zo školstva</h3>
+                    </div>
+                    <div className="g3">
+                      {news.map((p) => (
+                        <div className="post" key={p.id}>
+                          <div className="ph img">FOTO</div>
+                          {p.publishedAt && <div className="date">{fmtDate(p.publishedAt)}</div>}
+                          <div className="t">{p.title}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }
