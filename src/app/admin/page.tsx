@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { Role } from "@/generated/prisma/enums";
@@ -86,7 +87,14 @@ export default async function AdminDashboard() {
           <tbody className="divide-y divide-slate-100">
             {schools.map((s) => (
               <tr key={s.id} className="hover:bg-slate-50">
-                <td className="px-4 py-2.5 font-medium text-slate-900">{s.name}</td>
+                <td className="px-4 py-2.5">
+                  <Link
+                    href={`/admin/skoly/${s.slug}`}
+                    className="font-medium text-slate-900 hover:underline"
+                  >
+                    {s.name}
+                  </Link>
+                </td>
                 <td className="px-4 py-2.5 text-slate-600">{s.district}</td>
                 <td className="px-4 py-2.5 text-slate-600">
                   {s.tags.map((t) => t.code).join(", ") || "—"}

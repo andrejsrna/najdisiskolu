@@ -4,25 +4,18 @@ import Link from "next/link";
 import { requireUser } from "@/lib/session";
 import { logoutAction } from "@/lib/actions";
 import { Role } from "@/generated/prisma/enums";
+import { ROLE_LABEL } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Administrácia — Najdi si školu",
-};
-
-const ROLE_LABEL: Record<string, string> = {
-  ADMIN: "Administrátor",
-  SCHOLSTVO: "Odbor školstva",
-  SKOLA: "Škola",
 };
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const user = await requireUser();
   const isSchool = user.role === Role.SKOLA;
 
-  const sections = isSchool
-    ? []
-    : ["Školy", "Tagy", "Priestory", "Badge", "Veľtrhy", "Blog", "Nastavenia"];
-  if (user.role === Role.ADMIN) sections.push("Používatelia");
+  const pendingSections = ["Tagy", "Priestory", "Badge", "Veľtrhy", "Blog", "Nastavenia"];
+  if (user.role === Role.ADMIN) pendingSections.push("Používatelia");
 
   return (
     <div className="flex min-h-screen bg-slate-50">
@@ -38,10 +31,30 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                 href="/admin"
                 className="block rounded-lg bg-slate-900 px-3 py-2 font-medium text-white"
               >
-                {isSchool ? "Moja škola" : "Prehľad"}
+                Prehľad
               </Link>
             </li>
-            {sections.map((item) => (
+            {!isSchool && (
+              <li>
+                <Link
+                  href="/admin/skoly"
+                  className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
+                >
+                  Školy
+                </Link>
+              </li>
+            )}
+            {isSchool && (
+              <li>
+                <Link
+                  href="/admin/skoly"
+                  className="block rounded-lg px-3 py-2 text-slate-700 hover:bg-slate-100"
+                >
+                  Moja škola
+                </Link>
+              </li>
+            )}
+            {pendingSections.map((item) => (
               <li key={item}>
                 <span className="flex items-center justify-between rounded-lg px-3 py-2 text-slate-400">
                   {item}
