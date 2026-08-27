@@ -93,17 +93,16 @@ export default async function HomePage({
     <>
       {/* HERO */}
       {!heroHidden && (
-        <section className="band-acid" style={{ position: "relative" }}>
-          <div className="wrap" style={{ paddingTop: 56, paddingBottom: 56 }}>
-            <h1 style={{ fontSize: "clamp(34px,5vw,64px)", lineHeight: 1.12, letterSpacing: "-.03em", margin: "0 0 16px", maxWidth: "17ch" }}>
-              {heroTitle}
-            </h1>
-            <p style={{ fontSize: 20, margin: "0 0 26px", maxWidth: "52ch" }}>{heroSubtitle}</p>
-            {heroLink && (
-              <a className="btn solid" href={heroLink}>
-                Vybrať si školu →
-              </a>
-            )}
+        <section className="hero">
+          <video autoPlay muted loop playsInline preload="auto" aria-hidden="true" tabIndex={-1}>
+            <source src="/hero.mp4" type="video/mp4" />
+          </video>
+          <div className="claim">
+            <h1>{heroTitle}</h1>
+            <p className="sub">{heroSubtitle}</p>
+            <a className="btn solid" style={{ padding: "12px 26px", fontSize: "15.5px" }} href={heroLink || "#filter"}>
+              Vyber si školu
+            </a>
           </div>
         </section>
       )}
@@ -119,7 +118,7 @@ export default async function HomePage({
       </div>
 
       {/* FILTER */}
-      <section className="band-grey">
+      <section className="band-grey" id="filter">
         <div className="wrap fsec">
           <h2>Nájdi si školu</h2>
           <p className="lead">

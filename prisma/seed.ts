@@ -148,8 +148,8 @@ async function main() {
 
   // 5. Nastavenia (hero + štatistiky)
   const settings: [string, unknown][] = [
-    ["hero.title", "Vyber si strednú"],
-    ["hero.subtitle", "Nájdi školu, ktorá ťa posunie ďalej."],
+    [ "hero.title", "Nájdi si strednú, ktorá ťa bude baviť" ],
+    [ "hero.subtitle", "Trnavská župa ti ponúka 44 skvelých možností." ],
     ["hero.hidden", false],
     ["cred.schools", 44],
     ["cred.programs", 126],
