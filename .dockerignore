@@ -1,0 +1,27 @@
+# Dependencies / build artifacts (regenerované v image)
+node_modules
+.next
+/src/generated/prisma
+build
+out
+
+# Env / secrets — NIKDY do image
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+.gitignore
+
+# Editor / OS noise
+.DS_Store
+*.log
+npm-debug.log*
+
+# Prisma agent skills / dočasné skripty
+.agents
+.claude
+.windsurf
+skills-lock.json
+scripts/_*
