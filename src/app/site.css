@@ -541,6 +541,16 @@ background:var(--bez);border-color:var(--bez);color:var(--ink)
 .site .tag.hi {
 border-color:var(--ok);color:var(--ink);background:var(--ok);font-weight:600
 }
+/* vlastné odznaky (Badge) udelené odborom školstva — farebné varianty podľa kind */
+.site .tag.hi.k-mat {
+background:var(--mat);border-color:var(--mat)
+}
+.site .tag.hi.k-vl {
+background:var(--vl);border-color:var(--vl)
+}
+.site .tag.hi.k-term {
+background:var(--term);border-color:var(--term);color:#fff
+}
 .site .scard .foot {
 margin-top:auto;padding-top:12px
 }

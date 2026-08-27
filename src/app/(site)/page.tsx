@@ -12,7 +12,7 @@ export default async function HomePage() {
     prisma.tag.findMany({ orderBy: { label: "asc" } }),
     prisma.school.findMany({
       where: { isPublished: true },
-      include: { tags: true, odbory: true },
+      include: { tags: true, odbory: true, badges: true },
       orderBy: { name: "asc" },
     }),
     prisma.review.findMany({
@@ -62,6 +62,7 @@ export default async function HomePage() {
       length: o.length,
     })),
     tags: s.tags.map((t) => ({ code: t.code, label: t.label })),
+    badges: s.badges.map((b) => ({ label: b.label, kind: b.kind })),
   }));
 
   const stories = reviews;

@@ -35,3 +35,10 @@ export const LANGUAGE_OPTIONS = [
 export const LANGUAGE_LABEL: Record<string, string> = Object.fromEntries(
   LANGUAGE_OPTIONS.map((o) => [o.value, o.label]),
 );
+
+export const BADGE_KIND_OPTIONS = [
+  { value: "ok", label: "zelená (pozitívne)" },
+  { value: "mat", label: "tyrkysová (info)" },
+  { value: "vl", label: "oranžová (upozornenie)" },
+  { value: "term", label: "ružová (termín)" },
+] as const;

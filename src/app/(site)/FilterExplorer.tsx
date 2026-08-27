@@ -24,6 +24,7 @@ type School = {
   inekoKraj: string | null;
   odbory: Odbor[];
   tags: { code: string; label: string }[];
+  badges: { label: string; kind: string }[];
 };
 type Tag = { code: string; label: string };
 
@@ -341,6 +342,18 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                           <span className="tag">{s.odbory.length} {sklonOdbor(s.odbory.length)}</span>
                           <span className={`tag ${thirdCls}`}>{third}</span>
                         </div>
+                        {s.badges.length > 0 && (
+                          <div className="tags">
+                            {s.badges.map((b) => (
+                              <span
+                                key={b.label}
+                                className={`tag hi ${b.kind && b.kind !== "ok" ? "k-" + b.kind : ""}`}
+                              >
+                                {b.label}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         <div className="tags">
                           {totalAccepts > 0 && <span className="tag hi">prijímajú {totalAccepts} žiakov</span>}
                           {maxApplied != null && <span className="tag hi">vlani {maxApplied} prihlásených na 1 miesto</span>}

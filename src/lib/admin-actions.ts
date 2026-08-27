@@ -158,6 +158,41 @@ export async function deleteReview(id: string) {
   revalidatePath("/");
 }
 
+/* ================= ODZNAKY (Badge do kariet) ================= */
+
+const BADGE_KINDS = new Set(["ok", "mat", "vl", "term"]);
+
+export async function saveBadge(formData: FormData) {
+  await assertStaff();
+  const id = str(formData.get("id"));
+  const label = str(formData.get("label"));
+  const schoolId = str(formData.get("schoolId"));
+  if (!label || !schoolId) return;
+  const kindRaw = str(formData.get("kind")) ?? "ok";
+  const kind = BADGE_KINDS.has(kindRaw) ? kindRaw : "ok";
+  const data = {
+    label,
+    kind,
+    schoolId,
+    note: str(formData.get("note")),
+    createdBy: (await getSessionUser())?.id ?? null,
+  };
+  if (id) {
+    await prisma.badge.update({ where: { id }, data });
+  } else {
+    await prisma.badge.create({ data });
+  }
+  revalidatePath("/admin/badge");
+  revalidatePath("/");
+}
+
+export async function deleteBadge(id: string) {
+  await assertStaff();
+  await prisma.badge.delete({ where: { id } });
+  revalidatePath("/admin/badge");
+  revalidatePath("/");
+}
+
 /* ================= NASTAVENIA ================= */
 
 export async function saveSettings(formData: FormData) {
