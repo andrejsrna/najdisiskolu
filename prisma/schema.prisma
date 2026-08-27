@@ -1,0 +1,272 @@
+// Najdi si školu — Trnavský samosprávny kraj
+// Dátový model odvodený z prototypu „Vyber si strednú" (static HTML)
+// + poznámok zo stretnutia. Fáza 0: import dát 1:1 + role + nové polia.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============ ENUMS ============
+
+enum Role {
+  ADMIN      // správca systému
+  SCHOLSTVO  // odbor školstva TTSK (spravuje všetky školy, badge, blog, veľtrhy)
+  SKOLA      // konkrétna škola (edituje iba svoj profil)
+}
+
+enum Completion {
+  MATURITA                // mat
+  VYUCNY_LIST             // vl
+  MATURITA_A_VYUCNY_LIST  // mv
+  ZAVERECNA_SKUSKA        // zav
+}
+
+enum PostType {
+  SUPER  // „Moja stredná je super"
+  NEWS   // „Dobré správy zo školstva"
+}
+
+// ============ USER ============
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         Role     @default(SKOLA)
+  schoolId     String?
+  school       School?  @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  posts        Post[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ============ SCHOOL ============
+
+model School {
+  id     String @id @default(cuid())
+  name   String
+  slug   String @unique
+  city   String
+  district String // jeden zo 7 okresov: Dunajská Streda, Galanta, Hlohovec, Piešťany, Senica, Skalica, Trnava
+
+  // vyučovací jazyk + praktické príznaky
+  languages        String[] // sk / hu / en / ru
+  hasInternat      Boolean  @default(false) // i
+  hasCanteen       Boolean  @default(false) // s = školská jedáleň
+  hasDual          Boolean  @default(false) // d = duálne vzdelávanie
+  hasNadstavba     Boolean  @default(false) // nad
+  hasNativeSpeaker Boolean  @default(false) // nat
+  accessibility    String?                  // bez = bezbariérovosť ("áno"/popis)
+  erasmus          String?                  // er
+
+  // kontakt
+  website   String?
+  email     String?
+  phone     String?
+  facebook  String?
+  instagram String?
+
+  // kde škola sídli
+  address String?
+  mapUrl  String? // iframe embed (OpenStreetMap a pod.)
+
+  // umiestnenie v rebríčku INEKO
+  inekoKraj     String?
+  inekoSlovensko String?
+
+  // čísla
+  totalStudents Int? // koľko majú celkovo žiakov
+
+  // médiá (R2)
+  photoUrl String?
+  logoUrl  String?
+
+  // dlhšie texty
+  intro         String?  @db.Text // p = predstavenie školy
+  modernization String?  @db.Text // mod
+  plans         String?  @db.Text // plan
+  support       String?  @db.Text // podp
+  achievements  String?  @db.Text // usp
+  partners      String?  @db.Text // part
+  graduates     String?  @db.Text // absolventi
+  other         String?  @db.Text // ost
+
+  // zoznamy
+  whyUs          String[] // top = „Prečo práve sem"
+  clubs          String[] // kr = krúžky
+  sports         String[] // sport
+  canteenOptions String[] // buf
+  supportTeam    String[] // tim
+  certificates   String[] // cert
+
+  // stav
+  isComplete  Boolean @default(false) // vyplnený profil → objaví sa vo veľtrhu
+  isPublished Boolean @default(true)
+
+  tags      Tag[]
+  priestory Priestor[]
+  odbory    Odbor[]
+  projects  Project[]
+  dods      Dod[]
+  downloads Download[]
+  badges    Badge[]
+  veltrhy   Veltrh[]
+  users     User[]
+  posts     Post[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============ ODBOR (repeater: čo sa dá študovať) ============
+
+model Odbor {
+  id       String     @id @default(cuid())
+  schoolId String
+  school   School     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  code       String     // kód odboru, napr. "7902 J"
+  name       String     // "Elektromechanik - silnoprúdová technika"
+  length     Int        // dĺžka štúdia v rokoch (3 / 4)
+  completion Completion // maturita / výučný list / ...
+
+  // čísla, ktoré v prototype sú "???" a majú byť editovateľné
+  accepts         Int? // prijíma X žiakov
+  appliedLastYear Int? // vlani X prihlásených na 1 miesto
+  places          Int? // počet miest
+
+  employment String? // „Uplatníš sa ako..." (override; inak odvodené z názvu)
+  sort       Int     @default(0)
+
+  @@index([schoolId])
+}
+
+// ============ TAG (zameranie → vyhľadávanie na homepage) ============
+
+model Tag {
+  id      String   @id @default(cuid())
+  code    String   @unique // gym / tech / it / dop / eko / gas / zdr / ume / pol / spo
+  label   String
+  schools School[]
+}
+
+// ============ PRIESTOR (priestory a vybavenie) ============
+
+model Priestor {
+  id        String   @id @default(cuid())
+  name      String   @unique // "telocvičňa", "posilňovňa", "dielne", ...
+  isDefault Boolean  @default(true) // predvybraté odborom školstva; je možné vytvoriť nové
+  schools   School[]
+}
+
+// ============ PROJECT (projekty školy) ============
+
+model Project {
+  id          String @id @default(cuid())
+  schoolId    String
+  school      School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  title       String
+  description String @db.Text
+  sort        Int    @default(0)
+
+  @@index([schoolId])
+}
+
+// ============ DOD (deň otvorených dverí) ============
+
+model Dod {
+  id       String  @id @default(cuid())
+  schoolId String
+  school   School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  date DateTime @db.Date
+  time String?   // "8:00 - 12:00"
+  note String?
+
+  @@index([schoolId])
+}
+
+// ============ DOWNLOAD (box „na stiahnutie") ============
+
+model Download {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  title    String
+  fileUrl  String  // R2 public URL (alebo /api cesta)
+  fileName String?
+  fileSize Int?
+  sort     Int    @default(0)
+
+  @@index([schoolId])
+}
+
+// ============ BADGE (do kariet — udeľuje odbor školstva) ============
+
+model Badge {
+  id        String   @id @default(cuid())
+  schoolId  String
+  school    School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  label     String   // "Voľné miesta", "Top v INEKO", ...
+  kind      String   @default("ok") // ok / term / mat / vl ... → farba .tag.hi
+  note      String?
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([schoolId])
+}
+
+// ============ VELTRH (veľtrh škôl) ============
+
+model Veltrh {
+  id      String   @id @default(cuid())
+  city    String
+  date    DateTime @db.Date
+  time    String   // "8:00 - 17:00"
+  place   String   // "Športová hala"
+  address String
+
+  description String? @db.Text
+  extra       String?
+
+  schools School[] // školy s vyplneným profilom sa zobrazia v zozname
+
+  @@index([date])
+}
+
+// ============ POST (blog: „dobré správy" + „moja stredná je super") ============
+
+model Post {
+  id        String    @id @default(cuid())
+  type      PostType
+  title     String
+  body      String    @db.Text
+  coverUrl  String?
+
+  schoolId String?
+  school   School?  @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  authorId String?
+  author   User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([type, published])
+}
+
+// ============ SETTING (hero + štatistiky + skrytý link) ============
+
+model Setting {
+  key   String @id
+  value Json
+}
