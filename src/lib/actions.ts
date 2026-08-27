@@ -1,5 +1,5 @@
 "use server";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -24,10 +24,14 @@ export async function loginAction(
   }
 
   const store = await cookies();
+  // Secure flag nasleduje SKUTOČNÝ protokol požiadavky (X-Forwarded-Proto od Traefik/Coolify).
+  // Keď je aplikácia dostupná po HTTP, Secure cookie by prehliadač neposlal a relácia by sa
+  // stratila pri každej navigácii (nutnosť prihlásiť sa znova).
+  const isHttps = (await headers()).get("x-forwarded-proto") === "https";
   store.set(SESSION_COOKIE_NAME, await createSessionToken(user.id), {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: isHttps,
     path: "/",
     maxAge: SESSION_MAX_AGE_SECONDS,
   });
