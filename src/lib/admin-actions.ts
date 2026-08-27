@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/session";
 import { Role, type PostType } from "@/generated/prisma/enums";
+import { parseRole, canManageRole } from "@/lib/roles";
 
 const str = (v: FormDataEntryValue | null): string | null => {
   const s = String(v ?? "").trim();
@@ -21,13 +22,6 @@ async function assertStaff() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
   if (user.role !== Role.ADMIN && user.role !== Role.SCHOLSTVO) redirect("/admin");
-  return user;
-}
-
-async function assertAdmin() {
-  const user = await getSessionUser();
-  if (!user) redirect("/login");
-  if (user.role !== Role.ADMIN) redirect("/admin");
   return user;
 }
 
@@ -153,41 +147,55 @@ export async function saveSettings(formData: FormData) {
   revalidatePath("/admin/nastavenia");
 }
 
-/* ================= POUŽÍVATELIA (len ADMIN) ================= */
-
-const ROLE_VALUES = new Set(["ADMIN", "SCHOLSTVO", "SKOLA"]);
+/* ================= POUŽÍVATELIA (ADMIN + SCHOLSTVO) ================= */
 
 export async function createUser(formData: FormData) {
-  await assertAdmin();
+  const actor = await assertStaff();
   const email = str(formData.get("email"))?.toLowerCase();
   const password = String(formData.get("password") ?? "");
   const name = str(formData.get("name"));
-  const role = str(formData.get("role")) ?? "SKOLA";
+  const role = parseRole(str(formData.get("role")));
   const schoolId = str(formData.get("schoolId"));
+
   if (!email || !password) return;
+  if (!canManageRole(actor.role, role)) redirect("/admin");
+  // Pri školskom účte je povinné priradiť konkrétnu školu.
+  if (role === Role.SKOLA && !schoolId) return;
+
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return;
+
   await prisma.user.create({
     data: {
       email,
       name,
       passwordHash: await bcrypt.hash(password, 10),
-      role: (ROLE_VALUES.has(role) ? role : "SKOLA") as Role,
-      schoolId: schoolId || null,
+      role,
+      schoolId: role === Role.SKOLA ? schoolId : null,
     },
   });
   revalidatePath("/admin/pouzivatelia");
 }
 
 export async function updateUser(userId: string, formData: FormData) {
-  await assertAdmin();
-  const role = str(formData.get("role")) ?? "SKOLA";
+  const actor = await assertStaff();
+  const target = await prisma.user.findUnique({ where: { id: userId } });
+  if (!target) return;
+
+  const role = parseRole(str(formData.get("role")));
   const schoolId = str(formData.get("schoolId"));
+
+  // Editor nesmie meniť adminov, ani nikoho povýšiť na admina.
+  if (!canManageRole(actor.role, target.role)) redirect("/admin");
+  if (!canManageRole(actor.role, role)) redirect("/admin");
+  // Školský účet musí mať priradenú školu.
+  if (role === Role.SKOLA && !schoolId && !target.schoolId) return;
+
   await prisma.user.update({
     where: { id: userId },
     data: {
-      role: (ROLE_VALUES.has(role) ? role : "SKOLA") as Role,
-      schoolId: schoolId || null,
+      role,
+      schoolId: role === Role.SKOLA ? (schoolId ?? target.schoolId) : null,
       name: str(formData.get("name")),
     },
   });
@@ -195,7 +203,9 @@ export async function updateUser(userId: string, formData: FormData) {
 }
 
 export async function resetUserPassword(userId: string, formData: FormData) {
-  await assertAdmin();
+  const actor = await assertStaff();
+  const target = await prisma.user.findUnique({ where: { id: userId } });
+  if (!target || !canManageRole(actor.role, target.role)) redirect("/admin");
   const password = String(formData.get("password") ?? "");
   if (!password) return;
   await prisma.user.update({
@@ -206,7 +216,12 @@ export async function resetUserPassword(userId: string, formData: FormData) {
 }
 
 export async function deleteUser(userId: string) {
-  await assertAdmin();
+  const actor = await assertStaff();
+  const target = await prisma.user.findUnique({ where: { id: userId } });
+  if (!target) return;
+  // Nikto nesmie zmazať sám seba; editor nesmie zmazať admina.
+  if (target.id === actor.id) return;
+  if (!canManageRole(actor.role, target.role)) redirect("/admin");
   await prisma.user.delete({ where: { id: userId } });
   revalidatePath("/admin/pouzivatelia");
 }

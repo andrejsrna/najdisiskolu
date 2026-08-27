@@ -27,7 +27,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       { href: "/admin/nastavenia", label: "Nastavenia" },
     );
   }
-  if (user.role === Role.ADMIN) {
+  if (user.role === Role.ADMIN || user.role === Role.SCHOLSTVO) {
     items.push({ href: "/admin/pouzivatelia", label: "Používatelia" });
   }
 

@@ -3,70 +3,49 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
 import { ROLE_LABEL } from "@/lib/constants";
-import { createUser, updateUser, resetUserPassword, deleteUser } from "@/lib/admin-actions";
+import { creatableRolesFor } from "@/lib/roles";
+import { updateUser, resetUserPassword, deleteUser } from "@/lib/admin-actions";
+import CreateUserForm from "./CreateUserForm";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
-const label = "mb-1 block text-xs font-medium text-slate-600";
+
+const ROLE_OPTIONS: { value: Role; label: string }[] = [
+  { value: Role.ADMIN, label: ROLE_LABEL.ADMIN },
+  { value: Role.SCHOLSTVO, label: ROLE_LABEL.SCHOLSTVO },
+  { value: Role.SKOLA, label: ROLE_LABEL.SKOLA },
+];
 
 export default async function PouzivateliaPage() {
   const user = await requireUser();
-  if (user.role !== Role.ADMIN) redirect("/admin");
+  const isAdmin = user.role === Role.ADMIN;
+  // Správu účtov majú iba admin a odbor školstva (editor).
+  if (!isAdmin && user.role !== Role.SCHOLSTVO) redirect("/admin");
 
-  const users = await prisma.user.findMany({
+  const creatable = creatableRolesFor(user.role);
+  const creatableOptions = ROLE_OPTIONS.filter((o) => creatable.includes(o.value));
+
+  const allUsers = await prisma.user.findMany({
     include: { school: { select: { name: true } } },
     orderBy: { email: "asc" },
   });
+  // Editor nevidí administrátorov.
+  const users = isAdmin ? allUsers : allUsers.filter((u) => u.role !== Role.ADMIN);
+
   const schools = await prisma.school.findMany({ orderBy: { name: "asc" } });
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <h1 className="text-xl font-bold text-slate-900">Používatelia</h1>
-        <p className="text-sm text-slate-500">Roly: administrátor, odbor školstva, škola.</p>
+        <p className="text-sm text-slate-500">
+          {isAdmin
+            ? "Administrátor vytvára účty pre všetky roly."
+            : "Odbor školstva vytvára účty pre editorov a školy."}
+        </p>
       </div>
 
-      <form
-        action={createUser}
-        className="grid grid-cols-2 gap-3 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-5"
-      >
-        <div>
-          <label className={label}>Meno</label>
-          <input name="name" className={input} />
-        </div>
-        <div>
-          <label className={label}>Email</label>
-          <input name="email" type="email" className={input} />
-        </div>
-        <div>
-          <label className={label}>Heslo</label>
-          <input name="password" type="password" className={input} />
-        </div>
-        <div>
-          <label className={label}>Rola</label>
-          <select name="role" defaultValue="SKOLA" className={input}>
-            <option value="ADMIN">Administrátor</option>
-            <option value="SCHOLSTVO">Odbor školstva</option>
-            <option value="SKOLA">Škola</option>
-          </select>
-        </div>
-        <div>
-          <label className={label}>Škola (pre rolu škola)</label>
-          <select name="schoolId" defaultValue="" className={input}>
-            <option value="">— žiadna —</option>
-            {schools.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="col-span-2 sm:col-span-5">
-          <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
-            Vytvoriť používateľa
-          </button>
-        </div>
-      </form>
+      <CreateUserForm schools={schools} creatableRoles={creatableOptions} />
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm">
@@ -88,9 +67,11 @@ export default async function PouzivateliaPage() {
                 <td className="px-4 py-2.5">
                   <form action={updateUser.bind(null, u.id)} className="flex items-center gap-2">
                     <select name="role" defaultValue={u.role} className={input + " !w-auto"}>
-                      <option value="ADMIN">Administrátor</option>
-                      <option value="SCHOLSTVO">Odbor školstva</option>
-                      <option value="SKOLA">Škola</option>
+                      {ROLE_OPTIONS.filter((o) => creatable.includes(o.value)).map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
                     </select>
                     <button className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:bg-slate-100">
                       Uložiť
