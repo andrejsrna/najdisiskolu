@@ -77,7 +77,7 @@ async function main() {
       email: "gymds@gymds.sk",
       phone: "+421315522334",
       accessibility: "áno",
-      totalStudents: 420,
+      totalStudents: "420",
       intro: "Demo škola pre overenie dátového modelu.",
       whyUs: ["Všeobecné vzdelávanie v 4-ročnom a 8-ročnom štúdiu"],
       tags: { connect: [{ code: "gym" }] },

@@ -56,10 +56,13 @@ model School {
   district String // jeden zo 7 okresov: Dunajská Streda, Galanta, Hlohovec, Piešťany, Senica, Skalica, Trnava
 
   // vyučovací jazyk + praktické príznaky
-  languages        String[] // sk / hu / en / ru
+  languages        String[] // j = vyučovací jazyk: sk / hu / en / ru
+  foreignLanguages String[] // jaz = cudzie jazyky (anglický, nemecký, ...)
   hasInternat      Boolean  @default(false) // i
+  internatInfo     String?                  // intTxt = „Áno, na našom/inom internáte"
   hasCanteen       Boolean  @default(false) // s = školská jedáleň
   hasDual          Boolean  @default(false) // d = duálne vzdelávanie
+  dualCompanies    String[] // dfirmy = duálne firmy (partneri)
   hasNadstavba     Boolean  @default(false) // nad
   hasNativeSpeaker Boolean  @default(false) // nat
   accessibility    String?                  // bez = bezbariérovosť ("áno"/popis)
@@ -81,7 +84,7 @@ model School {
   inekoSlovensko String?
 
   // čísla
-  totalStudents Int? // koľko majú celkovo žiakov
+  totalStudents String? // ziakovReal = „koľko majú celkovo žiakov" (voľný text: „približne 550")
 
   // médiá (R2)
   photoUrl String?
@@ -89,6 +92,7 @@ model School {
 
   // dlhšie texty
   intro         String?  @db.Text // p = predstavenie školy
+  practice      String?  @db.Text // prac = kde prebieha odborná prax
   modernization String?  @db.Text // mod
   plans         String?  @db.Text // plan
   support       String?  @db.Text // podp
@@ -96,6 +100,7 @@ model School {
   partners      String?  @db.Text // part
   graduates     String?  @db.Text // absolventi
   other         String?  @db.Text // ost
+  otherTop      String?  @db.Text // ostTop = extra highlight „prečo práve sem"
 
   // zoznamy
   whyUs          String[] // top = „Prečo práve sem"
