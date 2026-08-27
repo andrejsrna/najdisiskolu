@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
 import { savePost, deletePost } from "@/lib/admin-actions";
+import RichTextEditor from "./RichTextEditor";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
@@ -55,7 +56,7 @@ export default async function BlogPage({
         </div>
         <div>
           <label className={label}>Text</label>
-          <textarea name="body" rows={6} defaultValue={editing?.body ?? ""} className={input} />
+          <RichTextEditor name="body" defaultValue={editing?.body ?? ""} />
         </div>
         <div>
           <label className={label}>Obrázok (URL)</label>
