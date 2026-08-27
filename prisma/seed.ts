@@ -1,177 +1,159 @@
-// Seed — overenie schémy: role, tagy, priestory, odbory, badge, DOD, download.
-// Úplný import 44 škôl z HTML prototypu je samostatný krok (scripts/import-from-html.ts).
+// Seed — vytvorí kompletný obsah (44 škôl + odbory + projekty + tagy + priestory +
+// veľtrhy + posty + settings + používateľov) z prisma/seed-data.json.
+// Idempotentné: ak už DB obsahuje školy, seed sa preskočí.
+// Opätovný export dát: npx tsx scripts/export-seed.ts
 import "dotenv/config";
+import { readFileSync } from "node:fs";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { Role, Completion, PostType } from "../src/generated/prisma/enums";
+import { Role, type Completion, type PostType } from "../src/generated/prisma/enums";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
 });
 
-function slugify(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+type SeedSchool = {
+  name: string; slug: string; city: string; district: string;
+  languages: string[]; foreignLanguages: string[];
+  hasInternat: boolean; internatInfo: string | null;
+  hasCanteen: boolean; hasDual: boolean; dualCompanies: string[];
+  hasNadstavba: boolean; hasNativeSpeaker: boolean;
+  accessibility: string | null; erasmus: string | null;
+  website: string | null; email: string | null; phone: string | null;
+  facebook: string | null; instagram: string | null;
+  address: string | null; mapUrl: string | null;
+  inekoKraj: string | null; inekoSlovensko: string | null;
+  totalStudents: string | null; photoUrl: string | null; logoUrl: string | null;
+  intro: string | null; practice: string | null; modernization: string | null;
+  plans: string | null; support: string | null; achievements: string | null;
+  partners: string | null; graduates: string | null; other: string | null; otherTop: string | null;
+  whyUs: string[]; clubs: string[]; sports: string[]; canteenOptions: string[];
+  supportTeam: string[]; certificates: string[];
+  isComplete: boolean; isPublished: boolean;
+  tagCodes: string[]; priestorNames: string[];
+  odbory: { code: string; name: string; length: number; completion: string; accepts: number | null; appliedLastYear: number | null; places: number | null; employment: string | null; sort: number }[];
+  projects: { title: string; description: string; sort: number }[];
+  dods: { date: string | null; time: string | null; note: string | null }[];
+  downloads: { title: string; fileUrl: string; fileName: string | null; sort: number }[];
+  badges: { label: string; kind: string; note: string | null }[];
+};
+
+type SeedData = {
+  tags: { code: string; label: string }[];
+  priestory: { name: string }[];
+  settings: { key: string; value: unknown }[];
+  schools: SeedSchool[];
+  veltrhy: { city: string; date: string | null; time: string; place: string; address: string; description: string | null; extra: string | null; schoolSlugs: string[] }[];
+  posts: { type: string; title: string; body: string; coverUrl: string | null; published: boolean; publishedAt: string | null; schoolSlug: string | null }[];
+};
+
+const toDate = (s: string | null | undefined) => (s ? new Date(`${s}T00:00:00`) : null);
 
 async function main() {
-  // 1. Tagy (zameranie → vyhľadávanie na homepage)
-  const tags: [string, string][] = [
-    ["gym", "Gymnáziá a všeobecné vzdelanie"],
-    ["tech", "Technika a priemysel"],
-    ["it", "IT a elektrotechnika"],
-    ["dop", "Doprava a logistika"],
-    ["eko", "Ekonomika, obchod a administratíva"],
-    ["gas", "Gastronómia, hotelierstvo a služby"],
-    ["zdr", "Zdravotníctvo, pedagogika a sociálna práca"],
-    ["ume", "Umenie a dizajn"],
-    ["pol", "Poľnohospodárstvo a potravinárstvo"],
-    ["spo", "Šport"],
-  ];
-  for (const [code, label] of tags) {
-    await prisma.tag.upsert({
-      where: { code },
-      update: { label },
-      create: { code, label },
-    });
+  const data: SeedData = JSON.parse(readFileSync("prisma/seed-data.json", "utf-8"));
+
+  if ((await prisma.school.count()) > 0) {
+    console.log("ℹ️ DB už obsahuje školy — seed preskočený.");
+    return;
   }
 
-  // 2. Predvybraté priestory a vybavenie (môže ich rozširovať odbor školstva)
-  const priestory = [
-    "telocvičňa",
-    "posilňovňa",
-    "multifunkčné ihrisko",
-    "bežecký okruh",
-    "športová hala",
-    "plaváreň",
-    "odborné dielne",
-    "laboratóriá",
-    "knižnica",
-    "školský internát",
-  ];
-  for (const name of priestory) {
-    await prisma.priestor.upsert({
-      where: { name },
-      update: {},
-      create: { name },
-    });
-  }
-
-  // 3. Demo škola (odbor + badge + DOD + download) — overenie relácií
-  const school = await prisma.school.upsert({
-    where: { slug: "gymnazium-ladislava-dubravu" },
-    update: {},
-    create: {
-      name: "Gymnázium Ladislava Dúbravu",
-      slug: "gymnazium-ladislava-dubravu",
-      city: "Dunajská Streda",
-      district: "Dunajská Streda",
-      languages: ["sk"],
-      hasCanteen: true,
-      website: "www.gymnaziumds.edupage.org",
-      email: "gymds@gymds.sk",
-      phone: "+421315522334",
-      accessibility: "áno",
-      totalStudents: "420",
-      intro: "Demo škola pre overenie dátového modelu.",
-      whyUs: ["Všeobecné vzdelávanie v 4-ročnom a 8-ročnom štúdiu"],
-      tags: { connect: [{ code: "gym" }] },
-      priestory: { connect: [{ name: "telocvičňa" }, { name: "posilňovňa" }] },
-      isComplete: true,
-    },
-  });
-
-  await prisma.odbor.upsert({
-    where: { id: "demo-odbor-gym" },
-    update: {},
-    create: {
-      id: "demo-odbor-gym",
-      schoolId: school.id,
-      code: "7902 J",
-      name: "Gymnázium",
-      length: 4,
-      completion: Completion.MATURITA,
-      accepts: 120,
-      appliedLastYear: 3,
-      places: 120,
-      employment: "pokračovanie na vysokej škole doma aj v zahraničí",
-    },
-  });
-
-  await prisma.badge.createMany({
-    data: [{ schoolId: school.id, label: "Voľné miesta", kind: "ok", createdBy: "seed" }],
-    skipDuplicates: true,
-  });
-
-  await prisma.dod.createMany({
-    data: [
-      {
-        schoolId: school.id,
-        date: new Date("2026-11-12"),
-        time: "8:00 - 12:00",
-      },
-    ],
-    skipDuplicates: true,
-  });
-
-  await prisma.download.createMany({
-    data: [
-      {
-        schoolId: school.id,
-        title: "Kritériá prijatia 2026/2027",
-        fileUrl: "https://example.com/kriteria.pdf",
-        fileName: "kriteria.pdf",
-      },
-    ],
-    skipDuplicates: true,
-  });
-
-  // 4. Používatelia (3 role)
-  const pass = await bcrypt.hash("najdi2026", 10);
-  const users: [string, string, Role, string?][] = [
-    ["admin@ttsk.sk", "Administrátor", Role.ADMIN, undefined],
-    ["scholstvo@ttsk.sk", "Odbor školstva", Role.SCHOLSTVO, undefined],
-    ["skola@demo.sk", "Gymnázium Ladislava Dúbravu", Role.SKOLA, school.id],
-  ];
-  for (const [email, name, role, schoolId] of users) {
-    await prisma.user.upsert({
-      where: { email },
-      update: {},
-      create: { email, name, role, schoolId, passwordHash: pass },
-    });
-  }
-
-  // 5. Nastavenia (hero + štatistiky)
-  const settings: [string, unknown][] = [
-    [ "hero.title", "Nájdi si strednú, ktorá ťa bude baviť" ],
-    [ "hero.subtitle", "Trnavská župa ti ponúka 44 skvelých možností." ],
-    ["hero.hidden", false],
-    ["cred.schools", 44],
-    ["cred.programs", 126],
-    ["cred.places", 4403],
-    ["cred.dual", 911],
-  ];
-  for (const [key, value] of settings) {
+  // 1. Tagy + priestory + settings
+  await prisma.tag.createMany({ data: data.tags });
+  await prisma.priestor.createMany({ data: data.priestory });
+  for (const s of data.settings) {
     await prisma.setting.upsert({
-      where: { key },
-      update: { value: value as never },
-      create: { key, value: value as never },
+      where: { key: s.key },
+      update: { value: s.value as never },
+      create: { key: s.key, value: s.value as never },
     });
   }
+
+  // 2. Školy (s nested odbormi, projektmi, DOD, downloads, badge + connect tagy/priestory)
+  let n = 0;
+  for (const s of data.schools) {
+    await prisma.school.create({
+      data: {
+        name: s.name, slug: s.slug, city: s.city, district: s.district,
+        languages: s.languages, foreignLanguages: s.foreignLanguages,
+        hasInternat: s.hasInternat, internatInfo: s.internatInfo,
+        hasCanteen: s.hasCanteen, hasDual: s.hasDual, dualCompanies: s.dualCompanies,
+        hasNadstavba: s.hasNadstavba, hasNativeSpeaker: s.hasNativeSpeaker,
+        accessibility: s.accessibility, erasmus: s.erasmus,
+        website: s.website, email: s.email, phone: s.phone, facebook: s.facebook, instagram: s.instagram,
+        address: s.address, mapUrl: s.mapUrl,
+        inekoKraj: s.inekoKraj, inekoSlovensko: s.inekoSlovensko,
+        totalStudents: s.totalStudents, photoUrl: s.photoUrl, logoUrl: s.logoUrl,
+        intro: s.intro, practice: s.practice, modernization: s.modernization, plans: s.plans,
+        support: s.support, achievements: s.achievements, partners: s.partners, graduates: s.graduates,
+        other: s.other, otherTop: s.otherTop,
+        whyUs: s.whyUs, clubs: s.clubs, sports: s.sports, canteenOptions: s.canteenOptions,
+        supportTeam: s.supportTeam, certificates: s.certificates,
+        isComplete: s.isComplete, isPublished: s.isPublished,
+        tags: { connect: s.tagCodes.map((code) => ({ code })) },
+        priestory: { connect: s.priestorNames.map((name) => ({ name })) },
+        odbory: { create: s.odbory.map((o) => ({ code: o.code, name: o.name, length: o.length, completion: o.completion as Completion, accepts: o.accepts, appliedLastYear: o.appliedLastYear, places: o.places, employment: o.employment, sort: o.sort })) },
+        projects: { create: s.projects.map((p) => ({ title: p.title, description: p.description, sort: p.sort })) },
+        dods: { create: s.dods.map((d) => ({ date: toDate(d.date)!, time: d.time, note: d.note })) },
+        downloads: { create: s.downloads.map((d) => ({ title: d.title, fileUrl: d.fileUrl, fileName: d.fileName, sort: d.sort })) },
+        badges: { create: s.badges.map((b) => ({ label: b.label, kind: b.kind, note: b.note })) },
+      },
+    });
+    n++;
+  }
+  console.log(`✓ ${n} škôl`);
+
+  // 3. Veľtrhy + priradené školy
+  for (const v of data.veltrhy) {
+    await prisma.veltrh.create({
+      data: {
+        city: v.city, date: toDate(v.date)!, time: v.time, place: v.place, address: v.address,
+        description: v.description, extra: v.extra,
+        schools: { connect: v.schoolSlugs.map((slug) => ({ slug })) },
+      },
+    });
+  }
+  console.log(`✓ ${data.veltrhy.length} veľtrhov`);
+
+  // 4. Posty (príbehy + články)
+  for (const p of data.posts) {
+    await prisma.post.create({
+      data: {
+        type: p.type as PostType, title: p.title, body: p.body, coverUrl: p.coverUrl,
+        published: p.published, publishedAt: toDate(p.publishedAt),
+        schoolId: p.schoolSlug
+          ? (await prisma.school.findUnique({ where: { slug: p.schoolSlug }, select: { id: true } }))?.id ?? null
+          : null,
+      },
+    });
+  }
+  console.log(`✓ ${data.posts.length} postov`);
+
+  // 5. Používatelia (3 roly) — demo heslo „najdi2026"
+  const pass = await bcrypt.hash("najdi2026", 10);
+  await prisma.user.createMany({
+    data: [
+      { email: "admin@ttsk.sk", name: "Administrátor", role: Role.ADMIN, passwordHash: pass },
+      { email: "scholstvo@ttsk.sk", name: "Odbor školstva", role: Role.SCHOLSTVO, passwordHash: pass },
+      {
+        email: "skola@demo.sk",
+        name: "Gymnázium Ladislava Dúbravu",
+        role: Role.SKOLA,
+        passwordHash: pass,
+        schoolId: (await prisma.school.findUnique({ where: { slug: "gymnazium-ladislava-dubravu" }, select: { id: true } }))?.id ?? null,
+      },
+    ],
+  });
+  console.log("✓ 3 používatelia (heslo: najdi2026)");
 
   const counts = {
-    users: await prisma.user.count(),
     schools: await prisma.school.count(),
     odbory: await prisma.odbor.count(),
-    tags: await prisma.tag.count(),
-    priestory: await prisma.priestor.count(),
+    projects: await prisma.project.count(),
+    posts: await prisma.post.count(),
   };
-  console.log("✅ Seed hotový:", counts);
+  console.log("✅ Seed dokončený:", counts);
+  await prisma.$disconnect();
 }
 
 main()
