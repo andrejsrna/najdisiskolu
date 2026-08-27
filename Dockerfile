@@ -44,8 +44,10 @@ COPY --from=build --chown=nextjs:nodejs /app/public ./public
 COPY --from=build --chown=nextjs:nodejs /app/src ./src
 COPY --from=build --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=build --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=build --chown=nextjs:nodejs --chmod=755 /app/entrypoint.sh ./entrypoint.sh
 
 USER nextjs
 EXPOSE 3000
 
-CMD ["node", "node_modules/next/dist/bin/next", "start"]
+# Migrácie (migrate deploy) + štart aplikácie
+ENTRYPOINT ["/app/entrypoint.sh"]
