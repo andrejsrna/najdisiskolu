@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
 import { savePost, deletePost } from "@/lib/admin-actions";
-import RichTextEditor from "./RichTextEditor";
+import RichTextEditor from "@/components/RichTextEditor";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";

@@ -5,6 +5,7 @@ import "dotenv/config";
 import { writeFileSync } from "node:fs";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { QA } from "../src/lib/qa-data";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -45,6 +46,19 @@ async function main() {
     console.log("✓ doplnené demo články (3)");
   }
 
+  // 2.5 Doplniť FAQ (často kladené otázky), ak ešte žiadne nie sú.
+  if ((await prisma.faq.count()) === 0) {
+    const flat: { group: string; question: string; answer: string; sort: number }[] = [];
+    let sort = 0;
+    for (const [group, items] of QA) {
+      for (const [question, answer] of items) {
+        flat.push({ group, question, answer, sort: sort++ });
+      }
+    }
+    await prisma.faq.createMany({ data: flat });
+    console.log(`✓ doplnené FAQ (${flat.length} otázok)`);
+  }
+
   // 3. Export všetkých dát.
   const schools = await prisma.school.findMany({
     include: { tags: true, priestory: true, odbory: true, projects: true, dods: true, downloads: true, badges: true },
@@ -52,6 +66,7 @@ async function main() {
   const veltrhy = await prisma.veltrh.findMany({ include: { schools: true } });
   const reviews = await prisma.review.findMany({ include: { school: { select: { slug: true } } }, orderBy: { sort: "asc" } });
   const posts = await prisma.post.findMany({ where: { type: "NEWS" }, orderBy: { publishedAt: "desc" } });
+  const faqs = await prisma.faq.findMany({ orderBy: { sort: "asc" } });
 
   const data = {
     tags: (await prisma.tag.findMany({ orderBy: { code: "asc" } })).map((t) => ({ code: t.code, label: t.label })),
@@ -98,6 +113,7 @@ async function main() {
       type: p.type, title: p.title, body: p.body, coverUrl: p.coverUrl,
       published: p.published, publishedAt: d10(p.publishedAt), schoolSlug: null,
     })),
+    faq: faqs.map((f) => ({ group: f.group, question: f.question, answer: f.answer, sort: f.sort })),
   };
 
   writeFileSync("prisma/seed-data.json", JSON.stringify(data, null, 2), "utf-8");

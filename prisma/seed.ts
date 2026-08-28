@@ -9,6 +9,7 @@ import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Role, type Completion, type PostType } from "../src/generated/prisma/enums";
+import { QA } from "../src/lib/qa-data";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -53,6 +54,7 @@ type SeedData = {
   veltrhy: { city: string; date: string | null; time: string; place: string; address: string; description: string | null; extra: string | null; schoolSlugs: string[] }[];
   reviews: SeedReview[];
   posts: { type: string; title: string; body: string; coverUrl: string | null; published: boolean; publishedAt: string | null; schoolSlug: string | null }[];
+  faq: { group: string; question: string; answer: string; sort: number }[];
 };
 
 const toDate = (s: string | null | undefined) => (s ? new Date(`${s}T00:00:00`) : null);
@@ -77,11 +79,26 @@ async function migrateSuperPosts() {
   console.log(`✓ migrovaných ${supers.length} príbehov (SUPER → Review)`);
 }
 
+/** FAQ: ak DB je prázdna, naplní ju obsahom z qa-data. Idempotentné, beží vždy. */
+async function migrateFaq() {
+  if ((await prisma.faq.count()) > 0) return;
+  const flat: { group: string; question: string; answer: string; sort: number }[] = [];
+  let sort = 0;
+  for (const [group, items] of QA) {
+    for (const [question, answer] of items) {
+      flat.push({ group, question, answer, sort: sort++ });
+    }
+  }
+  await prisma.faq.createMany({ data: flat });
+  console.log(`✓ doplnené FAQ (${flat.length} otázok)`);
+}
+
 async function main() {
   const data: SeedData = JSON.parse(readFileSync("prisma/seed-data.json", "utf-8"));
 
   // Vždy migruj legacy SUPER posty (bezpečné aj na prázdnej DB).
   await migrateSuperPosts();
+  await migrateFaq();
 
   if ((await prisma.school.count()) > 0) {
     console.log("ℹ️ DB už obsahuje školy — seed preskočený.");
@@ -196,6 +213,7 @@ async function main() {
     projects: await prisma.project.count(),
     reviews: await prisma.review.count(),
     posts: await prisma.post.count(),
+    faq: await prisma.faq.count(),
   };
   console.log("✅ Seed dokončený:", counts);
   await prisma.$disconnect();

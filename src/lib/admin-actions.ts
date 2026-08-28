@@ -193,6 +193,36 @@ export async function deleteBadge(id: string) {
   revalidatePath("/");
 }
 
+/* ================= FAQ (často kladené otázky) ================= */
+
+export async function saveFaq(formData: FormData) {
+  await assertStaff();
+  const id = str(formData.get("id"));
+  const group = str(formData.get("group"));
+  const question = str(formData.get("question"));
+  if (!group || !question) return;
+  const data = {
+    group,
+    question,
+    answer: str(formData.get("answer")) ?? "",
+    sort: num(formData.get("sort")) ?? 0,
+  };
+  if (id) {
+    await prisma.faq.update({ where: { id }, data });
+  } else {
+    await prisma.faq.create({ data });
+  }
+  revalidatePath("/admin/otazky");
+  revalidatePath("/otazky");
+}
+
+export async function deleteFaq(id: string) {
+  await assertStaff();
+  await prisma.faq.delete({ where: { id } });
+  revalidatePath("/admin/otazky");
+  revalidatePath("/otazky");
+}
+
 /* ================= NASTAVENIA ================= */
 
 export async function saveSettings(formData: FormData) {

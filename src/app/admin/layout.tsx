@@ -26,6 +26,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       { href: "/admin/recenzie", label: "Recenzie" },
       { href: "/admin/badge", label: "Odznaky" },
       { href: "/admin/blog", label: "Blog" },
+      { href: "/admin/otazky", label: "Otázky (FAQ)" },
       { href: "/admin/nastavenia", label: "Nastavenia" },
     );
   }

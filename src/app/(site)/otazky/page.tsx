@@ -1,7 +1,25 @@
-import { QA } from "@/lib/qa-data";
+import { prisma } from "@/lib/prisma";
 import { QaClient } from "./QaClient";
+import type { QAItem, QAGroup } from "@/lib/qa-data";
 
-export default function OtazkyPage() {
+export const dynamic = "force-dynamic";
+
+export default async function OtazkyPage() {
+  const faqs = await prisma.faq.findMany({ orderBy: { sort: "asc" } });
+
+  // Zoskupim ploché záznamy do [skupina, [otázka, odpoveď]][], zachovať poradie.
+  const groups: QAGroup[] = [];
+  const index = new Map<string, QAGroup>();
+  for (const f of faqs) {
+    let g = index.get(f.group);
+    if (!g) {
+      g = [f.group, []];
+      index.set(f.group, g);
+      groups.push(g);
+    }
+    g[1].push([f.question, f.answer] as QAItem);
+  }
+
   return (
     <>
       <section className="band-mat">
@@ -18,7 +36,7 @@ export default function OtazkyPage() {
 
       <section className="band-page">
         <div className="wrap" style={{ paddingTop: 36, paddingBottom: 56 }}>
-          <QaClient qa={QA} />
+          <QaClient qa={groups} />
         </div>
       </section>
     </>

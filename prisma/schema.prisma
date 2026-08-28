@@ -290,6 +290,21 @@ model Review {
   updatedAt DateTime @updatedAt
 }
 
+// ============ FAQ (často kladené otázky) ============
+
+model Faq {
+  id       String @id @default(cuid())
+  group    String // názov skupiny, napr. "Prihláška - kedy a ako"
+  question String @db.Text
+  answer   String @db.Text // HTML
+  sort     Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sort])
+}
+
 // ============ SETTING (hero + štatistiky + skrytý link) ============
 
 model Setting {
