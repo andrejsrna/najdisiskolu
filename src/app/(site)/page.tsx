@@ -6,6 +6,13 @@ export const dynamic = "force-dynamic";
 const fmtDate = (d: Date) =>
   d.toLocaleDateString("sk-SK", { day: "numeric", month: "long", year: "numeric" });
 
+/** Rok, do ktorého platí termín prihlášok (20. február). Nábor začína v septembri
+ *  predchádzajúceho roka, preto od septembra ukazujeme termín nasledujúceho roka. */
+function deadlineYear(): number {
+  const now = new Date();
+  return now.getMonth() >= 8 ? now.getFullYear() + 1 : now.getFullYear();
+}
+
 export default async function HomePage() {
   const [settingsRows, tags, schools, reviews, news] = await Promise.all([
     prisma.setting.findMany(),
@@ -88,7 +95,7 @@ export default async function HomePage() {
       {/* TIMEBAR + ŠTATISTIKY */}
       <section className="band-ink">
         <div className="timebar">
-          <strong>⏱ Prihlášky na stredné školy: <span className="hl">do 20. februára 2027</span></strong>
+          <strong>⏱ Prihlášky na stredné školy: <span className="hl">do 20. februára {deadlineYear()}</span></strong>
           <span>Teraz je čas chodiť na dni otvorených dverí →</span>
         </div>
         <div className="wrap">

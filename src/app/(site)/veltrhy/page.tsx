@@ -1,7 +1,15 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Veľtrhy škôl",
+  description:
+    "Termíny veľtrhov a dní otvorených dverí stredných škôl v Trnavskom kraji. Príď si pozrieť školy naživo.",
+  alternates: { canonical: "/veltrhy" },
+};
 
 const fmtDate = (d: Date) =>
   d.toLocaleDateString("sk-SK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });

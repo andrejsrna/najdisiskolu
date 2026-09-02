@@ -1,11 +1,56 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { COMPLETION_LABEL, LANGUAGE_LABEL } from "@/lib/constants";
+import { SITE_URL, stripHtml } from "@/lib/site";
 import { PrintButton } from "./PrintButton";
 
 const fmtDate = (d: Date) =>
   d.toLocaleDateString("sk-SK", { day: "numeric", month: "long", year: "numeric" });
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const school = await prisma.school.findUnique({
+    where: { slug },
+    select: {
+      name: true,
+      city: true,
+      district: true,
+      intro: true,
+      logoUrl: true,
+      isPublished: true,
+    },
+  });
+  if (!school || !school.isPublished) return {};
+
+  const title = `${school.name} — ${school.city}`;
+  const description =
+    stripHtml(school.intro) ||
+    `Stredná škola ${school.name} v okrese ${school.district}. Prehľad odborov, kritérií prijatia a dňa otvorených dverí.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/skola/${slug}` },
+    openGraph: {
+      title,
+      description,
+      url: `/skola/${slug}`,
+      type: "website",
+      images: school.logoUrl ? [{ url: school.logoUrl }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function SchoolPage({
   params,
@@ -40,6 +85,24 @@ export default async function SchoolPage({
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            name: school.name,
+            url: `${SITE_URL}/skola/${school.slug}`,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: school.city,
+              addressRegion: school.district,
+              addressCountry: "SK",
+            },
+            ...(school.website ? { sameAs: [school.website] } : {}),
+          }),
+        }}
+      />
       <div className="wrap">
         <div className="crumb">
           <Link href="/" style={{ textDecoration: "none" }}>

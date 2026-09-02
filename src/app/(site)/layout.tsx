@@ -29,10 +29,45 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               <b>Trnavský samosprávny kraj</b>
               <br />
               Odbor školstva
+              <br />
+              Starohájska 10, 917 01 Trnava
+              <br />
+              <a href="mailto:podatelna@trnava-vuc.sk">podatelna@trnava-vuc.sk</a>
             </div>
             <div>
               Katalóg stredných škôl zriaďovaných Trnavským samosprávnym krajom.
             </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px 28px",
+              marginTop: 28,
+              fontSize: 13,
+            }}
+          >
+            <a
+              href="https://www.trnava-vuc.sk/kontakt/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Kontakt
+            </a>
+            <a
+              href="https://www.trnava-vuc.sk/ochrana-osobnych-udajov/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ochrana osobných údajov
+            </a>
+            <a
+              href="https://www.trnava-vuc.sk/vyhlasenie-o-pristupnosti/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Vyhlásenie o prístupnosti
+            </a>
           </div>
         </div>
       </footer>

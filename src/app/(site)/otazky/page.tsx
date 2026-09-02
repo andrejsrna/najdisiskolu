@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { QaClient } from "./QaClient";
 import type { QAItem, QAGroup } from "@/lib/qa-data";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Otázky a odpovede",
+  description:
+    "Často kladené otázky o prijímačkách na stredné školy — termíny prihlášok, prijímacie skúšky, druhé kolo aj praktické veci.",
+  alternates: { canonical: "/otazky" },
+};
 
 export default async function OtazkyPage() {
   const faqs = await prisma.faq.findMany({ orderBy: { sort: "asc" } });
@@ -20,8 +28,25 @@ export default async function OtazkyPage() {
     g[1].push([f.question, f.answer] as QAItem);
   }
 
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: f.answer.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+      },
+    })),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+      />
       <section className="band-mat">
         <div className="wrap" style={{ paddingTop: 56, paddingBottom: 56 }}>
           <h1 style={{ fontSize: "clamp(30px,4.5vw,54px)", letterSpacing: "-.03em", margin: 0 }}>
