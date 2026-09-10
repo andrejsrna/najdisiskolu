@@ -245,6 +245,7 @@ export async function saveSettings(formData: FormData) {
   await upsert("cred.dual", num(formData.get("credDual")) ?? 0);
 
   revalidatePath("/admin/nastavenia");
+  revalidatePath("/");
 }
 
 /* ================= POUŽÍVATELIA (ADMIN + SCHOLSTVO) ================= */
