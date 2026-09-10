@@ -58,6 +58,13 @@ const hasMat = (o: Odbor) => o.completion === "MATURITA" || o.completion === "MA
 const hasVl = (o: Odbor) => o.completion === "VYUCNY_LIST" || o.completion === "MATURITA_A_VYUCNY_LIST";
 const sklonOdbor = (n: number) => (n === 1 ? "odbor" : n < 5 ? "odbory" : "odborov");
 
+/* keď škola nemá duál, internát, cudzí vyučovací jazyk ani nadstavbu,
+   ukážeme na karte niečo, čo uchádzačovi reálne pomôže rozhodnúť sa (ako v návrhu) */
+function benefit(s: School) {
+  if (s.inekoKraj) return "INEKO rebríček";
+  return s.odbory.length === 1 ? "jediný odbor" : "široký výber odborov";
+}
+
 function locTxt(m: string, o: string) {
   return m === o ? m : `${m} · okres ${o}`;
 }
@@ -326,7 +333,11 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                   const vl = s.odbory.some(hasVl);
                   const ukon = mat && vl ? "maturita + výučný" : mat ? "maturita" : "výučný list";
                   const ukonCls = mat && vl ? "matvl" : mat ? "mat" : "vl";
-                  const third = s.hasDual ? "duál" : s.hasInternat ? "internát" : !s.languages.includes("sk") && s.languages.length ? JAZ_SHORT[s.languages[0]] ?? "cudzí jazyk" : s.hasNadstavba ? "nadstavbové štúdium" : "školská jedáleň";
+                  const third = s.hasDual ? "duál"
+                    : s.hasInternat ? "internát"
+                    : !s.languages.includes("sk") && s.languages.length ? JAZ_SHORT[s.languages[0]] ?? "cudzí jazyk"
+                    : s.hasNadstavba ? "nadstavbové štúdium"
+                    : benefit(s);
                   const thirdCls = s.hasDual ? "dual" : s.hasInternat ? "dorm" : s.hasNadstavba ? "nad" : "";
                   const totalAccepts = s.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0);
                   const maxApplied = s.odbory.some((o) => o.appliedLastYear) ? Math.max(...s.odbory.map((o) => o.appliedLastYear ?? 0)) : null;

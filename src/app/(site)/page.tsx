@@ -111,15 +111,13 @@ export default async function HomePage() {
           <strong>⏱ Prihlášky na stredné školy: <span className="hl">do 20. februára {deadlineYear()}</span></strong>
           <span>Teraz je čas chodiť na dni otvorených dverí →</span>
         </div>
-        <div className="wrap">
-          <div className="creds">
-            {creds.map((c) => (
-              <div className="cred" key={c.t}>
-                <div className="n">{c.n}</div>
-                <div className="t">{c.t}</div>
-              </div>
-            ))}
-          </div>
+        <div className="creds">
+          {creds.map((c) => (
+            <div className="cred" key={c.t}>
+              <div className="n">{c.n}</div>
+              <div className="t">{c.t}</div>
+            </div>
+          ))}
         </div>
       </section>
 
