@@ -258,7 +258,7 @@ background:var(--acid);color:var(--ink)
 background:var(--fill)
 }
 .site .band-page {
-margin-top:50px;margin-bottom:0;background:var(--page)
+margin-top:0;margin-bottom:50px;background:var(--page)
 }
 .site .band-ink h1,
 .site .band-ink h2,

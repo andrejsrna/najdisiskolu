@@ -393,7 +393,7 @@ export default async function SchoolPage({
       </div>
 
       {school.similarTo.length > 0 && (
-        <section className="band-page" style={{ marginTop: 44 }}>
+        <section className="band-page">
           <div className="wrap">
             <h2 className="dh">Podobné školy, ktoré by ťa mohli zaujímať</h2>
             <div className="g3">
