@@ -10,7 +10,7 @@ const label = "mb-1 block text-xs font-medium text-slate-600";
 
 export default async function NastaveniaPage() {
   const user = await requireUser();
-  if (user.role !== Role.ADMIN && user.role !== Role.SCHOLSTVO) redirect("/admin");
+  if (user.role !== Role.ADMIN) redirect("/admin");
 
   const rows = await prisma.setting.findMany();
   const map = new Map(rows.map((r) => [r.key, r.value]));
@@ -41,6 +41,26 @@ export default async function NastaveniaPage() {
             <div>
               <label className={label}>Odkaz (link tlačidla)</label>
               <input name="heroLink" defaultValue={String(get("hero.link", ""))} className={input} />
+            </div>
+            <div>
+              <label className={label}>Typ pozadia</label>
+              <select name="heroMediaType" defaultValue={String(get("hero.mediaType", "video"))} className={input}>
+                <option value="video">Video</option>
+                <option value="image">Fotka</option>
+              </select>
+            </div>
+            <div>
+              <label className={label}>URL videa alebo fotky</label>
+              <input
+                name="heroMediaUrl"
+                type="url"
+                defaultValue={String(get("hero.mediaUrl", ""))}
+                placeholder="https://… (prázdne = pôvodné /hero.mp4)"
+                className={input}
+              />
+              <p className="mt-1 text-xs text-slate-400">
+                Vlož verejnú URL súboru. Pri videu odporúčame MP4, pri fotke široký formát aspoň 1920 × 1080 px.
+              </p>
             </div>
             <label className="flex items-center gap-2 text-sm text-slate-700">
               <input

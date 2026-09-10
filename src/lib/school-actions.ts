@@ -16,6 +16,8 @@ function revalidateSchool(slug: string) {
   revalidatePath("/admin");
   revalidatePath("/admin/skoly");
   revalidatePath(`/admin/skoly/${slug}`);
+  revalidatePath("/");
+  revalidatePath(`/skola/${slug}`);
 }
 
 const str = (v: FormDataEntryValue | null): string | null => {
@@ -199,6 +201,56 @@ export async function deleteDownload(
 ) {
   await assertCanEditSchool(schoolId);
   await prisma.download.delete({ where: { id: downloadId } });
+  revalidateSchool(slug);
+}
+
+/* ================= FOTOGALÉRIA ================= */
+
+export async function addSchoolPhoto(schoolId: string, slug: string, formData: FormData) {
+  await assertCanEditSchool(schoolId);
+  const url = str(formData.get("url"));
+  if (!url) return;
+  const sort = (await prisma.schoolPhoto.count({ where: { schoolId } })) + 1;
+  await prisma.schoolPhoto.create({
+    data: { schoolId, url, alt: str(formData.get("alt")), sort },
+  });
+  revalidateSchool(slug);
+}
+
+export async function deleteSchoolPhoto(schoolId: string, slug: string, photoId: string) {
+  await assertCanEditSchool(schoolId);
+  await prisma.schoolPhoto.deleteMany({ where: { id: photoId, schoolId } });
+  revalidateSchool(slug);
+}
+
+export async function setSchoolPhotoCover(
+  schoolId: string,
+  slug: string,
+  photoId: string,
+  kind: "detail" | "list",
+) {
+  await assertCanEditSchool(schoolId);
+  const photo = await prisma.schoolPhoto.findFirst({ where: { id: photoId, schoolId } });
+  if (!photo) return;
+  const field = kind === "detail" ? "isDetailCover" : "isListCover";
+  await prisma.$transaction([
+    prisma.schoolPhoto.updateMany({ where: { schoolId }, data: { [field]: false } }),
+    prisma.schoolPhoto.update({ where: { id: photoId }, data: { [field]: true } }),
+  ]);
+  revalidateSchool(slug);
+}
+
+/* ================= PODOBNÉ ŠKOLY (len ADMIN + SCHOLSTVO) ================= */
+
+export async function saveSimilarSchools(schoolId: string, slug: string, formData: FormData) {
+  await assertSchoolAdmin();
+  const ids = [...new Set(formData.getAll("similarSchools").map(String))]
+    .filter((id) => id !== schoolId)
+    .slice(0, 3);
+  await prisma.school.update({
+    where: { id: schoolId },
+    data: { similarTo: { set: ids.map((id) => ({ id })) } },
+  });
   revalidateSchool(slug);
 }
 

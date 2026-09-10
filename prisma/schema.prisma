@@ -125,9 +125,33 @@ model School {
   users     User[]
   posts     Post[]
   reviews   Review[]
+  photos    SchoolPhoto[]
+
+  // Ručne vybrané odporúčané školy na konci detailu (max. 3 sa vynucuje akciou).
+  similarTo   School[] @relation("SimilarSchools")
+  similarFrom School[] @relation("SimilarSchools")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ============ FOTOGALÉRIA ŠKOLY ============
+
+model SchoolPhoto {
+  id       String @id @default(cuid())
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  url           String
+  alt           String?
+  sort          Int     @default(0)
+  isDetailCover Boolean @default(false) // titulná na detaile
+  isListCover   Boolean @default(false) // titulná v zozname škôl
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([schoolId, sort])
 }
 
 // ============ ODBOR (repeater: čo sa dá študovať) ============

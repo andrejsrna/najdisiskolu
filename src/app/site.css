@@ -132,6 +132,10 @@ position:relative;z-index:0;height:540px;
 position:absolute;inset:0;width:100%;height:100%;
     object-fit:cover;object-position:50% 58%;z-index:0;display:block
 }
+.site .hero > img {
+position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;object-position:50% 58%;z-index:0;display:block
+}
 .site .hero .claim {
 z-index:3
 }

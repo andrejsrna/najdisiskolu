@@ -27,8 +27,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       { href: "/admin/badge", label: "Odznaky" },
       { href: "/admin/blog", label: "Blog" },
       { href: "/admin/otazky", label: "Otázky (FAQ)" },
-      { href: "/admin/nastavenia", label: "Nastavenia" },
     );
+    if (user.role === Role.ADMIN) {
+      items.push({ href: "/admin/nastavenia", label: "Nastavenia" });
+    }
   }
   if (user.role === Role.ADMIN || user.role === Role.SCHOLSTVO) {
     items.push({ href: "/admin/pouzivatelia", label: "Používatelia" });

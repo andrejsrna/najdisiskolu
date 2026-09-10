@@ -226,8 +226,10 @@ export async function deleteFaq(id: string) {
 /* ================= NASTAVENIA ================= */
 
 export async function saveSettings(formData: FormData) {
-  await assertStaff();
+  const user = await assertStaff();
+  if (user.role !== Role.ADMIN) redirect("/admin");
   const heroHidden = formData.has("heroHidden");
+  const heroMediaType = str(formData.get("heroMediaType")) === "image" ? "image" : "video";
   const upsert = (key: string, value: string | number | boolean) =>
     prisma.setting.upsert({ where: { key }, update: { value }, create: { key, value } });
 
@@ -235,6 +237,8 @@ export async function saveSettings(formData: FormData) {
   await upsert("hero.subtitle", str(formData.get("heroSubtitle")) ?? "");
   await upsert("hero.link", str(formData.get("heroLink")) ?? "");
   await upsert("hero.hidden", heroHidden);
+  await upsert("hero.mediaType", heroMediaType);
+  await upsert("hero.mediaUrl", str(formData.get("heroMediaUrl")) ?? "");
   await upsert("cred.schools", num(formData.get("credSchools")) ?? 0);
   await upsert("cred.programs", num(formData.get("credPrograms")) ?? 0);
   await upsert("cred.places", num(formData.get("credPlaces")) ?? 0);

@@ -19,7 +19,12 @@ export default async function HomePage() {
     prisma.tag.findMany({ orderBy: { label: "asc" } }),
     prisma.school.findMany({
       where: { isPublished: true },
-      include: { tags: true, odbory: true, badges: true },
+      include: {
+        tags: true,
+        odbory: true,
+        badges: true,
+        photos: { where: { isListCover: true }, take: 1 },
+      },
       orderBy: { name: "asc" },
     }),
     prisma.review.findMany({
@@ -40,6 +45,8 @@ export default async function HomePage() {
   const heroSubtitle = String(get("hero.subtitle", "Trnavská župa ti ponúka 44 skvelých možností."));
   const heroLink = String(get("hero.link", "") || "");
   const heroHidden = Boolean(get("hero.hidden", false));
+  const heroMediaType = get("hero.mediaType", "video") === "image" ? "image" : "video";
+  const heroMediaUrl = String(get("hero.mediaUrl", "") || "");
 
   const creds = [
     { n: String(get("cred.schools", schools.length)), t: "župných stredných škôl" },
@@ -70,6 +77,7 @@ export default async function HomePage() {
     })),
     tags: s.tags.map((t) => ({ code: t.code, label: t.label })),
     badges: s.badges.map((b) => ({ label: b.label, kind: b.kind })),
+    photoUrl: s.photos[0]?.url ?? s.photoUrl,
   }));
 
   const stories = reviews;
@@ -79,9 +87,14 @@ export default async function HomePage() {
       {/* HERO */}
       {!heroHidden && (
         <section className="hero">
-          <video autoPlay muted loop playsInline preload="auto" aria-hidden="true" tabIndex={-1}>
-            <source src="/hero.mp4" type="video/mp4" />
-          </video>
+          {heroMediaType === "image" && heroMediaUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={heroMediaUrl} alt="" aria-hidden="true" className="h-full w-full object-cover" />
+          ) : (
+            <video autoPlay muted loop playsInline preload="auto" aria-hidden="true" tabIndex={-1}>
+              <source src={heroMediaUrl || "/hero.mp4"} type="video/mp4" />
+            </video>
+          )}
           <div className="claim">
             <h1>{heroTitle}</h1>
             <p className="sub">{heroSubtitle}</p>

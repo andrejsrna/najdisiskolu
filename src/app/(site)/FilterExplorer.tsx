@@ -25,6 +25,7 @@ type School = {
   odbory: Odbor[];
   tags: { code: string; label: string }[];
   badges: { label: string; kind: string }[];
+  photoUrl: string | null;
 };
 type Tag = { code: string; label: string };
 
@@ -333,7 +334,12 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
 
                   return (
                     <div className="scard" key={s.slug}>
-                      <div className="ph img">FOTO ŠKOLY</div>
+                      {s.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={s.photoUrl} alt={s.name} className="img" style={{ height: 200, width: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <div className="ph img">FOTO ŠKOLY</div>
+                      )}
                       <div className="body">
                         <div className="name">{s.name}</div>
                         <div className="loc">{locTxt(s.city, s.district)}</div>

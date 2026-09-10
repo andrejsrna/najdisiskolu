@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { COMPLETION_LABEL, LANGUAGE_LABEL } from "@/lib/constants";
 import { SITE_URL, stripHtml } from "@/lib/site";
 import { PrintButton } from "./PrintButton";
+import { SchoolGallery } from "./SchoolGallery";
 
 const fmtDate = (d: Date) =>
   d.toLocaleDateString("sk-SK", { day: "numeric", month: "long", year: "numeric" });
@@ -67,6 +68,12 @@ export default async function SchoolPage({
       dods: true,
       downloads: { orderBy: { sort: "asc" } },
       badges: { orderBy: { createdAt: "desc" } },
+      photos: { orderBy: { sort: "asc" } },
+      similarTo: {
+        where: { isPublished: true },
+        include: { photos: { where: { isListCover: true }, take: 1 } },
+        take: 3,
+      },
     },
   });
   if (!school || !school.isPublished) notFound();
@@ -77,6 +84,9 @@ export default async function SchoolPage({
   const maxApplied = school.odbory.reduce((m, o) => Math.max(m, o.appliedLastYear ?? 0), 0);
   const dod = school.dods[0];
   const dodIcal = dod ? dod.date.toISOString().slice(0, 10).replace(/-/g, "") : "";
+  const orderedPhotos = [...school.photos].sort((a, b) =>
+    Number(b.isDetailCover) - Number(a.isDetailCover) || a.sort - b.sort,
+  );
   const gcalUrl = dod
     ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
         `Deň otvorených dverí — ${school.name}`,
@@ -135,6 +145,8 @@ export default async function SchoolPage({
           </div>
 
           {school.intro && <p style={{ fontSize: 17, color: "var(--ink2)", maxWidth: "72ch" }}>{school.intro}</p>}
+
+          <SchoolGallery photos={orderedPhotos} schoolName={school.name} />
 
           {/* ODBORY */}
           <h2 className="dh" style={{ marginTop: 34 }}>Čo sa dá študovať</h2>
@@ -344,6 +356,36 @@ export default async function SchoolPage({
           )}
         </div>
       </div>
+
+      {school.similarTo.length > 0 && (
+        <section className="band-page" style={{ marginTop: 44 }}>
+          <div className="wrap">
+            <h2 className="dh">Podobné školy, ktoré by ťa mohli zaujímať</h2>
+            <div className="g3">
+              {school.similarTo.map((similar) => {
+                const photo = similar.photos[0];
+                return (
+                  <Link
+                    key={similar.id}
+                    href={`/skola/${similar.slug}`}
+                    className="post"
+                    style={{ color: "inherit", textDecoration: "none" }}
+                  >
+                    {photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={photo.url} alt={photo.alt ?? similar.name} className="img" style={{ height: 180, width: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <div className="ph img">FOTO ŠKOLY</div>
+                    )}
+                    <div className="t">{similar.name}</div>
+                    <div className="date">{similar.city} · okres {similar.district}</div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }
