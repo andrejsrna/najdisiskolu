@@ -649,6 +649,17 @@ padding:15px 0;font-size:13.5px;color:var(--ink2)
 .site .crumb button {
 background:none;border:none;color:var(--act);cursor:pointer;font-size:13.5px;padding:0;text-decoration:underline
 }
+.site .school-hero-photo {
+width:min(1320px,calc(100% - 40px));height:clamp(240px,34vw,430px);margin:0 auto;overflow:hidden;background:var(--fill)
+}
+.site .school-hero-photo img {
+display:block;width:100%;height:100%;object-fit:cover;object-position:center
+}
+@media(max-width:760px) {
+.site .school-hero-photo {
+width:100%;height:235px
+}
+}
 .site .dcols {
 position:relative;display:grid;grid-template-columns:1fr 320px;gap:44px;padding:26px 0 50px
 }
@@ -1129,6 +1140,7 @@ background:#fff
 .site footer,
 .site #home,
 .site .crumb,
+.site .school-hero-photo,
 .site .ph,
 .site .dcols .fly {
 display:none !important

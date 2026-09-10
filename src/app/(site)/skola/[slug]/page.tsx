@@ -83,12 +83,17 @@ export default async function SchoolPage({
   const hasMat = school.odbory.some((o) => o.completion === "MATURITA" || o.completion === "MATURITA_A_VYUCNY_LIST");
   const hasVl = school.odbory.some((o) => o.completion === "VYUCNY_LIST" || o.completion === "MATURITA_A_VYUCNY_LIST");
   const totalAccepts = school.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0);
-  const maxApplied = school.odbory.reduce((m, o) => Math.max(m, o.appliedLastYear ?? 0), 0);
+  const totalApplied = school.odbory.reduce((a, o) => a + (o.appliedLastYear ?? 0), 0);
   const dod = school.dods[0];
   const dodIcal = dod ? dod.date.toISOString().slice(0, 10).replace(/-/g, "") : "";
   const orderedPhotos = [...school.photos].sort((a, b) =>
     Number(b.isDetailCover) - Number(a.isDetailCover) || a.sort - b.sort,
   );
+  const heroPhoto = orderedPhotos[0]
+    ? { url: orderedPhotos[0].url, alt: orderedPhotos[0].alt ?? school.name }
+    : school.photoUrl
+      ? { url: school.photoUrl, alt: school.name }
+      : null;
   const gcalUrl = dod
     ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
         `Deň otvorených dverí — ${school.name}`,
@@ -120,8 +125,17 @@ export default async function SchoolPage({
           <Link href="/" style={{ textDecoration: "none" }}>
             ← Späť na výber školy
           </Link>
+          <span aria-hidden="true">&nbsp; · &nbsp;</span>
+          Vyber si strednú / {school.city} / <span style={{ color: "var(--ink)" }}>{school.name}</span>
         </div>
       </div>
+
+      {heroPhoto && (
+        <div className="school-hero-photo">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={heroPhoto.url} alt={heroPhoto.alt} />
+        </div>
+      )}
 
       <div className="wrap dcols">
         {/* HLAVNÝ STĹPEC */}
@@ -149,6 +163,25 @@ export default async function SchoolPage({
           {school.intro && <p style={{ fontSize: 17, color: "var(--ink2)", maxWidth: "72ch" }}>{school.intro}</p>}
 
           <SchoolGallery photos={orderedPhotos} schoolName={school.name} />
+
+          <div className="numbers" style={{ marginTop: 24 }} aria-label="Základné údaje o škole">
+            <div className="num">
+              <div className={`n ${totalAccepts ? "" : "nodata"}`}>{totalAccepts || "—"}</div>
+              <div className="t">miest pre prvákov<br />v aktuálnej ponuke</div>
+            </div>
+            <div className="num">
+              <div className={`n ${totalApplied ? "" : "nodata"}`}>{totalApplied || "—"}</div>
+              <div className="t">prihlásených<br />vlani celkovo</div>
+            </div>
+            <div className="num">
+              <div className="n">{school.odbory.length}</div>
+              <div className="t">{school.odbory.length === 1 ? "odbor" : school.odbory.length < 5 ? "odbory" : "odborov"}<br />škola otvára</div>
+            </div>
+            <div className="num">
+              <div className={`n ${school.totalStudents ? "" : "nodata"}`}>{school.totalStudents ?? "—"}</div>
+              <div className="t">žiakov<br />celkovo</div>
+            </div>
+          </div>
 
           {/* ODBORY */}
           <h2 className="dh" style={{ marginTop: 34 }}>Čo sa dá študovať</h2>
