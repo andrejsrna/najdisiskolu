@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/session";
+import { uploadPublicImage } from "@/lib/s3";
 import { Role, type Completion } from "@/generated/prisma/enums";
 
 const COMPLETION_VALUES = new Set([
@@ -30,6 +31,29 @@ const num = (v: FormDataEntryValue | null): number | null => {
   const n = Number(s);
   return Number.isFinite(n) ? n : null;
 };
+
+const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+
+async function assertSupportedImage(file: File) {
+  if (!IMAGE_TYPES.has(file.type)) {
+    throw new Error("Fotka musí byť vo formáte JPEG, PNG alebo WebP.");
+  }
+  if (file.size === 0 || file.size > MAX_IMAGE_SIZE) {
+    throw new Error("Fotka môže mať najviac 10 MB.");
+  }
+
+  const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  const pngHeader = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  const isPng = bytes.slice(0, 8).every((byte, index) => byte === pngHeader[index]);
+  const isWebp =
+    String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
+    String.fromCharCode(...bytes.slice(8, 12)) === "WEBP";
+  if (!isJpeg && !isPng && !isWebp) {
+    throw new Error("Súbor neobsahuje platné obrazové dáta.");
+  }
+}
 
 /** ADMIN/SCHOLSTVO, alebo SKOLA ktorá edituje svoju školu. */
 async function assertCanEditSchool(schoolId: string) {
@@ -208,11 +232,21 @@ export async function deleteDownload(
 
 export async function addSchoolPhoto(schoolId: string, slug: string, formData: FormData) {
   await assertCanEditSchool(schoolId);
-  const url = str(formData.get("url"));
-  if (!url) return;
+  const upload = formData.get("file");
+  const file = upload instanceof File && upload.size > 0 ? upload : null;
+  const fallbackUrl = str(formData.get("url"));
+  if (!file && !fallbackUrl) return;
+
+  let url = fallbackUrl;
+  if (file) {
+    await assertSupportedImage(file);
+    const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+    url = await uploadPublicImage(file, `skoly/${schoolId}/${crypto.randomUUID()}.${extension}`);
+  }
+
   const sort = (await prisma.schoolPhoto.count({ where: { schoolId } })) + 1;
   await prisma.schoolPhoto.create({
-    data: { schoolId, url, alt: str(formData.get("alt")), sort },
+    data: { schoolId, url: url!, alt: str(formData.get("alt")), sort },
   });
   revalidateSchool(slug);
 }

@@ -248,7 +248,7 @@ export default async function SchoolEditPage({
       <section className="rounded-xl border border-slate-200 bg-white p-6">
         <h2 className="mb-1 text-sm font-semibold text-slate-900">Fotogaléria</h2>
         <p className="mb-4 text-xs text-slate-500">
-          Pridaj verejnú URL fotky. Označ zvlášť titulnú fotku pre detail a kartu v zozname škôl.
+          Nahraj JPEG, PNG alebo WebP do 10 MB. Označ zvlášť titulnú fotku pre detail a kartu v zozname škôl.
         </p>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -279,8 +279,8 @@ export default async function SchoolEditPage({
 
         <form action={addSchoolPhoto.bind(null, school.id, school.slug)} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-dashed border-slate-300 p-4 sm:grid-cols-2">
           <div>
-            <label className={label}>URL fotky</label>
-            <input name="url" type="url" required placeholder="https://…" className={input} />
+            <label className={label}>Fotka</label>
+            <input name="file" type="file" accept="image/jpeg,image/png,image/webp" required className={input} />
           </div>
           <div>
             <label className={label}>Popis fotky (nepovinné)</label>
