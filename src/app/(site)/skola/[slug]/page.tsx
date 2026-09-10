@@ -7,6 +7,8 @@ import { SITE_URL, stripHtml } from "@/lib/site";
 import { PrintButton } from "./PrintButton";
 import { SchoolGallery } from "./SchoolGallery";
 
+export const dynamic = "force-dynamic";
+
 const fmtDate = (d: Date) =>
   d.toLocaleDateString("sk-SK", { day: "numeric", month: "long", year: "numeric" });
 
