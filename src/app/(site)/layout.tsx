@@ -13,9 +13,11 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
         <Link href="/">Vyber si strednú</Link>
         <Link href="/veltrhy">Veľtrhy škôl</Link>
         <Link href="/otazky">Otázky a odpovede</Link>
-        <Link href="/admin" className="right">
-          Administrácia
-        </Link>
+        <div className="right">
+          <a className="btn sm solid" href="https://eprihlasky.iedu.sk/" target="_blank" rel="noopener noreferrer">
+            Prihláška →
+          </a>
+        </div>
       </nav>
 
       {children}
