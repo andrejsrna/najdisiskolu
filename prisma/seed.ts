@@ -94,12 +94,61 @@ async function migrateFaq() {
   console.log(`✓ doplnené FAQ (${flat.length} otázok)`);
 }
 
+/** Príbehy prenesené z klientom dodaného finálneho demo HTML; idempotentné. */
+async function migrateDemoReviews() {
+  const imageBase = (process.env.S3_PUBLIC_URL ?? "https://s3.trnavavuc.sk/ttsk-media").replace(/\/$/, "");
+  const stories = [
+    {
+      name: "Eliška Marlengová",
+      quote: "„Ešte v deviatke som piekla v televíznej súťaži a riešila presne to isté, čo ty teraz: kam ďalej. Vybrala som si hotelovku, lebo tu z koníčka robia remeslo. Máme barmanský aj baristický kurz, varíme na ozajstných podujatiach a na stáž sa dá ísť aj do Talianska.“",
+      schoolSlug: "hotelova-akademia-ludovita-wintera",
+      photo: "reviews/eliska-marlengova.jpg",
+      sort: 10,
+    },
+    {
+      name: "Adam Hagara",
+      quote: "„Naša škola má multifunkčné športovisko priamo v areáli a internát v budove a vychováva špičkových športovcov. Kombinovať vrcholový tréning a maturitu sa dá len tam, kde ti v tom pomáhajú. Preto som dnes olympionik a nie bývalý krasokorčuliar.“",
+      schoolSlug: "gymnazium-a-stredna-sportova-skola-jozefa-herdu",
+      photo: "reviews/adam-hagara.jpg",
+      sort: 20,
+    },
+    {
+      name: "Vivien Vranková",
+      quote: "„Chcela som, aby boli menštruačné potreby na školských toaletách bezplatne. Získala som zdroje z participatívneho rozpočtu a o pár týždňov tam boli. Naše gymnázium má vyše 30 rokov, ale nefunguje ako skanzen. Ak máš nápad, tu ti ho nikto nezhodí zo stola.“",
+      schoolSlug: "gymnazium-a-stredna-sportova-skola-jozefa-herdu",
+      photo: "reviews/vivien-vrankova.jpg",
+      sort: 30,
+    },
+  ];
+
+  let added = 0;
+  for (const story of stories) {
+    const existing = await prisma.review.findFirst({ where: { name: story.name, quote: story.quote } });
+    const school = await prisma.school.findUnique({ where: { slug: story.schoolSlug }, select: { id: true } });
+    if (!school) throw new Error(`Chýba škola pre príbeh: ${story.schoolSlug}`);
+    const data = {
+      age: null,
+      photoUrl: `${imageBase}/${story.photo}`,
+      published: true,
+      sort: story.sort,
+      schoolId: school.id,
+    };
+    if (existing) await prisma.review.update({ where: { id: existing.id }, data });
+    else {
+      await prisma.review.create({ data: { name: story.name, quote: story.quote, ...data } });
+      added++;
+    }
+  }
+  console.log(`✓ príbehy z demo HTML: ${added} nové, ${stories.length - added} aktualizované`);
+}
+
 async function main() {
   const data: SeedData = JSON.parse(readFileSync("prisma/seed-data.json", "utf-8"));
 
   // Vždy migruj legacy SUPER posty (bezpečné aj na prázdnej DB).
   await migrateSuperPosts();
   await migrateFaq();
+  await migrateDemoReviews();
 
   if ((await prisma.school.count()) > 0) {
     console.log("ℹ️ DB už obsahuje školy — seed preskočený.");
