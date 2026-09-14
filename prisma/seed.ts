@@ -22,10 +22,11 @@ type SeedSchool = {
   hasCanteen: boolean; hasDual: boolean; dualCompanies: string[];
   hasNadstavba: boolean; hasNativeSpeaker: boolean;
   accessibility: string | null; erasmus: string | null;
-  website: string | null; email: string | null; phone: string | null;
+  websites: string[]; email: string | null; phone: string | null;
   facebook: string | null; instagram: string | null;
   address: string | null; mapUrl: string | null;
-  inekoKraj: string | null; inekoSlovensko: string | null;
+  inekoKrajRank: number | null; inekoKrajOf: string | null; inekoSkRank: number | null; inekoSkOf: string | null;
+  internatType: string | null; erasmusCountries: string[]; hasMaturita: boolean; hasVl: boolean;
   totalStudents: string | null; photoUrl: string | null; logoUrl: string | null;
   intro: string | null; practice: string | null; modernization: string | null;
   plans: string | null; support: string | null; achievements: string | null;
@@ -127,9 +128,11 @@ async function main() {
         hasCanteen: s.hasCanteen, hasDual: s.hasDual, dualCompanies: s.dualCompanies,
         hasNadstavba: s.hasNadstavba, hasNativeSpeaker: s.hasNativeSpeaker,
         accessibility: s.accessibility, erasmus: s.erasmus,
-        website: s.website, email: s.email, phone: s.phone, facebook: s.facebook, instagram: s.instagram,
+        websites: s.websites ?? [], email: s.email, phone: s.phone, facebook: s.facebook, instagram: s.instagram,
         address: s.address, mapUrl: s.mapUrl,
-        inekoKraj: s.inekoKraj, inekoSlovensko: s.inekoSlovensko,
+        inekoKrajRank: s.inekoKrajRank ?? null, inekoKrajOf: s.inekoKrajOf ?? null, inekoSkRank: s.inekoSkRank ?? null, inekoSkOf: s.inekoSkOf ?? null,
+        internatType: s.internatType ?? null, erasmusCountries: s.erasmusCountries ?? [],
+        hasMaturita: s.hasMaturita ?? false, hasVl: s.hasVl ?? false,
         totalStudents: s.totalStudents, photoUrl: s.photoUrl, logoUrl: s.logoUrl,
         intro: s.intro, practice: s.practice, modernization: s.modernization, plans: s.plans,
         support: s.support, achievements: s.achievements, partners: s.partners, graduates: s.graduates,

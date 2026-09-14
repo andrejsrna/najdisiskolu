@@ -21,7 +21,8 @@ type School = {
   hasInternat: boolean;
   hasDual: boolean;
   hasNadstavba: boolean;
-  inekoKraj: string | null;
+  inekoKrajRank: number | null;
+  inekoKrajOf: string | null;
   odbory: Odbor[];
   tags: { code: string; label: string }[];
   badges: { label: string; kind: string }[];
@@ -61,7 +62,7 @@ const sklonOdbor = (n: number) => (n === 1 ? "odbor" : n < 5 ? "odbory" : "odbor
 /* keď škola nemá duál, internát, cudzí vyučovací jazyk ani nadstavbu,
    ukážeme na karte niečo, čo uchádzačovi reálne pomôže rozhodnúť sa (ako v návrhu) */
 function benefit(s: School) {
-  if (s.inekoKraj) return "INEKO rebríček";
+  if (s.inekoKrajRank) return "INEKO rebríček";
   return s.odbory.length === 1 ? "jediný odbor" : "široký výber odborov";
 }
 
@@ -341,7 +342,7 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                   const thirdCls = s.hasDual ? "dual" : s.hasInternat ? "dorm" : s.hasNadstavba ? "nad" : "";
                   const totalAccepts = s.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0);
                   const maxApplied = s.odbory.some((o) => o.appliedLastYear) ? Math.max(...s.odbory.map((o) => o.appliedLastYear ?? 0)) : null;
-                  const ineko = s.inekoKraj?.split(",")[0]?.trim();
+                  const ineko = s.inekoKrajRank ? `${s.inekoKrajRank}. ${s.inekoKrajOf ?? "zo všetkých"}` : null;
 
                   return (
                     <div className="scard" key={s.slug}>

@@ -66,7 +66,8 @@ export default async function HomePage() {
     hasInternat: s.hasInternat,
     hasDual: s.hasDual,
     hasNadstavba: s.hasNadstavba,
-    inekoKraj: s.inekoKraj,
+    inekoKrajRank: s.inekoKrajRank,
+    inekoKrajOf: s.inekoKrajOf,
     odbory: s.odbory.map((o) => ({
       completion: o.completion,
       accepts: o.accepts,

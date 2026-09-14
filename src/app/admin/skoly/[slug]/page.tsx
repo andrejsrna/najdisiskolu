@@ -3,7 +3,14 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
-import { DISTRICTS, COMPLETION_OPTIONS, COMPLETION_LABEL, LANGUAGE_OPTIONS } from "@/lib/constants";
+import {
+  DISTRICTS,
+  COMPLETION_OPTIONS,
+  LANGUAGE_OPTIONS,
+  ACCESSIBILITY_OPTIONS,
+  ERASMUS_OPTIONS,
+  INTERNAT_OPTIONS,
+} from "@/lib/constants";
 import {
   updateSchoolBasic,
   addOdbor,
@@ -12,8 +19,6 @@ import {
   saveDod,
   addDownload,
   deleteDownload,
-  addBadge,
-  deleteBadge,
   addSchoolPhoto,
   deleteSchoolPhoto,
   setSchoolPhotoCover,
@@ -24,12 +29,13 @@ const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
 const label = "mb-1 block text-xs font-medium text-slate-600";
 
-const BADGE_KINDS = [
-  { value: "ok", label: "ok — zelená (voľné miesta)" },
-  { value: "term", label: "term — ružová (termín)" },
-  { value: "mat", label: "mat — tyrkysová (maturita)" },
-  { value: "vl", label: "vl — oranžová (výučný list)" },
-  { value: "dual", label: "dual — fialová (duál)" },
+const INEKO_CATEGORIES = [
+  "zo všetkých",
+  "z gymnázií",
+  "z odborných škôl",
+  "zo športových škôl",
+  "z hotelových akadémií",
+  "z umeleckých škôl",
 ];
 
 function fmtDate(d: Date): string {
@@ -48,6 +54,7 @@ export default async function SchoolEditPage({
     where: { slug },
     include: {
       tags: true,
+      priestory: true,
       odbory: { orderBy: { sort: "asc" } },
       dods: true,
       downloads: { orderBy: { sort: "asc" } },
@@ -62,7 +69,7 @@ export default async function SchoolEditPage({
   const canEdit = isAdmin || (user.role === Role.SKOLA && user.schoolId === school.id);
   if (!canEdit) redirect("/admin");
 
-  const [allTags, allSchools] = await Promise.all([
+  const [allTags, allSchools, allPriestory] = await Promise.all([
     prisma.tag.findMany({ orderBy: { label: "asc" } }),
     isAdmin
       ? prisma.school.findMany({
@@ -71,6 +78,7 @@ export default async function SchoolEditPage({
           orderBy: [{ name: "asc" }, { city: "asc" }],
         })
       : Promise.resolve([]),
+    prisma.priestor.findMany({ orderBy: { name: "asc" } }),
   ]);
   const dod = school.dods[0];
 
@@ -109,8 +117,14 @@ export default async function SchoolEditPage({
             </select>
           </div>
           <div>
-            <label className={label}>Web</label>
-            <input name="website" defaultValue={school.website ?? ""} className={input} />
+            <label className={label}>Weby školy (jeden na riadok, bez https://)</label>
+            <textarea
+              name="websites"
+              defaultValue={(school.websites ?? []).join("\n")}
+              rows={2}
+              placeholder={"www.skola.sk\nwww.druhyweb.sk"}
+              className={input}
+            />
           </div>
           <div>
             <label className={label}>Email</label>
@@ -121,12 +135,12 @@ export default async function SchoolEditPage({
             <input name="phone" defaultValue={school.phone ?? ""} className={input} />
           </div>
           <div>
-            <label className={label}>Facebook</label>
-            <input name="facebook" defaultValue={school.facebook ?? ""} className={input} />
+            <label className={label}>Facebook (napr. facebook.com/skola)</label>
+            <input name="facebook" defaultValue={school.facebook ?? ""} placeholder="facebook.com/skola" className={input} />
           </div>
           <div>
-            <label className={label}>Instagram</label>
-            <input name="instagram" defaultValue={school.instagram ?? ""} className={input} />
+            <label className={label}>Instagram (handle bez @, napr. skola.tt)</label>
+            <input name="instagram" defaultValue={school.instagram ?? ""} placeholder="skola.tt" className={input} />
           </div>
           <div className="sm:col-span-2">
             <label className={label}>Adresa</label>
@@ -137,12 +151,26 @@ export default async function SchoolEditPage({
             <input name="mapUrl" defaultValue={school.mapUrl ?? ""} placeholder="https://www.openstreetmap.org/export/embed.html?…" className={input} />
           </div>
           <div>
-            <label className={label}>INEKO — kraj</label>
-            <input name="inekoKraj" defaultValue={school.inekoKraj ?? ""} className={input} />
+            <label className={label}>INEKO — poradie v kraji</label>
+            <div className="flex gap-2">
+              <input name="inekoKrajRank" type="number" min={1} defaultValue={school.inekoKrajRank ?? ""} placeholder="poradie" className={input} />
+              <select name="inekoKrajOf" defaultValue={school.inekoKrajOf ?? "zo všetkých"} className={input}>
+                {INEKO_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <div>
-            <label className={label}>INEKO — Slovensko</label>
-            <input name="inekoSlovensko" defaultValue={school.inekoSlovensko ?? ""} className={input} />
+            <label className={label}>INEKO — poradie na Slovensku</label>
+            <div className="flex gap-2">
+              <input name="inekoSkRank" type="number" min={1} defaultValue={school.inekoSkRank ?? ""} placeholder="poradie" className={input} />
+              <select name="inekoSkOf" defaultValue={school.inekoSkOf ?? "zo všetkých"} className={input}>
+                {INEKO_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <div>
             <label className={label}>Celkovo žiakov</label>
@@ -150,15 +178,36 @@ export default async function SchoolEditPage({
           </div>
           <div>
             <label className={label}>Bezbariérovosť</label>
-            <input name="accessibility" defaultValue={school.accessibility ?? ""} placeholder="áno / popis" className={input} />
+            <select name="accessibility" defaultValue={school.accessibility ?? "Nie"} className={input}>
+              {ACCESSIBILITY_OPTIONS.map((a) => (
+                <option key={a.value} value={a.value}>{a.label}</option>
+              ))}
+            </select>
           </div>
           <div>
-            <label className={label}>Internát (popis)</label>
-            <input name="internatInfo" defaultValue={school.internatInfo ?? ""} placeholder="Áno, na našom internáte" className={input} />
+            <label className={label}>Internát — typ</label>
+            <select name="internatType" defaultValue={school.internatType ?? ""} className={input}>
+              <option value="">— žiadny —</option>
+              {INTERNAT_OPTIONS.map((i) => (
+                <option key={i.value} value={i.value}>{i.label}</option>
+              ))}
+            </select>
           </div>
           <div>
-            <label className={label}>Erasmus+</label>
-            <input name="erasmus" defaultValue={school.erasmus ?? ""} className={input} />
+            <label className={label}>Ubytovanie — doplnkový popis</label>
+            <input name="internatInfo" defaultValue={school.internatInfo ?? ""} placeholder="napr. na internáte SOŠ v areáli" className={input} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className={label}>Erasmus+ krajiny (CTRL+klik pre viac; nechaj prázdne ak žiadne)</label>
+            <select name="erasmusCountries" multiple defaultValue={school.erasmusCountries as string[]} className={input} size={5}>
+              {ERASMUS_OPTIONS.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className={label}>Erasmus+ — doplnkový text (nepovinné)</label>
+            <textarea name="erasmus" defaultValue={school.erasmus ?? ""} rows={3} className={input} />
           </div>
           <div className="sm:col-span-2">
             <label className={label}>Predstavenie školy</label>
@@ -166,11 +215,13 @@ export default async function SchoolEditPage({
           </div>
 
           <div className="sm:col-span-2">
-            <label className={label}>Príznaky</label>
+            <label className={label}>Highlighty školy (zobrazujú sa v Rýchlom prehľade aj v tagoch)</label>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
               {[
+                ["hasMaturita", "maturita"],
+                ["hasVl", "výučný list"],
                 ["hasInternat", "internát"],
-                ["hasCanteen", "školská jedáleň"],
+                ["hasCanteen", "jedáleň"],
                 ["hasDual", "duálne vzdelávanie"],
                 ["hasNadstavba", "nadstavbové štúdium"],
                 ["hasNativeSpeaker", "native speaker"],
@@ -189,7 +240,7 @@ export default async function SchoolEditPage({
           </div>
 
           <div className="sm:col-span-2">
-            <label className={label}>Zameranie (tagy)</label>
+            <label className={label}>Zameranie školy</label>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
               {allTags.map((t) => (
                 <label key={t.code} className="flex items-center gap-2 text-sm text-slate-700">
@@ -201,6 +252,24 @@ export default async function SchoolEditPage({
                     className="h-4 w-4 rounded border-slate-300"
                   />
                   {t.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className={label}>Priestory a vybavenie</label>
+            <div className="flex flex-wrap gap-x-5 gap-y-2">
+              {allPriestory.map((p) => (
+                <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    name="priestory"
+                    value={p.id}
+                    defaultChecked={school.priestory.some((x) => x.id === p.id)}
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
+                  {p.name}
                 </label>
               ))}
             </div>
@@ -243,79 +312,6 @@ export default async function SchoolEditPage({
           </div>
         </form>
       </section>
-
-      {/* ============ FOTOGALÉRIA ============ */}
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="mb-1 text-sm font-semibold text-slate-900">Fotogaléria</h2>
-        <p className="mb-4 text-xs text-slate-500">
-          Nahraj JPEG, PNG alebo WebP do 10 MB. Označ zvlášť titulnú fotku pre detail a kartu v zozname škôl.
-        </p>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {school.photos.map((photo) => (
-            <div key={photo.id} className="overflow-hidden rounded-lg border border-slate-200">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photo.url} alt={photo.alt ?? school.name} className="h-40 w-full object-cover" />
-              <div className="space-y-2 p-3">
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {photo.isDetailCover && <span className="rounded-full bg-slate-900 px-2 py-1 text-white">Titulná detailu</span>}
-                  {photo.isListCover && <span className="rounded-full bg-slate-900 px-2 py-1 text-white">Titulná zoznamu</span>}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <form action={setSchoolPhotoCover.bind(null, school.id, school.slug, photo.id, "detail")}>
-                    <button className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Titulná detailu</button>
-                  </form>
-                  <form action={setSchoolPhotoCover.bind(null, school.id, school.slug, photo.id, "list")}>
-                    <button className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Titulná zoznamu</button>
-                  </form>
-                  <form action={deleteSchoolPhoto.bind(null, school.id, school.slug, photo.id)}>
-                    <button className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50">Zmazať</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <form action={addSchoolPhoto.bind(null, school.id, school.slug)} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-dashed border-slate-300 p-4 sm:grid-cols-2">
-          <div>
-            <label className={label}>Fotka</label>
-            <input name="file" type="file" accept="image/jpeg,image/png,image/webp" required className={input} />
-          </div>
-          <div>
-            <label className={label}>Popis fotky (nepovinné)</label>
-            <input name="alt" placeholder="Žiaci v laboratóriu" className={input} />
-          </div>
-          <div className="sm:col-span-2">
-            <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Pridať fotku</button>
-          </div>
-        </form>
-      </section>
-
-      {/* ============ PODOBNÉ ŠKOLY (len staff) ============ */}
-      {isAdmin && (
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="mb-1 text-sm font-semibold text-slate-900">Podobné školy</h2>
-          <p className="mb-4 text-xs text-slate-500">Vyber najviac 3 školy, ktoré sa zobrazia na konci verejného detailu.</p>
-          <form action={saveSimilarSchools.bind(null, school.id, school.slug)}>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {allSchools.map((candidate) => (
-                <label key={candidate.id} className="flex items-center gap-2 rounded-md px-2 py-1 text-sm text-slate-700 hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    name="similarSchools"
-                    value={candidate.id}
-                    defaultChecked={school.similarTo.some((item) => item.id === candidate.id)}
-                    className="h-4 w-4 rounded border-slate-300"
-                  />
-                  {candidate.name} <span className="text-slate-400">· {candidate.city}</span>
-                </label>
-              ))}
-            </div>
-            <button className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Uložiť podobné školy</button>
-          </form>
-        </section>
-      )}
 
       {/* ============ ODBORY ============ */}
       <section className="rounded-xl border border-slate-200 bg-white p-6">
@@ -442,6 +438,79 @@ export default async function SchoolEditPage({
         </form>
       </section>
 
+      {/* ============ FOTOGALÉRIA ============ */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <h2 className="mb-1 text-sm font-semibold text-slate-900">Fotogaléria</h2>
+        <p className="mb-4 text-xs text-slate-500">
+          Nahraj JPEG, PNG alebo WebP do 10 MB. Označ zvlášť titulnú fotku pre detail a kartu v zozname škôl.
+        </p>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {school.photos.map((photo) => (
+            <div key={photo.id} className="overflow-hidden rounded-lg border border-slate-200">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photo.url} alt={photo.alt ?? school.name} className="h-40 w-full object-cover" />
+              <div className="space-y-2 p-3">
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {photo.isDetailCover && <span className="rounded-full bg-slate-900 px-2 py-1 text-white">Titulná detailu</span>}
+                  {photo.isListCover && <span className="rounded-full bg-slate-900 px-2 py-1 text-white">Titulná zoznamu</span>}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <form action={setSchoolPhotoCover.bind(null, school.id, school.slug, photo.id, "detail")}>
+                    <button className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Titulná detailu</button>
+                  </form>
+                  <form action={setSchoolPhotoCover.bind(null, school.id, school.slug, photo.id, "list")}>
+                    <button className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Titulná zoznamu</button>
+                  </form>
+                  <form action={deleteSchoolPhoto.bind(null, school.id, school.slug, photo.id)}>
+                    <button className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50">Zmazať</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <form action={addSchoolPhoto.bind(null, school.id, school.slug)} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-dashed border-slate-300 p-4 sm:grid-cols-2">
+          <div>
+            <label className={label}>Fotka</label>
+            <input name="file" type="file" accept="image/jpeg,image/png,image/webp" required className={input} />
+          </div>
+          <div>
+            <label className={label}>Popis fotky (nepovinné)</label>
+            <input name="alt" placeholder="Žiaci v laboratóriu" className={input} />
+          </div>
+          <div className="sm:col-span-2">
+            <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Pridať fotku</button>
+          </div>
+        </form>
+      </section>
+
+      {/* ============ PODOBNÉ ŠKOLY (len staff) ============ */}
+      {isAdmin && (
+        <section className="rounded-xl border border-slate-200 bg-white p-6">
+          <h2 className="mb-1 text-sm font-semibold text-slate-900">Podobné školy</h2>
+          <p className="mb-4 text-xs text-slate-500">Vyber najviac 3 školy, ktoré sa zobrazia na konci verejného detailu.</p>
+          <form action={saveSimilarSchools.bind(null, school.id, school.slug)}>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {allSchools.map((candidate) => (
+                <label key={candidate.id} className="flex items-center gap-2 rounded-md px-2 py-1 text-sm text-slate-700 hover:bg-slate-50">
+                  <input
+                    type="checkbox"
+                    name="similarSchools"
+                    value={candidate.id}
+                    defaultChecked={school.similarTo.some((item) => item.id === candidate.id)}
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
+                  {candidate.name} <span className="text-slate-400">· {candidate.city}</span>
+                </label>
+              ))}
+            </div>
+            <button className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Uložiť podobné školy</button>
+          </form>
+        </section>
+      )}
+
       {/* ============ DEŇ OTVORENÝCH DVERÍ ============ */}
       <section className="rounded-xl border border-slate-200 bg-white p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-900">Deň otvorených dverí</h2>
@@ -502,57 +571,6 @@ export default async function SchoolEditPage({
         </form>
       </section>
 
-      {/* ============ BADGE (len ADMIN/SCHOLSTVO) ============ */}
-      {isAdmin && (
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="mb-4 text-sm font-semibold text-slate-900">Badge (do karty)</h2>
-          <ul className="mb-4 space-y-2">
-            {school.badges.length === 0 && (
-              <li className="text-sm text-slate-400">Žiadne badge.</li>
-            )}
-            {school.badges.map((b) => (
-              <li key={b.id} className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
-                <div className="text-sm">
-                  <span className="font-medium text-slate-800">{b.label}</span>
-                  <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">{b.kind}</span>
-                  {b.note && <span className="ml-2 text-xs text-slate-400">— {b.note}</span>}
-                </div>
-                <form action={deleteBadge.bind(null, school.id, school.slug, b.id)}>
-                  <button className="rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50">
-                    Zmazať
-                  </button>
-                </form>
-              </li>
-            ))}
-          </ul>
-          <form action={addBadge.bind(null, school.id, school.slug)} className="grid gap-3 sm:grid-cols-4">
-            <div>
-              <label className={label}>Text badge</label>
-              <input name="label" placeholder="Voľné miesta" className={input} />
-            </div>
-            <div>
-              <label className={label}>Farba</label>
-              <select name="kind" defaultValue="ok" className={input}>
-                {BADGE_KINDS.map((k) => (
-                  <option key={k.value} value={k.value}>
-                    {k.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={label}>Poznámka</label>
-              <input name="note" className={input} />
-            </div>
-            <div>
-              <label className={label}>&nbsp;</label>
-              <button className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
-                Pridať
-              </button>
-            </div>
-          </form>
-        </section>
-      )}
     </div>
   );
 }

@@ -59,17 +59,19 @@ model School {
   languages        String[] // j = vyučovací jazyk: sk / hu / en / ru
   foreignLanguages String[] // jaz = cudzie jazyky (anglický, nemecký, ...)
   hasInternat      Boolean  @default(false) // i
-  internatInfo     String?                  // intTxt = „Áno, na našom/inom internáte"
+  internatType     String?                  // dropdown: „Vlastný internát" / „Externý internát"
+  internatInfo     String?                  // intTxt = doplnkový popis ubytovania
   hasCanteen       Boolean  @default(false) // s = školská jedáleň
   hasDual          Boolean  @default(false) // d = duálne vzdelávanie
   dualCompanies    String[] // dfirmy = duálne firmy (partneri)
   hasNadstavba     Boolean  @default(false) // nad
   hasNativeSpeaker Boolean  @default(false) // nat
-  accessibility    String?                  // bez = bezbariérovosť ("áno"/popis)
-  erasmus          String?                  // er
+  accessibility    String?                  // dropdown: Áno / Čiastočne / Nie
+  erasmus          String?                  // doplnkový text o Erasmus+ projektoch
+  erasmusCountries String[]                 // dropdown krajín (prvá „Žiadne" sa rieši prázdnym poľom)
 
   // kontakt
-  website   String?
+  websites  String[] // viac webov školy (vždy vrátane https://)
   email     String?
   phone     String?
   facebook  String?
@@ -79,9 +81,11 @@ model School {
   address String?
   mapUrl  String? // iframe embed (OpenStreetMap a pod.)
 
-  // umiestnenie v rebríčku INEKO
-  inekoKraj     String?
-  inekoSlovensko String?
+  // umiestnenie v rebríčku INEKO — iba čísla + kategória (FE doplní bodky a „zo")
+  inekoKrajRank Int?
+  inekoKrajOf   String? // zo všetkých / z gymnázií / z odborných škôl / zo športových škôl / z hotelových akadémií / z umeleckých škôl
+  inekoSkRank   Int?
+  inekoSkOf     String?
 
   // čísla
   totalStudents String? // ziakovReal = „koľko majú celkovo žiakov" (voľný text: „približne 550")
@@ -109,6 +113,10 @@ model School {
   canteenOptions String[] // buf
   supportTeam    String[] // tim
   certificates   String[] // cert
+
+  // Highlighty školy (ručné zaškrtnutie — ťahá sa do Rýchleho prehľadu aj do tagov)
+  hasMaturita Boolean @default(false)
+  hasVl       Boolean @default(false)
 
   // stav
   isComplete  Boolean @default(false) // vyplnený profil → objaví sa vo veľtrhu

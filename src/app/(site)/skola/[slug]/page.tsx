@@ -12,12 +12,6 @@ export const dynamic = "force-dynamic";
 const fmtDate = (d: Date) =>
   d.toLocaleDateString("sk-SK", { day: "numeric", month: "long", year: "numeric" });
 
-/* INEKO: časť škôl vyplnila len číslo alebo nulu - tie nezobrazujeme */
-const inekoOk = (v: string | null | undefined) =>
-  !!v && /\d\s*\./.test(v) && /[a-záäčďéíľĺňóôŕšťúýž]/i.test(v);
-const inekoFmt = (v: string) =>
-  String(v).split(",").map((x) => x.trim()).filter(Boolean)
-    .map((x) => x.replace(/(ých|ich)$/, "$1 škôl")).join(" / ");
 const sklonOdbor = (n: number) => (n === 1 ? "odbor" : n < 5 ? "odbory" : "odborov");
 const ktore = (n: number) => (n === 1 ? "ktorý" : n < 5 ? "ktoré" : "ktorých");
 
@@ -99,9 +93,8 @@ export default async function SchoolPage({
   const hasVl = school.odbory.some((o) => o.completion === "VYUCNY_LIST" || o.completion === "MATURITA_A_VYUCNY_LIST");
   const totalAccepts = school.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0);
   const totalApplied = school.odbory.reduce((a, o) => a + (o.appliedLastYear ?? 0), 0);
-  const iK = inekoOk(school.inekoKraj), iS = inekoOk(school.inekoSlovensko);
-  const inekoK = iK ? inekoFmt(school.inekoKraj!) : null;
-  const inekoS = iS ? inekoFmt(school.inekoSlovensko!) : null;
+  const inekoK = school.inekoKrajRank ? `${school.inekoKrajRank}. ${school.inekoKrajOf ?? "zo všetkých"}` : null;
+  const inekoS = school.inekoSkRank ? `${school.inekoSkRank}. ${school.inekoSkOf ?? "zo všetkých"}` : null;
   const dod = school.dods[0];
   const dodIcal = dod ? dod.date.toISOString().slice(0, 10).replace(/-/g, "") : "";
   /* zoznamy (certifikáty, krúžky) zlúčime do boxov v „Prečo práve sem" ako v návrhu */
@@ -156,7 +149,19 @@ export default async function SchoolPage({
               addressRegion: school.district,
               addressCountry: "SK",
             },
-            ...(school.website ? { sameAs: [school.website] } : {}),
+            ...(school.websites.length || school.facebook || school.instagram
+      ? {
+          sameAs: [
+            ...school.websites.map((w) => `https://${w.replace(/^https?:\/\//, "")}`),
+            ...(school.facebook
+              ? [`https://www.facebook.com/${school.facebook.replace(/^@/, "")}`]
+              : []),
+            ...(school.instagram
+              ? [`https://www.instagram.com/${school.instagram.replace(/^@/, "")}`]
+              : []),
+          ],
+        }
+      : {}),
           }),
         }}
       />
@@ -188,18 +193,18 @@ export default async function SchoolPage({
               {school.city === school.district ? school.city : `${school.city} · okres ${school.district}`}
             </div>
             <div className="tags" style={{ marginBottom: 20 }}>
-              <span className={`tag ${hasMat && hasVl ? "matvl" : hasMat ? "mat" : "vl"}`}>
-                {hasMat && hasVl ? "maturita + výučný list" : hasMat ? "maturita" : "výučný list"}
-              </span>
+              {hasMat && hasVl && <span className="tag matvl">maturita + výučný list</span>}
+              {!hasMat && hasVl && <span className="tag vl">výučný list</span>}
+              {hasMat && !hasVl && <span className="tag mat">maturita</span>}
               {school.hasDual && <span className="tag dual">duálne vzdelávanie</span>}
               {school.hasInternat && <span className="tag dorm">internát</span>}
-              {school.hasNadstavba && <span className="tag nad">nadstavbové štúdium</span>}
-              {school.accessibility?.toLowerCase().startsWith("áno") && (
-                <span className="tag bez">bezbariérový prístup</span>
-              )}
+              {school.hasNadstavba && <span className="tag nad">nadstavba</span>}
+              {school.accessibility === "Áno" && <span className="tag bez">bezbariérový prístup</span>}
+              {school.accessibility === "Čiastočne" && <span className="tag bez">čiastočne bezbariérová</span>}
             </div>
           </div>
 
+          {/* Tagy pod názvom — v tlači aj na obrazovke */}
           {(inekoK || inekoS) && (
             <div className="ineko">
               <div className="itxt">
@@ -209,8 +214,6 @@ export default async function SchoolPage({
               </div>
             </div>
           )}
-
-          <SchoolGallery photos={orderedPhotos} schoolName={school.name} />
 
           <div className="numbers" style={{ marginTop: (inekoK || inekoS) ? 0 : 24 }} aria-label="Základné údaje o škole">
             <div className="num">
@@ -233,11 +236,11 @@ export default async function SchoolPage({
 
           {/* O ŠKOLE */}
           {school.intro && (
-            <>
+            <div className="p-sec">
               <div className="rule" />
               <h2 className="dh">O škole</h2>
               <div className="txtblk" dangerouslySetInnerHTML={{ __html: school.intro }} />
-            </>
+            </div>
           )}
 
           {/* ODBORY */}
@@ -291,11 +294,14 @@ export default async function SchoolPage({
           )}
 
           {/* ERASMUS+ */}
-          {school.erasmus && (
+          {(school.erasmusCountries.length > 0 || school.erasmus) && (
             <>
               <div className="rule" />
               <h2 className="dh">Erasmus+</h2>
               <p className="dl">Škola je zapojená do európskeho programu Erasmus+.</p>
+              {school.erasmusCountries.length > 0 && (
+                <div className="txtblk">{school.erasmusCountries.join(", ")}</div>
+              )}
               <div className="txtblk" style={{ whiteSpace: "pre-line" }}>{school.erasmus}</div>
             </>
           )}
@@ -381,7 +387,7 @@ export default async function SchoolPage({
 
           {/* ČO PO ŠKOLE */}
           {(school.graduates || school.achievements) && (
-            <>
+            <div className="p-sec">
               <div className="rule" />
               <h2 className="dh">Čo po škole?</h2>
               <p className="dl">Kam odchádzajú naši absolventi a kde sa uplatnia.</p>
@@ -391,11 +397,13 @@ export default async function SchoolPage({
               {school.achievements && (
                 <div className="txtblk" style={{ marginTop: 14, whiteSpace: "pre-line" }}>{school.achievements}</div>
               )}
-            </>
+            </div>
           )}
 
+          <SchoolGallery photos={orderedPhotos} schoolName={school.name} />
+
           {/* KDE ŠKOLA SÍDLI */}
-          {(school.address || school.phone || school.email || school.website) && (
+          {(school.address || school.phone || school.email || school.websites.length > 0 || school.facebook || school.instagram) && (
             <>
               <div className="rule" />
               <h2 className="dh">Kde škola sídli</h2>
@@ -409,6 +417,24 @@ export default async function SchoolPage({
               ) : (
                 <div className="ph" style={{ height: 260, margin: "16px 0 14px" }}>MAPA</div>
               )}
+              <div className="p-only">
+                <table className="p-tab">
+                  <tbody>
+                    <tr><th>Ukončenie</th><td>{hasMat && hasVl ? "maturita + výučný list" : hasMat ? "maturita" : "výučný list"}</td></tr>
+                    <tr><th>Vyučovací jazyk</th><td>{school.languages.map((l) => LANGUAGE_LABEL[l] ?? l).join(", ") || "-"}</td></tr>
+                    <tr><th>Native speaker</th><td>{school.hasNativeSpeaker ? "áno" : "nie"}</td></tr>
+                    <tr><th>Ubytovanie</th><td>{school.internatType ?? (school.internatInfo && !/^(nie|nemá|neposkyt|neponúk)/i.test(school.internatInfo) ? school.internatInfo : "nie")}</td></tr>
+                    <tr><th>Bezbariérovosť</th><td>{school.accessibility ?? "-"}</td></tr>
+                    <tr><th>Podporný tím</th><td>{school.supportTeam.join(", ") || "-"}</td></tr>
+                  </tbody>
+                </table>
+                <div className="p-cols">
+                  <div><b>Zriaďovateľ:</b> Trnavský samosprávny kraj</div>
+                  {dod && <div><b>Deň otvorených dverí:</b> {fmtDate(dod.date)}{dod.time ? `, ${dod.time}` : ""}</div>}
+                  <div><b>Kontakt:</b> {[school.phone?.split("\n")[0], school.email, school.websites[0]].filter(Boolean).join(" · ")}</div>
+                </div>
+              </div>
+
               <div className="loc">
                 <div>
                   <div className="lbl">Kontakt</div>
@@ -418,13 +444,46 @@ export default async function SchoolPage({
                       <span key={i}>{i > 0 && "tel. "}{t.trim()}<br /></span>
                     ))}</>}
                     {school.email && <><a href={`mailto:${school.email}`}>{school.email}</a><br /></>}
-                    {school.website && (
-                      <a href={`https://${school.website.replace(/^https?:\/\//, "")}`} target="_blank" rel="noopener noreferrer">
-                        {school.website}
-                      </a>
+                    {school.websites.map((w) => (
+                      <span key={w}>
+                        <a href={`https://${w.replace(/^https?:\/\//, "")}`} target="_blank" rel="noopener noreferrer">
+                          {w.replace(/^https?:\/\//, "").replace(/^www\./, "")}
+                        </a>
+                        <br />
+                      </span>
+                    ))}
+                    {school.facebook && (
+                      <>
+                        <br />
+                        <a
+                          href={
+                            school.facebook.startsWith("http")
+                              ? school.facebook
+                              : `https://www.facebook.com/${school.facebook.replace(/^@/, "")}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Facebook
+                        </a>
+                      </>
                     )}
-                    {school.facebook && <><br />Facebook: {school.facebook}</>}
-                    {school.instagram && <><br />Instagram: {school.instagram}</>}
+                    {school.instagram && (
+                      <>
+                        {school.facebook ? " · " : <><br /></>}
+                        <a
+                          href={
+                            school.instagram.startsWith("http")
+                              ? school.instagram
+                              : `https://www.instagram.com/${school.instagram.replace(/^@/, "")}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Instagram
+                        </a>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -472,8 +531,11 @@ export default async function SchoolPage({
               )}
               {school.hasDual && <div><span>Duálne vzdelávanie</span><b>áno</b></div>}
               {school.hasNadstavba && <div><span>Nadstavbové štúdium</span><b>áno</b></div>}
-              {school.internatInfo && !/^(nie|nemá|neposkyt|neponúk)/i.test(school.internatInfo) && (
-                <div><span>Ubytovanie</span><b>{school.internatInfo}</b></div>
+              {(school.internatType || (school.internatInfo && !/^(nie|nemá|neposkyt|neponúk)/i.test(school.internatInfo))) && (
+                <div>
+                  <span>Ubytovanie</span>
+                  <b>{[school.internatType, school.internatInfo].filter((x) => x && !/^(nie|nemá|neposkyt|neponúk)/i.test(x)).join(" — ")}</b>
+                </div>
               )}
               {school.foreignLanguages.length > 0 && (
                 <div><span>Cudzie jazyky</span><b>{school.foreignLanguages.join(", ")}</b></div>

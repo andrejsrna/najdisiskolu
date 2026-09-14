@@ -167,8 +167,7 @@ async function main() {
         phone: str(r.t),
         facebook: str(r.f),
         instagram: str(r.ig),
-        inekoKraj: str(r.inekoK),
-        inekoSlovensko: str(r.inekoS),
+        // INEKO: nová štruktúra (rank+of) — import už nebeží, konverzia je v migrácii
         totalStudents: str(r.ziakovReal),
         intro: str(r.p),
         practice: str(r.prac),
