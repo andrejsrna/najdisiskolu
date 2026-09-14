@@ -188,6 +188,25 @@ export async function uploadPostImages(formData: FormData): Promise<string[]> {
   return urls;
 }
 
+/** Nahrať hero médium (video MP4 alebo fotku) do nastavení – vráti verejné URL. Iba ADMIN. */
+export async function uploadHeroMedia(formData: FormData): Promise<string[]> {
+  const user = await getSessionUser();
+  if (!user || user.role !== "ADMIN") return [];
+  const files = formData
+    .getAll("file")
+    .filter((x): x is File => x instanceof File && x.size > 0);
+  const urls: string[] = [];
+  for (const file of files) {
+    const isVideo = file.type === "video/mp4" || file.type === "video/quicktime";
+    const isImage = ["image/jpeg", "image/png", "image/webp"].includes(file.type);
+    if (!isVideo && !isImage) continue;
+    if (file.size > (isVideo ? 60 * 1024 * 1024 : 10 * 1024 * 1024)) continue;
+    const extension = isVideo ? "mp4" : file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+    urls.push(await uploadPublicImage(file, `hero/${crypto.randomUUID()}.${extension}`));
+  }
+  return urls;
+}
+
 /* ================= RECENZIE (príbehy „Moja stredná je super") ================= */
 
 export async function saveReview(formData: FormData) {

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
 import { saveSettings } from "@/lib/admin-actions";
+import { HeroMediaUpload } from "./HeroMediaUpload";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
@@ -50,16 +51,10 @@ export default async function NastaveniaPage() {
               </select>
             </div>
             <div>
-              <label className={label}>URL videa alebo fotky</label>
-              <input
-                name="heroMediaUrl"
-                type="url"
-                defaultValue={String(get("hero.mediaUrl", ""))}
-                placeholder="https://… (prázdne = pôvodné /hero.mp4)"
-                className={input}
-              />
+              <label className={label}>Video alebo fotka (nahraj, alebo vlož URL)</label>
+              <HeroMediaUpload name="heroMediaUrl" initial={String(get("hero.mediaUrl", ""))} />
               <p className="mt-1 text-xs text-slate-400">
-                Vlož verejnú URL súboru. Pri videu odporúčame MP4, pri fotke široký formát aspoň 1920 × 1080 px.
+                Pretiahni video (MP4, do 60 MB) alebo fotku (do 10 MB), alebo vlož verejnú URL. Prázdne = pôvodné /hero.mp4.
               </p>
             </div>
             <label className="flex items-center gap-2 text-sm text-slate-700">
