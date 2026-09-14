@@ -11,6 +11,7 @@ import {
   ERASMUS_OPTIONS,
   INTERNAT_OPTIONS,
 } from "@/lib/constants";
+import { PhotoReorder } from "./PhotoReorder";
 import {
   updateSchoolBasic,
   addOdbor,
@@ -20,8 +21,6 @@ import {
   addDownload,
   deleteDownload,
   addSchoolPhoto,
-  deleteSchoolPhoto,
-  setSchoolPhotoCover,
   saveSimilarSchools,
 } from "@/lib/school-actions";
 
@@ -445,30 +444,15 @@ export default async function SchoolEditPage({
           Nahraj JPEG, PNG alebo WebP do 10 MB. Označ zvlášť titulnú fotku pre detail a kartu v zozname škôl.
         </p>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {school.photos.map((photo) => (
-            <div key={photo.id} className="overflow-hidden rounded-lg border border-slate-200">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photo.url} alt={photo.alt ?? school.name} className="h-40 w-full object-cover" />
-              <div className="space-y-2 p-3">
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {photo.isDetailCover && <span className="rounded-full bg-slate-900 px-2 py-1 text-white">Titulná detailu</span>}
-                  {photo.isListCover && <span className="rounded-full bg-slate-900 px-2 py-1 text-white">Titulná zoznamu</span>}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <form action={setSchoolPhotoCover.bind(null, school.id, school.slug, photo.id, "detail")}>
-                    <button className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Titulná detailu</button>
-                  </form>
-                  <form action={setSchoolPhotoCover.bind(null, school.id, school.slug, photo.id, "list")}>
-                    <button className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Titulná zoznamu</button>
-                  </form>
-                  <form action={deleteSchoolPhoto.bind(null, school.id, school.slug, photo.id)}>
-                    <button className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50">Zmazať</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="mt-4">
+          <PhotoReorder
+            schoolId={school.id}
+            slug={school.slug}
+            photos={school.photos.map((p) => ({
+              id: p.id, url: p.url, alt: p.alt, isDetailCover: p.isDetailCover, isListCover: p.isListCover,
+            }))}
+            schoolName={school.name}
+          />
         </div>
 
         <form action={addSchoolPhoto.bind(null, school.id, school.slug)} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-dashed border-slate-300 p-4 sm:grid-cols-2">

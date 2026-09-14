@@ -266,6 +266,16 @@ export async function addSchoolPhoto(schoolId: string, slug: string, formData: F
   revalidateSchool(slug);
 }
 
+export async function reorderSchoolPhotos(schoolId: string, slug: string, photoIds: string[]) {
+  await assertCanEditSchool(schoolId);
+  await prisma.$transaction(
+    photoIds.map((id, index) =>
+      prisma.schoolPhoto.updateMany({ where: { id, schoolId }, data: { sort: index + 1 } }),
+    ),
+  );
+  revalidateSchool(slug);
+}
+
 export async function deleteSchoolPhoto(schoolId: string, slug: string, photoId: string) {
   await assertCanEditSchool(schoolId);
   await prisma.schoolPhoto.deleteMany({ where: { id: photoId, schoolId } });

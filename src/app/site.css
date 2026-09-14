@@ -515,7 +515,7 @@ overflow:hidden;text-overflow:ellipsis;max-width:100%
 }
 .site .tag {
 font-size:11px;border:1px solid var(--line);border-radius:3px;padding:3px 8px;
-    color:var(--ink2);white-space:nowrap;background:#fff
+    color:var(--ink2);white-space:nowrap;background:#fff;overflow:hidden;text-overflow:ellipsis;max-width:100%
 }
 .site .tag.mat {
 background:var(--mat);border-color:var(--mat);color:var(--ink);font-weight:500
