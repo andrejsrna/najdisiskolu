@@ -11,6 +11,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Role, type Completion } from "../src/generated/prisma/enums";
 import { QA } from "../src/lib/qa-data";
 import { DEMO_NEWS } from "../src/lib/demo-news";
+import { VELTRHY_SECTIONS_DEFAULT, VELTRHY_SECTIONS_KEY } from "../src/lib/veltrhy-content";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -200,6 +201,16 @@ async function migrateDemoNews() {
   console.log(`✓ články z demo HTML: ${DEMO_NEWS.length} aktualizované`);
 }
 
+async function migrateVeltrhyContent() {
+  const existing = await prisma.setting.findUnique({ where: { key: VELTRHY_SECTIONS_KEY } });
+  if (!existing) {
+    await prisma.setting.create({
+      data: { key: VELTRHY_SECTIONS_KEY, value: VELTRHY_SECTIONS_DEFAULT as unknown as never },
+    });
+    console.log("✓ nahraný obsah veľtrhovej stránky (veltrhy.sections)");
+  }
+}
+
 async function main() {
   const data: SeedData = JSON.parse(readFileSync("prisma/seed-data.json", "utf-8"));
 
@@ -208,6 +219,7 @@ async function main() {
   await migrateFaq();
   await migrateDemoReviews();
   await migrateDemoNews();
+  await migrateVeltrhyContent();
 
   if ((await prisma.school.count()) > 0) {
     console.log("ℹ️ DB už obsahuje školy — seed preskočený.");

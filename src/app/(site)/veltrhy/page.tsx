@@ -2,6 +2,11 @@ import { Illustration } from "@/lib/illustrations";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import {
+  VELTRHY_SECTIONS_DEFAULT,
+  VELTRHY_SECTIONS_KEY,
+  type VeltrhySections,
+} from "@/lib/veltrhy-content";
 import DodFilter from "./DodFilter";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +19,7 @@ export const metadata: Metadata = {
 };
 
 export default async function VeltrhyPage() {
-  const [veltrhy, dodSchools] = await Promise.all([
+  const [veltrhy, dodSchools, settings] = await Promise.all([
     prisma.veltrh.findMany({
       include: { schools: { orderBy: { name: "asc" } } },
       orderBy: { date: "asc" },
@@ -24,7 +29,23 @@ export default async function VeltrhyPage() {
       include: { dods: { orderBy: { date: "asc" } } },
       orderBy: { name: "asc" },
     }),
+    prisma.setting.findUnique({ where: { key: VELTRHY_SECTIONS_KEY } }),
   ]);
+
+  const stored = (settings?.value ?? {}) as Partial<VeltrhySections>;
+  const s: VeltrhySections = {
+    lead: stored.lead ?? VELTRHY_SECTIONS_DEFAULT.lead,
+    whatCells:
+      (stored.whatCells?.length ? stored.whatCells : VELTRHY_SECTIONS_DEFAULT.whatCells) ??
+      VELTRHY_SECTIONS_DEFAULT.whatCells,
+    tipsIntro: stored.tipsIntro ?? VELTRHY_SECTIONS_DEFAULT.tipsIntro,
+    tipsCells:
+      (stored.tipsCells?.length ? stored.tipsCells : VELTRHY_SECTIONS_DEFAULT.tipsCells) ??
+      VELTRHY_SECTIONS_DEFAULT.tipsCells,
+    dodIntro: stored.dodIntro ?? VELTRHY_SECTIONS_DEFAULT.dodIntro,
+    helpHeading: stored.helpHeading ?? VELTRHY_SECTIONS_DEFAULT.helpHeading,
+    helpText: stored.helpText ?? VELTRHY_SECTIONS_DEFAULT.helpText,
+  };
 
   const dodData = dodSchools
     .map((s) => {
@@ -47,11 +68,7 @@ export default async function VeltrhyPage() {
         <Illustration name="fairFlag" />
         <div className="wrap phead">
           <h1>Veľtrhy škôl</h1>
-          <p className="plead">
-            Raz do roka sa všetkých 44 župných stredných škôl stretne na jednom mieste. Za jedno
-            popoludnie sa porozprávaš s toľkými školami, koľko by si inak obchádzal celú jeseň – a
-            hlavne so žiakmi, ktorí na nich naozaj študujú.
-          </p>
+          <p className="plead">{s.lead}</p>
         </div>
       </section>
 
@@ -89,41 +106,29 @@ export default async function VeltrhyPage() {
         <div className="rule" />
         <h2 className="dh">Čo tam na teba čaká</h2>
         <div className="infolist">
-          <div className="cell">Stánok každej zo 44 župných stredných škôl – na jednom mieste, bez cestovania</div>
-          <div className="cell">Ukážky prác a praktické dielne – uvidíš, čo sa v odbore naozaj robí</div>
-          <div className="cell">Študenti škôl, ktorí odpovedia na to, na čo sa učiteľa spýtať nechceš</div>
-          <div className="cell">Zástupcovia firiem, ktoré berú žiakov do duálneho vzdelávania</div>
-          <div className="cell">Talentcentrum – pomôže ti zistiť, v čom máš predpoklady</div>
-          <div className="cell">Kariérové poradenstvo pre teba aj pre rodičov</div>
+          {s.whatCells.map((cell) => (
+            <div className="cell" key={cell}>{cell}</div>
+          ))}
         </div>
 
         <div className="rule" />
         <h2 className="dh">Ako z toho vyťažiť čo najviac</h2>
-        <p className="dl">
-          Väčšina deviatakov prejde halu za dvadsať minút a odnesie si tašku letákov. Škoda – dá sa
-          to aj inak.
-        </p>
+        <p className="dl">{s.tipsIntro}</p>
         <div className="infolist">
-          <div className="cell">Pozri si vopred, ktoré školy ťa zaujímajú, a vyber si tri až päť stánkov, kde sa naozaj zastavíš</div>
-          <div className="cell">Priprav si otázky – čo presne budem robiť na praxi, kam idú absolventi, koľko vás vlani prijali</div>
-          <div className="cell">Choď s rodičom, ale nechaj sa pýtať sám – ide o tvoje štyri roky</div>
-          <div className="cell">Pýtaj sa študentov, nie len učiteľov pri stánku</div>
-          <div className="cell">Zapíš si termín dňa otvorených dverí škôl, ktoré ťa zaujali</div>
-          <div className="cell">Nerozhoduj sa na mieste – doma si to v pokoji porovnaj</div>
+          {s.tipsCells.map((cell) => (
+            <div className="cell" key={cell}>{cell}</div>
+          ))}
         </div>
 
         <div className="rule" />
         <h2 className="dh">Dni otvorených dverí</h2>
-        <p className="dl">
-          Veľtrh ti dá prehľad, deň otvorených dverí ti dá pocit z konkrétnej školy. Choď aspoň na
-          dve – porovnanie ti povie viac než ktorýkoľvek leták.
-        </p>
+        <p className="dl">{s.dodIntro}</p>
         <DodFilter schools={dodData} />
 
         <div className="helpbox">
           <div>
-            <h4>Nestíhaš ani jeden veľtrh?</h4>
-            <p>Nevadí. Prejdi si ponuku škôl online a napíš priamo tej, ktorá ťa zaujme.</p>
+            <h4>{s.helpHeading}</h4>
+            <p>{s.helpText}</p>
           </div>
           <Link className="btn solid" href="/#filter">
             Vyber si školu online →
