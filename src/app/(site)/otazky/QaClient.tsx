@@ -4,6 +4,7 @@ import type { QAGroup } from "@/lib/qa-data";
 
 export function QaClient({ qa }: { qa: QAGroup[] }) {
   const [q, setQ] = useState("");
+  const [openItems, setOpenItems] = useState<Set<string>>(() => new Set());
   const query = q.trim().toLowerCase();
 
   const filtered = qa
@@ -61,18 +62,37 @@ export function QaClient({ qa }: { qa: QAGroup[] }) {
       )}
 
       {filtered.map(([g, items]) => (
-        <div key={g}>
-          <h3 style={{ fontSize: 22, letterSpacing: "-.02em", margin: "30px 0 6px" }}>{g}</h3>
-          {items.map(([qq, aa]) => (
-            <details key={qq} style={{ borderBottom: "1px solid var(--line2)", padding: "11px 0" }}>
-              <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 16 }}>{qq}</summary>
-              <div
-                style={{ paddingTop: 8, fontSize: 15, color: "var(--ink2)", maxWidth: "68ch" }}
-                dangerouslySetInnerHTML={{ __html: aa }}
-              />
-            </details>
-          ))}
-        </div>
+        <section className="qgroup" key={g} aria-labelledby={`faq-group-${g}`}>
+          <h3 id={`faq-group-${g}`}>{g}</h3>
+          {items.map(([qq, aa], index) => {
+            const id = `${g}-${index}`;
+            const open = openItems.has(id);
+            return (
+              <div className={`qa ${open ? "open" : ""}`} key={`${id}-${qq}`}>
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  aria-controls={`faq-answer-${id}`}
+                  onClick={() => {
+                    setOpenItems((previous) => {
+                      const next = new Set(previous);
+                      if (next.has(id)) next.delete(id);
+                      else next.add(id);
+                      return next;
+                    });
+                  }}
+                >
+                  {qq}
+                </button>
+                <div
+                  id={`faq-answer-${id}`}
+                  className="ans"
+                  dangerouslySetInnerHTML={{ __html: aa }}
+                />
+              </div>
+            );
+          })}
+        </section>
       ))}
     </>
   );
