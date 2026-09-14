@@ -211,6 +211,26 @@ async function migrateVeltrhyContent() {
   }
 }
 
+async function migrateDodDates() {
+  const DOD_DATES = ["2026-11-12", "2026-11-14", "2026-11-21", "2026-11-28", "2026-12-05"];
+  const schools = await prisma.school.findMany({
+    where: { isPublished: true },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+  let added = 0;
+  for (let i = 0; i < schools.length; i++) {
+    const school = schools[i];
+    const existing = await prisma.dod.count({ where: { schoolId: school.id } });
+    if (existing) continue;
+    await prisma.dod.create({
+      data: { schoolId: school.id, date: new Date(`${DOD_DATES[i % DOD_DATES.length]}T00:00:00`) },
+    });
+    added++;
+  }
+  if (added) console.log(`✓ DOD termíny doplnené pre ${added} škôl (demo rozvrh)`);
+}
+
 async function main() {
   const data: SeedData = JSON.parse(readFileSync("prisma/seed-data.json", "utf-8"));
 
@@ -220,6 +240,7 @@ async function main() {
   await migrateDemoReviews();
   await migrateDemoNews();
   await migrateVeltrhyContent();
+  await migrateDodDates();
 
   if ((await prisma.school.count()) > 0) {
     console.log("ℹ️ DB už obsahuje školy — seed preskočený.");
