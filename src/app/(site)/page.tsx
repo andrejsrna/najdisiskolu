@@ -151,6 +151,7 @@ export default async function HomePage() {
                         ) : (
                           <div className="ph img">PORTRÉT</div>
                         )}
+                        {s.title && <div className="st">{s.title}</div>}
                         <div className="q">{s.quote}</div>
                         <div className="who">
                           {s.name}

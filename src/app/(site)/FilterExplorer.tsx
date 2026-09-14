@@ -163,6 +163,44 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
 
   const activeCount = zam.length + okres.length + uk.length + jaz.length + (prak.internat ? 1 : 0) + (prak.strava ? 1 : 0) + (prak.dual ? 1 : 0) + (odbCat ? 1 : 0) + (q ? 1 : 0);
 
+  // Zvolené filtre ako odstrániteľné chipy v hlavičke výsledkov (1:1 s FINAL activeChips).
+  const activeChips: { key: string; label: string; remove: () => void }[] = [
+    ...zam.map((c) => ({ key: `zam-${c}`, label: tags.find((t) => t.code === c)?.label ?? c, remove: () => toggle(zam, c, setZam) })),
+    ...okres.map((d) => ({ key: `okr-${d}`, label: d, remove: () => toggle(okres, d, setOkres) })),
+    ...uk.map((u) => ({ key: `uk-${u}`, label: UK_OPTIONS.find(([v]) => v === u)?.[1] ?? u, remove: () => toggle(uk, u, setUk) })),
+    ...jaz.map((l) => ({ key: `jaz-${l}`, label: JAZ_SHORT[l] ?? l, remove: () => toggle(jaz, l, setJaz) })),
+    ...(prak.internat ? [{ key: "int", label: "internát", remove: () => setPrak({ ...prak, internat: false }) }] : []),
+    ...(prak.strava ? [{ key: "str", label: "stravovanie", remove: () => setPrak({ ...prak, strava: false }) }] : []),
+    ...(prak.dual ? [{ key: "dual", label: "duálne vzdelávanie", remove: () => setPrak({ ...prak, dual: false }) }] : []),
+    ...(odbCat ? [{ key: "odb", label: tags.find((t) => t.code === odbCat)?.label ?? odbCat, remove: () => setOdbCat("") }] : []),
+    ...(q ? [{ key: "q", label: `„${q}“`, remove: () => setQ("") }] : []),
+  ];
+
+  // Keď žiadny výsledok, ponúkni uvoľnenie jedného konkrétneho filtra (1:1 s FINAL suggestRelax).
+  const relax = useMemo(() => {
+    if (filtered.length !== 0) return { text: "", label: "", action: null as null | (() => void) };
+    const set = (
+      label: string,
+      clear: (list: string[]) => void,
+      list: string[],
+    ) => ({ text: `Skús odstrániť filter „${label}“.`, label: `Uvoľniť: ${label}`, action: () => clear(list) });
+    if (okres.length) return set(okres.length === 1 ? okres[0] : "okres", setOkres, []);
+    if (zam.length) return set("zameranie", setZam, []);
+    if (jaz.length) return set("vyučovací jazyk", setJaz, []);
+    if (uk.length) return set("ukončenie", setUk, []);
+    if (odbCat) return set("odbor", () => setOdbCat(""), []);
+    if (q) return set("hľadanú školu", () => setQ(""), []);
+    return {
+      text: "Skús uvoľniť niektorý z filtrov.",
+      label: "Zrušiť všetky filtre",
+      action: () => {
+        setZam([]); setOkres([]); setUk([]); setJaz([]);
+        setPrak({ internat: false, strava: false, dual: false });
+        setOdbCat(""); setQ("");
+      },
+    };
+  }, [filtered, okres, zam, jaz, uk, odbCat, q]);
+
   return (
     <>
       {/* ===================== FILTER ===================== */}
@@ -294,11 +332,9 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
             >
               Vyhľadať školu <b style={{ marginLeft: 6 }}>({filtered.length})</b>
             </button>
-            {activeCount > 0 && (
-              <button className="clear" onClick={clearAll}>
-                Zrušiť filtre
-              </button>
-            )}
+            <button className="clear" onClick={clearAll}>
+              Zrušiť filtre
+            </button>
           </div>
         </div>
       </section>
@@ -308,30 +344,40 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
       <section className="band-grey">
         <div className="wrap">
           <div className="results" id="results">
+            <div className="rhead">
+              <div>
+                <h3>
+                  Našli sme <span className="n">{filtered.length}</span>{" "}
+                  {filtered.length === 1 ? "školu" : filtered.length < 5 ? "školy" : "škôl"}
+                </h3>
+                {activeChips.length > 0 && (
+                  <div className="active" style={{ marginTop: 12 }}>
+                    {activeChips.map((c) => (
+                      <span key={c.key} className="chip on" onClick={c.remove} style={{ cursor: "pointer" }}>
+                        <span className="sq">✓</span>
+                        {c.label}
+                        <span aria-hidden="true" style={{ marginLeft: 4 }}>×</span>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as "abc" | "odbor")}
+                style={{ width: "auto", fontSize: 14, padding: "8px 12px" }}
+              >
+                <option value="abc">Zoradiť: abecedne</option>
+                <option value="odbor">Zoradiť: podľa počtu odborov</option>
+              </select>
+            </div>
             {filtered.length === 0 ? (
               <div className="empty">
                 <div style={{ fontSize: 18, marginBottom: 8 }}>Tejto kombinácii nezodpovedá žiadna škola.</div>
-                <div style={{ fontSize: 14, color: "var(--ink2)", marginBottom: 18 }}>Skús uvoľniť niektorý z filtrov.</div>
-                <button className="btn sm" onClick={clearAll}>Zrušiť všetky filtre</button>
+                <div style={{ fontSize: 14, color: "var(--ink2)", marginBottom: 18 }}>{relax.text}</div>
+                {relax.action && <button className="btn sm" onClick={relax.action}>{relax.label}</button>}
               </div>
             ) : (
-              <>
-                <div className="rhead">
-                  <div>
-                    <h3>
-                      Našli sme <span className="n">{filtered.length}</span>{" "}
-                      {filtered.length === 1 ? "školu" : filtered.length < 5 ? "školy" : "škôl"}
-                    </h3>
-                  </div>
-                  <select
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value as "abc" | "odbor")}
-                    style={{ width: "auto", fontSize: 14, padding: "8px 12px" }}
-                  >
-                    <option value="abc">Zoradiť: abecedne</option>
-                    <option value="odbor">Zoradiť: podľa počtu odborov</option>
-                  </select>
-                </div>
 
                 <div className="cards">
                   {filtered.map((s) => {
@@ -394,7 +440,6 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                     );
                   })}
                 </div>
-              </>
             )}
           </div>
         </div>

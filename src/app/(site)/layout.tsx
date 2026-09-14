@@ -34,44 +34,36 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               <br />
               Odbor školstva
               <br />
-              Starohájska 10, 917 01 Trnava
-              <br />
-              <a href="mailto:podatelna@trnava-vuc.sk">podatelna@trnava-vuc.sk</a>
+              Starohájska 10, Trnava
             </div>
             <div>
-              Katalóg stredných škôl zriaďovaných Trnavským samosprávnym krajom.
+              <Link href="/">Vyber si strednú</Link>
+              <br />
+              <Link href="/veltrhy">Veľtrhy škôl</Link>
+              <br />
+              <Link href="/otazky">Otázky a odpovede</Link>
             </div>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "8px 28px",
-              marginTop: 28,
-              fontSize: 13,
-            }}
-          >
-            <a
-              href="https://www.trnava-vuc.sk/kontakt/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Kontakt
-            </a>
-            <a
-              href="https://www.trnava-vuc.sk/ochrana-osobnych-udajov/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Ochrana osobných údajov
-            </a>
-            <a
-              href="https://www.trnava-vuc.sk/vyhlasenie-o-pristupnosti/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Vyhlásenie o prístupnosti
-            </a>
+            <div>
+              <a
+                href="https://www.trnava-vuc.sk/vyhlasenie-o-pristupnosti/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Vyhlásenie o prístupnosti
+              </a>
+              <br />
+              <a
+                href="https://www.trnava-vuc.sk/ochrana-osobnych-udajov/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ochrana osobných údajov
+              </a>
+              <br />
+              <Link href="/admin">
+                <b>Prihlásenie pre školy →</b>
+              </Link>
+            </div>
           </div>
         </div>
       </footer>

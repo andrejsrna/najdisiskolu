@@ -326,6 +326,7 @@ model Review {
   id       String @id @default(cuid())
   name     String // meno autora, napr. "Adam"
   age      String? // vek / ročník, napr. "21"
+  title    String? // nadpis príbehu (story .st), napr. "Olympionik v krasokorčuľovaní"
   quote    String @db.Text // citát / text príbehu
 
   schoolId String?

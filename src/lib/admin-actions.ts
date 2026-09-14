@@ -173,6 +173,7 @@ export async function saveReview(formData: FormData) {
   const data = {
     name,
     age: str(formData.get("age")),
+    title: str(formData.get("title")),
     quote: str(formData.get("quote")) ?? "",
     photoUrl: str(formData.get("photoUrl")),
     schoolId: schoolId || null,

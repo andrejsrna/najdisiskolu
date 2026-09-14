@@ -1,5 +1,6 @@
 import { Illustration } from "@/lib/illustrations";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { QaClient } from "./QaClient";
 import type { QAItem, QAGroup } from "@/lib/qa-data";
@@ -64,6 +65,19 @@ export default async function OtazkyPage() {
       <section className="band-page">
         <div className="wrap" style={{ paddingTop: 36, paddingBottom: 56 }}>
           <QaClient qa={groups} />
+
+          <div className="helpbox">
+            <div>
+              <h4>Nenašiel si odpoveď?</h4>
+              <p>
+                Napíš na odbor školstva Trnavského samosprávneho kraja alebo sa spýtaj priamo školy,
+                ktorá ťa zaujíma.
+              </p>
+            </div>
+            <Link className="btn solid" href="/#filter">
+              Nájdi si školu →
+            </Link>
+          </div>
         </div>
       </section>
     </>

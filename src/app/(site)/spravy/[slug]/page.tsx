@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import SafeRichText from "@/components/SafeRichText";
+import { BlockIllustration } from "@/lib/illustrations";
 import { prisma } from "@/lib/prisma";
 import ArticleGallery from "./ArticleGallery";
 
@@ -44,8 +45,14 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={post.coverUrl} alt="" />
         </div>
-      ) : null}
-      <div className="wrap article-back"><Link href="/spravy">← Späť na dobré správy</Link></div>
+      ) : (
+        <div className="ph article-hero" style={{ height: 260, marginBottom: 0 }}>HEADER FOTO ČLÁNKU</div>
+      )}
+      <div className="wrap article-back">
+        <Link href="/">← Späť na hlavnú stránku</Link>
+        <span aria-hidden="true">&nbsp; · &nbsp;</span>
+        <span>Dobré správy zo školstva</span>
+      </div>
       <article className="article-wrap">
         <header>
           {post.publishedAt && <time dateTime={post.publishedAt.toISOString()}>{fmtDate(post.publishedAt)}</time>}
@@ -55,8 +62,10 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
         <SafeRichText html={post.body} />
         <ArticleGallery images={post.images} caption={post.galleryCaption} />
         {more.length > 0 && (
-          <section className="article-more" aria-labelledby="article-more-heading">
-            <h2 id="article-more-heading">Ďalšie dobré správy</h2>
+          <>
+            <BlockIllustration name="handRule" />
+            <section className="article-more" aria-labelledby="article-more-heading">
+              <h2 id="article-more-heading">Ďalšie dobré správy</h2>
             <div>
               {more.map((item) => (
                 <article className="post" key={item.id}>
@@ -71,7 +80,8 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
                 </article>
               ))}
             </div>
-          </section>
+            </section>
+          </>
         )}
       </article>
     </main>

@@ -62,6 +62,10 @@ export default async function RecenziePage({
             <input name="age" defaultValue={editing?.age ?? ""} className={input} />
           </div>
         </div>
+        <div>
+          <label className={label}>Nadpis príbehu (titulok karty)</label>
+          <input name="title" defaultValue={editing?.title ?? ""} className={input} />
+        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>

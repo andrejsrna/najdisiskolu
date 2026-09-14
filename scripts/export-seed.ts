@@ -29,6 +29,7 @@ async function main() {
         {
           name: "Eliška Marlengová",
           age: null,
+          title: "Piekla v televíznej súťaži ešte na základnej škole",
           quote: "„Ešte v deviatke som piekla v televíznej súťaži a riešila presne to isté, čo ty teraz: kam ďalej. Vybrala som si hotelovku, lebo tu z koníčka robia remeslo. Máme barmanský aj baristický kurz, varíme na ozajstných podujatiach a na stáž sa dá ísť aj do Talianska.“",
           photoUrl: `${imageBase}/reviews/eliska-marlengova.jpg`,
           schoolId: hotel,
@@ -38,6 +39,7 @@ async function main() {
         {
           name: "Adam Hagara",
           age: null,
+          title: "Olympionik v krasokorčuľovaní",
           quote: "„Naša škola má multifunkčné športovisko priamo v areáli a internát v budove a vychováva špičkových športovcov. Kombinovať vrcholový tréning a maturitu sa dá len tam, kde ti v tom pomáhajú. Preto som dnes olympionik a nie bývalý krasokorčuliar.“",
           photoUrl: `${imageBase}/reviews/adam-hagara.jpg`,
           schoolId: herdu,
@@ -47,6 +49,7 @@ async function main() {
         {
           name: "Vivien Vranková",
           age: null,
+          title: "Presadila menštruačné pomôcky na školských toaletách",
           quote: "„Chcela som, aby boli menštruačné potreby na školských toaletách bezplatne. Získala som zdroje z participatívneho rozpočtu a o pár týždňov tam boli. Naše gymnázium má vyše 30 rokov, ale nefunguje ako skanzen. Ak máš nápad, tu ti ho nikto nezhodí zo stola.“",
           photoUrl: `${imageBase}/reviews/vivien-vrankova.jpg`,
           schoolId: herdu,
@@ -136,7 +139,7 @@ async function main() {
       description: v.description, extra: v.extra, schoolSlugs: v.schools.map((s) => s.slug),
     })),
     reviews: reviews.map((r) => ({
-      name: r.name, age: r.age, quote: r.quote, photoUrl: r.photoUrl,
+      name: r.name, age: r.age, title: r.title, quote: r.quote, photoUrl: r.photoUrl,
       published: r.published, sort: r.sort, schoolSlug: r.school?.slug ?? null,
     })),
     posts: posts.map((p) => ({

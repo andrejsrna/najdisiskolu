@@ -135,7 +135,7 @@ export default async function SchoolPage({
     : "";
 
   return (
-    <>
+    <div id="detail">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -237,49 +237,51 @@ export default async function SchoolPage({
             </div>
           </div>
 
+          {/* ODBORY */}
+          <div className="p-odb">
+            <div className="rule" />
+            <h2 className="dh">Čo sa tu dá študovať</h2>
+            <p className="dl">Odbory, ktoré škola otvára pre absolventov základnej školy.</p>
+            {school.odbory.length === 0 ? (
+              <p className="dl">Zoznam odborov zatiaľ nie je doplnený.</p>
+            ) : (
+              <div className="scroll">
+                <table className="od">
+                  <thead>
+                    <tr>
+                      <th>Odbor</th>
+                      <th>Prijíma</th>
+                      <th>Vlani prihlásených</th>
+                      <th>Dĺžka</th>
+                      <th>Ukončenie</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {school.odbory.map((o) => (
+                      <tr key={o.id}>
+                        <td>
+                          <span className="kod">{o.code}</span>
+                          <span className="on">{o.name}</span>
+                          {o.employment && <span className="upl">Uplatníš sa ako: <b>{o.employment}</b></span>}
+                        </td>
+                        <td className="c">{o.accepts ?? "—"}</td>
+                        <td className="c">{o.appliedLastYear ?? "—"}</td>
+                        <td className="c">{o.length} {o.length === 1 ? "rok" : "roky"}</td>
+                        <td className="c">{COMPLETION_LABEL[o.completion] ?? o.completion}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
           {/* O ŠKOLE */}
           {school.intro && (
             <div className="p-sec">
               <div className="rule" />
               <h2 className="dh">O škole</h2>
               <div className="txtblk" dangerouslySetInnerHTML={{ __html: school.intro }} />
-            </div>
-          )}
-
-          {/* ODBORY */}
-          <div className="rule" />
-          <h2 className="dh">Čo sa tu dá študovať</h2>
-          <p className="dl">Odbory, ktoré škola otvára pre absolventov základnej školy.</p>
-          {school.odbory.length === 0 ? (
-            <p className="dl">Zoznam odborov zatiaľ nie je doplnený.</p>
-          ) : (
-            <div className="scroll">
-              <table className="od">
-                <thead>
-                  <tr>
-                    <th>Odbor</th>
-                    <th>Prijíma</th>
-                    <th>Vlani prihlásených</th>
-                    <th>Dĺžka</th>
-                    <th>Ukončenie</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {school.odbory.map((o) => (
-                    <tr key={o.id}>
-                      <td>
-                        <span className="kod">{o.code}</span>
-                        <span className="on">{o.name}</span>
-                        {o.employment && <span className="upl">Uplatníš sa ako: <b>{o.employment}</b></span>}
-                      </td>
-                      <td className="c">{o.accepts ?? "—"}</td>
-                      <td className="c">{o.appliedLastYear ?? "—"}</td>
-                      <td className="c">{o.length} {o.length === 1 ? "rok" : "roky"}</td>
-                      <td className="c">{COMPLETION_LABEL[o.completion] ?? o.completion}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           )}
 
@@ -439,41 +441,47 @@ export default async function SchoolPage({
               </div>
 
               <div className="loc">
-                <div>
-                  <div className="lbl">Kontakt</div>
-                  <div className="contact">
-                    {school.address && <>{school.address}<br /></>}
-                    {school.phone && <>tel. {school.phone.split("\n").map((t, i) => (
-                      <span key={i}>{i > 0 && "tel. "}{t.trim()}<br /></span>
-                    ))}</>}
-                    {school.email && <><a href={`mailto:${school.email}`}>{school.email}</a><br /></>}
-                    {school.websites.map((w) => (
-                      <span key={w}>
-                        <a href={`https://${w.replace(/^https?:\/\//, "")}`} target="_blank" rel="noopener noreferrer">
-                          {w.replace(/^https?:\/\//, "").replace(/^www\./, "")}
-                        </a>
-                        <br />
-                      </span>
-                    ))}
-                    {school.facebook && (
-                      <>
-                        <br />
-                        <a
-                          href={
-                            school.facebook.startsWith("http")
-                              ? school.facebook
-                              : `https://www.facebook.com/${school.facebook.replace(/^@/, "")}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Facebook
-                        </a>
-                      </>
-                    )}
-                    {school.instagram && (
-                      <>
-                        {school.facebook ? " · " : <><br /></>}
+                <div className="loccols">
+                  <div>
+                    <div className="lbl">Adresa</div>
+                    <div className="contact">
+                      {school.name}<br />
+                      {school.address && <>{school.address}<br /></>}
+                      okres {school.district}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="lbl">Kontakt</div>
+                    <div className="contact">
+                      {school.phone && <>{school.phone.split("\n").map((t, i) => (
+                        <span key={i}>{i > 0 && "tel. "}{t.trim()}<br /></span>
+                      ))}</>}
+                      {school.email && <><a href={`mailto:${school.email}`}>{school.email}</a><br /></>}
+                      {school.websites.map((w) => (
+                        <span key={w}>
+                          <a href={`https://${w.replace(/^https?:\/\//, "")}`} target="_blank" rel="noopener noreferrer">
+                            {w.replace(/^https?:\/\//, "").replace(/^www\./, "")}
+                          </a>
+                          <br />
+                        </span>
+                      ))}
+                      {school.facebook && (
+                        <>
+                          <a
+                            href={
+                              school.facebook.startsWith("http")
+                                ? school.facebook
+                                : `https://www.facebook.com/${school.facebook.replace(/^@/, "")}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Facebook
+                          </a>
+                          {school.instagram ? " · " : <><br /></>}
+                        </>
+                      )}
+                      {school.instagram && (
                         <a
                           href={
                             school.instagram.startsWith("http")
@@ -485,13 +493,21 @@ export default async function SchoolPage({
                         >
                           Instagram
                         </a>
-                      </>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
                 <Illustration name="contactStar" />
               </div>
             </>
+          )}
+
+          {/* Deň otvorených dverí – tlačený highlight (na obrazovke skrytý, len do tlače) */}
+          {dod && (
+            <div className="p-sec dod-print" aria-hidden="true">
+              <b>Deň otvorených dverí:</b> {fmtDate(dod.date)}
+              {dod.time ? `, ${dod.time}` : ""}
+            </div>
           )}
         </div>
 
@@ -614,6 +630,6 @@ export default async function SchoolPage({
           Podať prihlášku
         </a>
       </div>
-    </>
+    </div>
   );
 }
