@@ -162,7 +162,7 @@ async function main() {
         hasNativeSpeaker: bool(r.nat),
         accessibility: str(r.bez),
         erasmus: str(r.er),
-        website: str(r.w),
+        websites: str(r.w) ? [str(r.w)!.replace(/^https?:\/\//, "")] : [],
         email: str(r.e),
         phone: str(r.t),
         facebook: str(r.f),

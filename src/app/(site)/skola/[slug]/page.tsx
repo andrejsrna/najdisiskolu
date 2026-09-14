@@ -193,9 +193,9 @@ export default async function SchoolPage({
               {school.city === school.district ? school.city : `${school.city} · okres ${school.district}`}
             </div>
             <div className="tags" style={{ marginBottom: 20 }}>
-              {hasMat && hasVl && <span className="tag matvl">maturita + výučný list</span>}
-              {!hasMat && hasVl && <span className="tag vl">výučný list</span>}
-              {hasMat && !hasVl && <span className="tag mat">maturita</span>}
+              {(school.hasMaturita || hasMat) && (school.hasVl || hasVl) && <span className="tag matvl">maturita + výučný list</span>}
+              {!(school.hasMaturita || hasMat) && (school.hasVl || hasVl) && <span className="tag vl">výučný list</span>}
+              {(school.hasMaturita || hasMat) && !(school.hasVl || hasVl) && <span className="tag mat">maturita</span>}
               {school.hasDual && <span className="tag dual">duálne vzdelávanie</span>}
               {school.hasInternat && <span className="tag dorm">internát</span>}
               {school.hasNadstavba && <span className="tag nad">nadstavba</span>}

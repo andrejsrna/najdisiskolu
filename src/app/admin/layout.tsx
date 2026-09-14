@@ -14,9 +14,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const user = await requireUser();
   const isSchool = user.role === Role.SKOLA;
 
-  const items: { href: string; label: string }[] = [{ href: "/admin", label: "Prehľad" }];
-  if (isSchool) {
-    items.push({ href: "/admin/skoly", label: "Moja škola" });
+  const items: { href: string; label: string }[] =
+    isSchool
+      ? [{ href: "/admin/skoly", label: "Moja škola" }]
+      : [{ href: "/admin/skoly", label: "Školy" }];
+  if (false) {
+    // (pôvodná school-vetva zlúčená vyššie)
   } else {
     items.push(
       { href: "/admin/tagy", label: "Tagy" },

@@ -9,28 +9,55 @@ ALTER TABLE "School" ADD COLUMN "inekoSkOf" TEXT;
 
 -- pomocná logika: prvý údaj = poradie „zo všetkých", druhý po čiarke = poradie v kategórii.
 -- Ak je druhý údaj prítomný, použijeme jeho poradie aj kategóriu (relevantnejšie pre školu).
+-- čisto číselný zápis („5") = poradie v kraji zo všetkých
 UPDATE "School" SET
-  "inekoKrajRank" = (regexp_match("inekoKraj", '(\d+)\s*\.'))[1]::int,
-  "inekoKrajOf"   = COALESCE(
-    (SELECT 'z ' || trim(regexp_replace(x, '^\d+\s*\.\s*', ''))
+  "inekoKrajRank" = (regexp_match("inekoKraj", '^\s*(\d+)\s*$'))[1]::int,
+  "inekoKrajOf" = 'zo všetkých'
+WHERE "inekoKraj" ~ '^\s*\d+\s*$';
+
+UPDATE "School" SET
+  "inekoSkRank" = (regexp_match("inekoSlovensko", '^\s*(\d+)\s*$'))[1]::int,
+  "inekoSkOf" = 'zo všetkých'
+WHERE "inekoSlovensko" ~ '^\s*\d+\s*$';
+
+-- Ak má zápis druhý segment (po čiarke), použijeme poradie AJ kategóriu z neho:
+--   „7. zo všetkých, 3. z odborných škôl" → rank 3, kategória „z odborných škôl"
+-- Inak prvý segment: „5. zo všetkých" → rank 5, „zo všetkých".
+UPDATE "School" SET
+  "inekoKrajRank" = COALESCE(
+    (SELECT (regexp_match(x, '(\d+)\s*\.'))[1]::int
+     FROM unnest(string_to_array("inekoKraj", ',')) WITH ORDINALITY AS t(x, ord)
+     WHERE ord = 2 AND x ~ '\d'),
+    (regexp_match("inekoKraj", '(\d+)\s*\.'))[1]::int),
+  "inekoKrajOf" = COALESCE(
+    (SELECT CASE WHEN trim(regexp_replace(x, '^\s*\d+\s*\.\s*', '', '')) ~ '^(z|zo)\s'
+                 THEN trim(regexp_replace(x, '^\s*\d+\s*\.\s*', '', ''))
+                 ELSE 'z ' || trim(regexp_replace(x, '^\s*\d+\s*\.\s*', '', '')) END
      FROM unnest(string_to_array("inekoKraj", ',')) WITH ORDINALITY AS t(x, ord)
      WHERE ord = 2 AND x ~ '\d'),
     'zo všetkých')
 WHERE "inekoKraj" ~ '\d';
 
 UPDATE "School" SET
-  "inekoSkRank" = (regexp_match("inekoSlovensko", '(\d+)\s*\.'))[1]::int,
-  "inekoSkOf"   = COALESCE(
-    (SELECT 'z ' || trim(regexp_replace(x, '^\d+\s*\.\s*', ''))
+  "inekoSkRank" = COALESCE(
+    (SELECT (regexp_match(x, '(\d+)\s*\.'))[1]::int
+     FROM unnest(string_to_array("inekoSlovensko", ',')) WITH ORDINALITY AS t(x, ord)
+     WHERE ord = 2 AND x ~ '\d'),
+    (regexp_match("inekoSlovensko", '(\d+)\s*\.'))[1]::int),
+  "inekoSkOf" = COALESCE(
+    (SELECT CASE WHEN trim(regexp_replace(x, '^\s*\d+\s*\.\s*', '', '')) ~ '^(z|zo)\s'
+                 THEN trim(regexp_replace(x, '^\s*\d+\s*\.\s*', '', ''))
+                 ELSE 'z ' || trim(regexp_replace(x, '^\s*\d+\s*\.\s*', '', '')) END
      FROM unnest(string_to_array("inekoSlovensko", ',')) WITH ORDINALITY AS t(x, ord)
      WHERE ord = 2 AND x ~ '\d'),
     'zo všetkých')
 WHERE "inekoSlovensko" ~ '\d';
 
--- normalizácia bielych znakov
+-- normalizácia: očisti whitespace/bodky, beztextové a duplicitné „z z" → korektná hodnota
 UPDATE "School" SET "inekoKrajOf" = btrim("inekoKrajOf", ' .') WHERE "inekoKrajOf" IS NOT NULL;
 UPDATE "School" SET "inekoSkOf" = btrim("inekoSkOf", ' .') WHERE "inekoSkOf" IS NOT NULL;
--- kategória bez textu → „zo všetkých"
+UPDATE "School" SET "inekoKrajOf" = replace("inekoKrajOf", 'z z ', 'z ') WHERE "inekoKrajOf" LIKE 'z z %';
+UPDATE "School" SET "inekoSkOf" = replace("inekoSkOf", 'z z ', 'z ') WHERE "inekoSkOf" LIKE 'z z %';
 UPDATE "School" SET "inekoKrajOf" = 'zo všetkých' WHERE "inekoKrajRank" IS NOT NULL AND ("inekoKrajOf" IS NULL OR "inekoKrajOf" IN ('', 'z', 'zo'));
 UPDATE "School" SET "inekoSkOf" = 'zo všetkých' WHERE "inekoSkRank" IS NOT NULL AND ("inekoSkOf" IS NULL OR "inekoSkOf" IN ('', 'z', 'zo'));
 

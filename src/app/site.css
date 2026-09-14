@@ -1127,7 +1127,7 @@ margin-bottom:0
 display:none
 }
 @media print {
-.site @page {
+@page {
 size:A4 portrait;margin:12mm 12mm 10mm
 }
 html,
