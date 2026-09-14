@@ -19,19 +19,43 @@ async function main() {
 
   // 1. Doplniť demo recenzie (príbehy), ak ešte žiadne nie sú.
   if ((await prisma.review.count()) === 0) {
-    const [tech, holleho, podnik] = await Promise.all([
-      bySlug("stredna-priemyselna-skola-technicka"),
-      bySlug("gymnazium-jana-holleho"),
-      bySlug("stredna-odborna-skola-podnikania-v-remeslach-a-sluzbach"),
+    const [hotel, herdu] = await Promise.all([
+      bySlug("hotelova-akademia-ludovita-wintera"),
+      bySlug("gymnazium-a-stredna-sportova-skola-jozefa-herdu"),
     ]);
+    const imageBase = "https://s3.trnavavuc.sk/ttsk-media";
     await prisma.review.createMany({
       data: [
-        { name: "Adam", age: "21", quote: "„Bál som sa, že strojárina je len o špine.\"", schoolId: tech, published: true, sort: 0 },
-        { name: "Nina", age: "19", quote: "„Gymnázium ma naučilo učiť sa.\"", schoolId: holleho, published: true, sort: 1 },
-        { name: "Sára", age: "22", quote: "„Po troch rokoch som mala vlastný salón.\"", schoolId: podnik, published: true, sort: 2 },
+        {
+          name: "Eliška Marlengová",
+          age: null,
+          quote: "„Ešte v deviatke som piekla v televíznej súťaži a riešila presne to isté, čo ty teraz: kam ďalej. Vybrala som si hotelovku, lebo tu z koníčka robia remeslo. Máme barmanský aj baristický kurz, varíme na ozajstných podujatiach a na stáž sa dá ísť aj do Talianska.“",
+          photoUrl: `${imageBase}/reviews/eliska-marlengova.jpg`,
+          schoolId: hotel,
+          published: true,
+          sort: 10,
+        },
+        {
+          name: "Adam Hagara",
+          age: null,
+          quote: "„Naša škola má multifunkčné športovisko priamo v areáli a internát v budove a vychováva špičkových športovcov. Kombinovať vrcholový tréning a maturitu sa dá len tam, kde ti v tom pomáhajú. Preto som dnes olympionik a nie bývalý krasokorčuliar.“",
+          photoUrl: `${imageBase}/reviews/adam-hagara.jpg`,
+          schoolId: herdu,
+          published: true,
+          sort: 20,
+        },
+        {
+          name: "Vivien Vranková",
+          age: null,
+          quote: "„Chcela som, aby boli menštruačné potreby na školských toaletách bezplatne. Získala som zdroje z participatívneho rozpočtu a o pár týždňov tam boli. Naše gymnázium má vyše 30 rokov, ale nefunguje ako skanzen. Ak máš nápad, tu ti ho nikto nezhodí zo stola.“",
+          photoUrl: `${imageBase}/reviews/vivien-vrankova.jpg`,
+          schoolId: herdu,
+          published: true,
+          sort: 30,
+        },
       ],
     });
-    console.log("✓ doplnené demo recenzie (3 príbehy)");
+    console.log("✓ doplnené demo recenzie (3 príbehy z finálneho návrhu)");
   }
 
   // 2. Doplniť demo články („Dobré správy"), ak ešte žiadne nie sú.

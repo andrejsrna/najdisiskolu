@@ -98,6 +98,14 @@ async function migrateFaq() {
 /** Príbehy prenesené z klientom dodaného finálneho demo HTML; idempotentné. */
 async function migrateDemoReviews() {
   const imageBase = (process.env.S3_PUBLIC_URL ?? "https://s3.trnavavuc.sk/ttsk-media").replace(/\/$/, "");
+  // 1. Vymazať legacy/placeholder recenzie, ponechať len 3 reálne z finálneho návrhu
+  const keepNames = ["Eliška Marlengová", "Adam Hagara", "Vivien Vranková"];
+  await prisma.review.deleteMany({
+    where: {
+      name: { notIn: keepNames },
+    },
+  });
+
   const stories = [
     {
       name: "Eliška Marlengová",
@@ -266,21 +274,8 @@ async function main() {
   console.log(`✓ ${data.veltrhy.length} veľtrhov`);
 
   // 4. Recenzie (príbehy „Moja stredná je super")
-  const schoolIdBySlug = new Map<string, string>();
-  for (const r of data.reviews) {
-    if (r.schoolSlug && !schoolIdBySlug.has(r.schoolSlug)) {
-      const school = await prisma.school.findUnique({ where: { slug: r.schoolSlug }, select: { id: true } });
-      if (school) schoolIdBySlug.set(r.schoolSlug, school.id);
-    }
-    await prisma.review.create({
-      data: {
-        name: r.name, age: r.age, quote: r.quote, photoUrl: r.photoUrl,
-        published: r.published, sort: r.sort,
-        schoolId: r.schoolSlug ? schoolIdBySlug.get(r.schoolSlug) ?? null : null,
-      },
-    });
-  }
-  console.log(`✓ ${data.reviews.length} recenzií`);
+  // Reálne príbehy z demo návrhu sa vytvorili/aktualizovali už v migrateDemoReviews() vyššie.
+  console.log(`✓ recenzie synchronizované z demo HTML`);
 
   // 5. Články sa už idempotentne vložili z DEMO_NEWS vyššie. Starší seed-data.json
   // obsahuje len historické placeholdery, preto ho sem zámerne znovu neimportujeme.
