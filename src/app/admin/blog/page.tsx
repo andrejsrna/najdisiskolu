@@ -5,6 +5,7 @@ import { Role } from "@/generated/prisma/enums";
 import { savePost, deletePost } from "@/lib/admin-actions";
 import RichTextEditor from "@/components/RichTextEditor";
 import { BlogGalleryUpload } from "./BlogGalleryUpload";
+import { CoverImageUpload } from "./CoverImageUpload";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
@@ -86,8 +87,8 @@ export default async function BlogPage({
           <p className="mt-1 text-xs text-slate-500">Voliteľný zvýraznený blok na konci článku (čierny `.artbox`).</p>
         </div>
         <div>
-          <label className={label}>Titulná fotografia (URL)</label>
-          <input name="coverUrl" type="url" defaultValue={editing?.coverUrl ?? ""} className={input} />
+          <label className={label}>Titulná fotografia</label>
+          <CoverImageUpload name="coverUrl" initial={editing?.coverUrl ?? ""} />
         </div>
         <div>
           <label className={label}>Fotogaléria</label>
