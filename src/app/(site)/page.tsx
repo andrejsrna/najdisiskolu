@@ -50,6 +50,7 @@ export default async function HomePage() {
   const heroHidden = Boolean(get("hero.hidden", false));
   const heroMediaType = get("hero.mediaType", "video") === "image" ? "image" : "video";
   const heroMediaUrl = String(get("hero.mediaUrl", "") || "");
+  const heroPosterUrl = String(get("hero.posterUrl", "") || "");
 
   const creds = [
     { n: String(get("cred.schools", schools.length)), t: "župných stredných škôl", icon: "credIcon1" as const, iconClass: "ico-wide" },
@@ -95,7 +96,7 @@ export default async function HomePage() {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={heroMediaUrl} alt="" aria-hidden="true" className="h-full w-full object-cover" />
           ) : (
-            <video autoPlay muted loop playsInline preload="auto" aria-hidden="true" tabIndex={-1}>
+            <video autoPlay muted loop playsInline preload="auto" poster={heroPosterUrl || undefined} aria-hidden="true" tabIndex={-1}>
               <source src={heroMediaUrl || "/hero.mp4"} type="video/mp4" />
             </video>
           )}

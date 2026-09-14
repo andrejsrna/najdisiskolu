@@ -215,6 +215,20 @@ async function migrateVeltrhyContent() {
   }
 }
 
+async function migrateHeroMedia() {
+  const imageBase = (process.env.S3_PUBLIC_URL ?? "https://s3.trnavavuc.sk/ttsk-media").replace(/\/$/, "");
+  const upsertIfEmpty = async (key: string, value: string | number | boolean) => {
+    const existing = await prisma.setting.findUnique({ where: { key } });
+    if (!existing?.value) {
+      await prisma.setting.upsert({ where: { key }, update: { value }, create: { key, value } });
+    }
+  };
+  await upsertIfEmpty("hero.mediaType", "video");
+  await upsertIfEmpty("hero.mediaUrl", `${imageBase}/hero.mp4`);
+  await upsertIfEmpty("hero.posterUrl", `${imageBase}/hero-poster.jpg`);
+  console.log("✓ hero médiá nastavené (video + poster na S3)");
+}
+
 async function migrateDodDates() {
   const DOD_DATES = ["2026-11-12", "2026-11-14", "2026-11-21", "2026-11-28", "2026-12-05"];
   const schools = await prisma.school.findMany({
@@ -245,6 +259,7 @@ async function main() {
   await migrateDemoNews();
   await migrateVeltrhyContent();
   await migrateDodDates();
+  await migrateHeroMedia();
 
   if ((await prisma.school.count()) > 0) {
     console.log("ℹ️ DB už obsahuje školy — seed preskočený.");
