@@ -1,3 +1,4 @@
+import { Illustration } from "@/lib/illustrations";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { QaClient } from "./QaClient";
@@ -48,6 +49,7 @@ export default async function OtazkyPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
       />
       <section className="band-mat">
+        <Illustration name="faqQuestion" />
         <div className="wrap" style={{ paddingTop: 56, paddingBottom: 56 }}>
           <h1 style={{ fontSize: "clamp(30px,4.5vw,54px)", letterSpacing: "-.03em", margin: 0 }}>
             Otázky a odpovede

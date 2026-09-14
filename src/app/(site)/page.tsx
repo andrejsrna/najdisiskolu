@@ -1,3 +1,4 @@
+import { BlockIllustration, Illustration } from "@/lib/illustrations";
 import { prisma } from "@/lib/prisma";
 import { FilterExplorer } from "./FilterExplorer";
 
@@ -49,10 +50,10 @@ export default async function HomePage() {
   const heroMediaUrl = String(get("hero.mediaUrl", "") || "");
 
   const creds = [
-    { n: String(get("cred.schools", schools.length)), t: "župných stredných škôl" },
-    { n: String(get("cred.programs", "-")), t: "študijných a učebných odborov" },
-    { n: String(get("cred.places", "-")), t: "voľných miest pre prvákov" },
-    { n: String(get("cred.dual", "-")), t: "žiakov v duálnom vzdelávaní" },
+    { n: String(get("cred.schools", schools.length)), t: "župných stredných škôl", icon: "credIcon1" as const, iconClass: "ico-wide" },
+    { n: String(get("cred.programs", "-")), t: "študijných a učebných odborov", icon: "credIcon2" as const, iconClass: "ico-sq" },
+    { n: String(get("cred.places", "-")), t: "voľných miest pre prvákov", icon: "credIcon3" as const, iconClass: "ico-mid" },
+    { n: String(get("cred.dual", "-")), t: "žiakov v duálnom vzdelávaní", icon: "credIcon4" as const, iconClass: "" },
   ];
 
   const tagData = tags.map((t) => ({ code: t.code, label: t.label }));
@@ -96,6 +97,8 @@ export default async function HomePage() {
               <source src={heroMediaUrl || "/hero.mp4"} type="video/mp4" />
             </video>
           )}
+          <Illustration name="heroBlob" />
+          <Illustration name="heroBeams" />
           <div className="claim">
             <h1>{heroTitle}</h1>
             <p className="sub">{heroSubtitle}</p>
@@ -115,6 +118,7 @@ export default async function HomePage() {
         <div className="creds">
           {creds.map((c) => (
             <div className="cred" key={c.t}>
+              <div className={`ico ico-svg ${c.iconClass}`}><Illustration name={c.icon} className="illustration" /></div>
               <div className="n">{c.n}</div>
               <div className="t">{c.t}</div>
             </div>
@@ -157,7 +161,7 @@ export default async function HomePage() {
 
               {news.length > 0 && (
                 <>
-                  <div className="rule hand" aria-hidden="true" />
+                  <BlockIllustration name="handRule" />
                   <div className="modul">
                     <div className="mhead">
                       <h3>Dobré správy zo školstva</h3>

@@ -1,3 +1,4 @@
+import { Illustration } from "@/lib/illustrations";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -183,6 +184,7 @@ export default async function SchoolPage({
       )}
 
       <div className="wrap dcols">
+        <Illustration name="detailShoe" />
         {/* HLAVNÝ STĹPEC */}
         <div>
           <div className="p-head">
@@ -207,6 +209,7 @@ export default async function SchoolPage({
           {/* Tagy pod názvom — v tlači aj na obrazovke */}
           {(inekoK || inekoS) && (
             <div className="ineko">
+              <Illustration name="inekoPodium" />
               <div className="itxt">
                 <div className="lb">Umiestnenie v rebríčku INEKO 2024/25</div>
                 {inekoK && <div className="ir"><span className="ik">TT kraj:</span> {inekoK}</div>}
@@ -284,7 +287,7 @@ export default async function SchoolPage({
           {preco.length > 0 && (
             <>
               {<HandRule />}
-              <h2 className="dh">Prečo práve sem</h2>
+              <h2 className="dh"><Illustration name="sectionIcon" />Prečo práve sem</h2>
               <div className="duo" style={{ marginTop: 16 }}>
                 {preco.map((w, i) => (
                   <div className="cell" key={i}>{w}</div>
@@ -486,6 +489,7 @@ export default async function SchoolPage({
                     )}
                   </div>
                 </div>
+                <Illustration name="contactStar" />
               </div>
             </>
           )}
@@ -604,6 +608,12 @@ export default async function SchoolPage({
           </div>
         </div>
       )}
+      <div className="mobbar">
+        <span>{dod ? `DOD ${fmtDate(dod.date)}` : "Vyber si svoju školu"}</span>
+        <a className="btn sm" style={{ background: "#fff", borderColor: "#fff", marginLeft: "auto" }} href="https://eprihlasky.iedu.sk/" target="_blank" rel="noopener noreferrer">
+          Podať prihlášku
+        </a>
+      </div>
     </>
   );
 }

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { TTSK_HEADER_LOGO, TTSK_EMBLEM } from "@/lib/ttsk";
+import { Illustration } from "@/lib/illustrations";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
@@ -20,6 +21,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       {children}
 
       <footer>
+        <Illustration name="footerFootprint" />
         <div className="wrap">
           <div className="cols">
             <div className="flogo" aria-label="Trnavský samosprávny kraj">

@@ -1,3 +1,4 @@
+import { Illustration } from "@/lib/illustrations";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
@@ -30,6 +31,7 @@ export default async function VeltrhyPage() {
   return (
     <>
       <section className="band-acid">
+        <Illustration name="fairFlag" />
         <div className="wrap" style={{ paddingTop: 56, paddingBottom: 56 }}>
           <h1 style={{ fontSize: "clamp(30px,4.5vw,54px)", letterSpacing: "-.03em", margin: 0 }}>
             Veľtrhy škôl

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { Illustration } from "@/lib/illustrations";
 
 type Odbor = {
   completion: string;
@@ -166,6 +167,8 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
     <>
       {/* ===================== FILTER ===================== */}
       <section className="band-acid" id="filter">
+        <Illustration name="filterArrow" />
+        <Illustration name="filterQuestion" />
         <div className="wrap fsec">
           <h2>Vyber si svoju ideálnu školu.</h2>
           <p className="lead">Vyfiltruj si vhodné školy a vyberaj len z toho, čo ťa naozaj zaujíma.</p>
