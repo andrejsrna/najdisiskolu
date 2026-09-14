@@ -289,6 +289,7 @@ model Post {
   slug           String?   @unique
   excerpt        String?   @db.Text
   body           String    @db.Text
+  box            String?   @db.Text // zvýraznený kontaktný blok (.artbox), utils články pomoci
   coverUrl       String?
   galleryCaption String?   @db.Text
 

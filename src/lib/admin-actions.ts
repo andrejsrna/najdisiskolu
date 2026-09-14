@@ -132,6 +132,7 @@ export async function savePost(formData: FormData) {
     type: PostType.NEWS,
     excerpt: str(formData.get("excerpt")),
     body: str(formData.get("body")) ?? "",
+    box: str(formData.get("box")),
     coverUrl: str(formData.get("coverUrl")),
     galleryCaption: str(formData.get("galleryCaption")),
     schoolId: null,
