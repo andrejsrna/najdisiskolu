@@ -266,6 +266,25 @@ export async function addSchoolPhoto(schoolId: string, slug: string, formData: F
   revalidateSchool(slug);
 }
 
+export async function addSchoolPhotos(schoolId: string, slug: string, formData: FormData) {
+  await assertCanEditSchool(schoolId);
+  const files = formData
+    .getAll("files")
+    .filter((x): x is File => x instanceof File && x.size > 0);
+  if (files.length === 0) return;
+  const baseSort = await prisma.schoolPhoto.count({ where: { schoolId } });
+  const rows: { schoolId: string; url: string; alt: null; sort: number }[] = [];
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    await assertSupportedImage(file);
+    const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+    const url = await uploadPublicImage(file, `skoly/${schoolId}/${crypto.randomUUID()}.${extension}`);
+    rows.push({ schoolId, url, alt: null, sort: baseSort + i + 1 });
+  }
+  await prisma.schoolPhoto.createMany({ data: rows });
+  revalidateSchool(slug);
+}
+
 export async function reorderSchoolPhotos(schoolId: string, slug: string, photoIds: string[]) {
   await assertCanEditSchool(schoolId);
   await prisma.$transaction(

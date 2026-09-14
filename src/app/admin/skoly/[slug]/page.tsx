@@ -12,6 +12,7 @@ import {
   INTERNAT_OPTIONS,
 } from "@/lib/constants";
 import { PhotoReorder } from "./PhotoReorder";
+import { PhotoUpload } from "./PhotoUpload";
 import {
   updateSchoolBasic,
   addOdbor,
@@ -20,7 +21,6 @@ import {
   saveDod,
   addDownload,
   deleteDownload,
-  addSchoolPhoto,
   saveSimilarSchools,
 } from "@/lib/school-actions";
 
@@ -455,19 +455,9 @@ export default async function SchoolEditPage({
           />
         </div>
 
-        <form action={addSchoolPhoto.bind(null, school.id, school.slug)} className="mt-4 grid grid-cols-1 gap-3 rounded-lg border border-dashed border-slate-300 p-4 sm:grid-cols-2">
-          <div>
-            <label className={label}>Fotka</label>
-            <input name="file" type="file" accept="image/jpeg,image/png,image/webp" required className={input} />
-          </div>
-          <div>
-            <label className={label}>Popis fotky (nepovinné)</label>
-            <input name="alt" placeholder="Žiaci v laboratóriu" className={input} />
-          </div>
-          <div className="sm:col-span-2">
-            <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Pridať fotku</button>
-          </div>
-        </form>
+        <div className="mt-4">
+          <PhotoUpload schoolId={school.id} slug={school.slug} />
+        </div>
       </section>
 
       {/* ============ PODOBNÉ ŠKOLY (len staff) ============ */}
