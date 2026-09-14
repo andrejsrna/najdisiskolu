@@ -304,17 +304,11 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
       </section>
 
       {/* ===================== RESULTS ===================== */}
+      {activeCount > 0 && (
       <section className="band-grey">
         <div className="wrap">
           <div className="results" id="results">
-            {activeCount === 0 ? (
-              <div className="empty">
-                <div style={{ fontSize: 18, marginBottom: 8 }}>Ešte nevyhľadávaš žiadne školy.</div>
-                <div style={{ fontSize: 14, color: "var(--ink2)" }}>
-                  Zapni filter nad týmto (zameranie, okres, odbor alebo školu) a vhodné školy sa ti zobrazia tu.
-                </div>
-              </div>
-            ) : filtered.length === 0 ? (
+            {filtered.length === 0 ? (
               <div className="empty">
                 <div style={{ fontSize: 18, marginBottom: 8 }}>Tejto kombinácii nezodpovedá žiadna škola.</div>
                 <div style={{ fontSize: 14, color: "var(--ink2)", marginBottom: 18 }}>Skús uvoľniť niektorý z filtrov.</div>
@@ -404,7 +398,8 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
             )}
           </div>
         </div>
-      </section>
+        </section>
+      )}
     </>
   );
 }
