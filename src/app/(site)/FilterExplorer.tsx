@@ -307,91 +307,100 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
       <section className="band-grey">
         <div className="wrap">
           <div className="results" id="results">
-            <div className="rhead">
-              <div>
-                <h3>
-                  Našli sme <span className="n">{filtered.length}</span>{" "}
-                  {filtered.length === 1 ? "školu" : filtered.length < 5 ? "školy" : "škôl"}
-                </h3>
+            {activeCount === 0 ? (
+              <div className="empty">
+                <div style={{ fontSize: 18, marginBottom: 8 }}>Ešte nevyhľadávaš žiadne školy.</div>
+                <div style={{ fontSize: 14, color: "var(--ink2)" }}>
+                  Zapni filter nad týmto (zameranie, okres, odbor alebo školu) a vhodné školy sa ti zobrazia tu.
+                </div>
               </div>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as "abc" | "odbor")}
-                style={{ width: "auto", fontSize: 14, padding: "8px 12px" }}
-              >
-                <option value="abc">Zoradiť: abecedne</option>
-                <option value="odbor">Zoradiť: podľa počtu odborov</option>
-              </select>
-            </div>
-
-            {filtered.length === 0 ? (
+            ) : filtered.length === 0 ? (
               <div className="empty">
                 <div style={{ fontSize: 18, marginBottom: 8 }}>Tejto kombinácii nezodpovedá žiadna škola.</div>
                 <div style={{ fontSize: 14, color: "var(--ink2)", marginBottom: 18 }}>Skús uvoľniť niektorý z filtrov.</div>
                 <button className="btn sm" onClick={clearAll}>Zrušiť všetky filtre</button>
               </div>
             ) : (
-              <div className="cards">
-                {filtered.map((s) => {
-                  const mat = s.odbory.some(hasMat);
-                  const vl = s.odbory.some(hasVl);
-                  const ukon = mat && vl ? "maturita + výučný" : mat ? "maturita" : "výučný list";
-                  const ukonCls = mat && vl ? "matvl" : mat ? "mat" : "vl";
-                  const third = s.hasDual ? "duál"
-                    : s.hasInternat ? "internát"
-                    : !s.languages.includes("sk") && s.languages.length ? JAZ_SHORT[s.languages[0]] ?? "cudzí jazyk"
-                    : s.hasNadstavba ? "nadstavbové štúdium"
-                    : benefit(s);
-                  const thirdCls = s.hasDual ? "dual" : s.hasInternat ? "dorm" : s.hasNadstavba ? "nad" : "";
-                  const totalAccepts = s.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0);
-                  const maxApplied = s.odbory.some((o) => o.appliedLastYear) ? Math.max(...s.odbory.map((o) => o.appliedLastYear ?? 0)) : null;
-                  const ineko = s.inekoKrajRank ? `${s.inekoKrajRank}. ${s.inekoKrajOf ?? "zo všetkých"}` : null;
+              <>
+                <div className="rhead">
+                  <div>
+                    <h3>
+                      Našli sme <span className="n">{filtered.length}</span>{" "}
+                      {filtered.length === 1 ? "školu" : filtered.length < 5 ? "školy" : "škôl"}
+                    </h3>
+                  </div>
+                  <select
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value as "abc" | "odbor")}
+                    style={{ width: "auto", fontSize: 14, padding: "8px 12px" }}
+                  >
+                    <option value="abc">Zoradiť: abecedne</option>
+                    <option value="odbor">Zoradiť: podľa počtu odborov</option>
+                  </select>
+                </div>
 
-                  return (
-                    <div className="scard" key={s.slug}>
-                      {s.photoUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={s.photoUrl} alt={s.name} className="img" style={{ height: 200, width: "100%", objectFit: "cover" }} />
-                      ) : (
-                        <div className="ph img">FOTO ŠKOLY</div>
-                      )}
-                      <div className="body">
-                        <div className="name">{s.name}</div>
-                        <div className="loc">{locTxt(s.city, s.district)}</div>
-                        <div className="tags tags3">
-                          <span className={`tag ${ukonCls}`}>{ukon}</span>
-                          <span className="tag">{s.odbory.length} {sklonOdbor(s.odbory.length)}</span>
-                          <span className={`tag ${thirdCls}`}>{third}</span>
-                        </div>
-                        {s.badges.length > 0 && (
-                          <div className="tags">
-                            {s.badges.map((b) => (
-                              <span
-                                key={b.label}
-                                className={`tag hi ${b.kind && b.kind !== "ok" ? "k-" + b.kind : ""}`}
-                              >
-                                {b.label}
-                              </span>
-                            ))}
-                          </div>
+                <div className="cards">
+                  {filtered.map((s) => {
+                    const mat = s.odbory.some(hasMat);
+                    const vl = s.odbory.some(hasVl);
+                    const ukon = mat && vl ? "maturita + výučný" : mat ? "maturita" : "výučný list";
+                    const ukonCls = mat && vl ? "matvl" : mat ? "mat" : "vl";
+                    const third = s.hasDual ? "duál"
+                      : s.hasInternat ? "internát"
+                      : !s.languages.includes("sk") && s.languages.length ? JAZ_SHORT[s.languages[0]] ?? "cudzí jazyk"
+                      : s.hasNadstavba ? "nadstavbové štúdium"
+                      : benefit(s);
+                    const thirdCls = s.hasDual ? "dual" : s.hasInternat ? "dorm" : s.hasNadstavba ? "nad" : "";
+                    const totalAccepts = s.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0);
+                    const maxApplied = s.odbory.some((o) => o.appliedLastYear) ? Math.max(...s.odbory.map((o) => o.appliedLastYear ?? 0)) : null;
+                    const ineko = s.inekoKrajRank ? `${s.inekoKrajRank}. ${s.inekoKrajOf ?? "zo všetkých"}` : null;
+
+                    return (
+                      <div className="scard" key={s.slug}>
+                        {s.photoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={s.photoUrl} alt={s.name} className="img" style={{ height: 200, width: "100%", objectFit: "cover" }} />
+                        ) : (
+                          <div className="ph img">FOTO ŠKOLY</div>
                         )}
-                        <div className="tags">
-                          {totalAccepts > 0 && <span className="tag hi">prijímajú {totalAccepts} žiakov</span>}
-                          {maxApplied != null && <span className="tag hi">vlani {maxApplied} prihlásených na 1 miesto</span>}
-                        </div>
-                        {ineko && (
-                          <div className="tags">
-                            <span className="tag hi">INEKO: {ineko.replace(/(ých|ich)$/, " škôl")}</span>
+                        <div className="body">
+                          <div className="name">{s.name}</div>
+                          <div className="loc">{locTxt(s.city, s.district)}</div>
+                          <div className="tags tags3">
+                            <span className={`tag ${ukonCls}`}>{ukon}</span>
+                            <span className="tag">{s.odbory.length} {sklonOdbor(s.odbory.length)}</span>
+                            <span className={`tag ${thirdCls}`}>{third}</span>
                           </div>
-                        )}
-                        <div className="foot">
-                          <Link className="btn sm" href={`/skola/${s.slug}`}>Detail školy</Link>
+                          {s.badges.length > 0 && (
+                            <div className="tags">
+                              {s.badges.map((b) => (
+                                <span
+                                  key={b.label}
+                                  className={`tag hi ${b.kind && b.kind !== "ok" ? "k-" + b.kind : ""}`}
+                                >
+                                  {b.label}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <div className="tags">
+                            {totalAccepts > 0 && <span className="tag hi">prijímajú {totalAccepts} žiakov</span>}
+                            {maxApplied != null && <span className="tag hi">vlani {maxApplied} prihlásených na 1 miesto</span>}
+                          </div>
+                          {ineko && (
+                            <div className="tags">
+                              <span className="tag hi">INEKO: {ineko.replace(/(ých|ich)$/, " škôl")}</span>
+                            </div>
+                          )}
+                          <div className="foot">
+                            <Link className="btn sm" href={`/skola/${s.slug}`}>Detail školy</Link>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         </div>
