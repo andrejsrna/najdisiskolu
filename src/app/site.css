@@ -681,6 +681,14 @@ position:absolute;right:calc(320px + 24px);top:-26px;height:175px;width:auto;
 .site .dcols > div:not(.side) {
 position:relative;z-index:1
 }
+/* DetailShoe je zabalená v <span class="illustration"><svg class="fly"/></span>.
+   Výnimka z grid toku – inak by span zaberal stĺpec (1fr 320px) a rozbil layout. */
+.site .dcols > .illustration {
+position:absolute;inset:0;pointer-events:none;z-index:0;line-height:0
+}
+.site .dcols > .illustration > .fly {
+height:175px;width:auto
+}
 .site .p-head h1,
 .site .p-head > div:not(.ineko) {
 position:relative;z-index:2
