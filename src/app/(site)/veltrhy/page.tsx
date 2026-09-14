@@ -1,7 +1,8 @@
 import { Illustration } from "@/lib/illustrations";
-import Link from "next/link";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import DodFilter from "./DodFilter";
 
 export const dynamic = "force-dynamic";
 
@@ -12,9 +13,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/veltrhy" },
 };
 
-const fmtDate = (d: Date) =>
-  d.toLocaleDateString("sk-SK", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-
 export default async function VeltrhyPage() {
   const [veltrhy, dodSchools] = await Promise.all([
     prisma.veltrh.findMany({
@@ -23,112 +21,115 @@ export default async function VeltrhyPage() {
     }),
     prisma.school.findMany({
       where: { dods: { some: {} }, isPublished: true },
-      include: { dods: true },
+      include: { dods: { orderBy: { date: "asc" } } },
       orderBy: { name: "asc" },
     }),
   ]);
 
+  const dodData = dodSchools
+    .map((s) => {
+      const dod = s.dods[0];
+      return {
+        slug: s.slug,
+        name: s.name,
+        city: s.city,
+        district: s.district,
+        dodDate: dod ? dod.date.toISOString() : null,
+        dodTime: dod?.time ?? null,
+      };
+    })
+    .filter((s) => s.dodDate);
+
   return (
     <>
+      {/* ===== Veľtrhy ===== */}
       <section className="band-acid">
         <Illustration name="fairFlag" />
-        <div className="wrap" style={{ paddingTop: 56, paddingBottom: 56 }}>
-          <h1 style={{ fontSize: "clamp(30px,4.5vw,54px)", letterSpacing: "-.03em", margin: 0 }}>
-            Veľtrhy škôl
-          </h1>
-          <p style={{ fontSize: 19, maxWidth: "62ch", margin: "12px 0 0" }}>
-            Raz do roka sa všetky župné stredné školy stretnú na jednom mieste — za jedno
-            popoludnie spoznáš školy, ktoré by si inak obchádzal celú jeseň.
+        <div className="wrap phead">
+          <h1>Veľtrhy škôl</h1>
+          <p className="plead">
+            Raz do roka sa všetkých 44 župných stredných škôl stretne na jednom mieste. Za jedno
+            popoludnie sa porozprávaš s toľkými školami, koľko by si inak obchádzal celú jeseň – a
+            hlavne so žiakmi, ktorí na nich naozaj študujú.
           </p>
         </div>
       </section>
 
-      <section>
-        <div className="wrap" style={{ paddingTop: 40, paddingBottom: 40 }}>
-          {veltrhy.length === 0 ? (
-            <div className="empty">Termíny veľtrhov zatiaľ nie sú zverejnené.</div>
-          ) : (
-            <div className="g3">
-              {veltrhy.map((v) => (
-                <div className="scard" key={v.id} style={{ padding: 20 }}>
-                  <div className="name" style={{ fontSize: 20 }}>{v.city}</div>
-                  <div className="loc" style={{ marginBottom: 10 }}>
-                    {fmtDate(v.date)} · {v.time}
+      <section className="wrap page">
+        {veltrhy.length === 0 ? (
+          <div className="empty">Termíny veľtrhov zatiaľ nie sú zverejnené.</div>
+        ) : (
+          <div className="fest" style={{ marginTop: 4 }}>
+            {veltrhy.map((v) => (
+              <div className="fcard" key={v.id}>
+                <div className="top">
+                  <div className="d">
+                    {v.date.toLocaleDateString("sk-SK", { day: "numeric", month: "long" })}
                   </div>
-                  <div style={{ fontSize: 14, marginBottom: 4 }}>
-                    <b>{v.place}</b>
+                  <div className="c">
+                    {v.date.toLocaleDateString("sk-SK", { weekday: "long" })} · {v.time}
                   </div>
-                  <div style={{ fontSize: 13.5, color: "var(--ink2)", marginBottom: 10 }}>
+                </div>
+                <div className="bd">
+                  <div className="mm">{v.city}</div>
+                  <div className="ad">
+                    {v.place}
+                    <br />
                     {v.address}
                   </div>
-                  {v.description && (
-                    <p style={{ fontSize: 14, margin: "0 0 12px" }}>{v.description}</p>
-                  )}
-                  {v.extra && <p style={{ fontSize: 13, color: "var(--term-ink)" }}>{v.extra}</p>}
-                  {v.schools.length > 0 && (
-                    <div style={{ marginTop: 14 }}>
-                      <div style={{ fontSize: 12, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--ink2)", marginBottom: 6 }}>
-                        Zúčastnené školy ({v.schools.length})
-                      </div>
-                      <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5 }}>
-                        {v.schools.map((s) => (
-                          <li key={s.id}>
-                            <Link href={`/skola/${s.slug}`} style={{ textDecoration: "underline" }}>
-                              {s.name}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                  {(v.extra ?? v.description) && (
+                    <div className="ex">{v.extra ?? v.description}</div>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="rule" />
+        <h2 className="dh">Čo tam na teba čaká</h2>
+        <div className="infolist">
+          <div className="cell">Stánok každej zo 44 župných stredných škôl – na jednom mieste, bez cestovania</div>
+          <div className="cell">Ukážky prác a praktické dielne – uvidíš, čo sa v odbore naozaj robí</div>
+          <div className="cell">Študenti škôl, ktorí odpovedia na to, na čo sa učiteľa spýtať nechceš</div>
+          <div className="cell">Zástupcovia firiem, ktoré berú žiakov do duálneho vzdelávania</div>
+          <div className="cell">Talentcentrum – pomôže ti zistiť, v čom máš predpoklady</div>
+          <div className="cell">Kariérové poradenstvo pre teba aj pre rodičov</div>
+        </div>
+
+        <div className="rule" />
+        <h2 className="dh">Ako z toho vyťažiť čo najviac</h2>
+        <p className="dl">
+          Väčšina deviatakov prejde halu za dvadsať minút a odnesie si tašku letákov. Škoda – dá sa
+          to aj inak.
+        </p>
+        <div className="infolist">
+          <div className="cell">Pozri si vopred, ktoré školy ťa zaujímajú, a vyber si tri až päť stánkov, kde sa naozaj zastavíš</div>
+          <div className="cell">Priprav si otázky – čo presne budem robiť na praxi, kam idú absolventi, koľko vás vlani prijali</div>
+          <div className="cell">Choď s rodičom, ale nechaj sa pýtať sám – ide o tvoje štyri roky</div>
+          <div className="cell">Pýtaj sa študentov, nie len učiteľov pri stánku</div>
+          <div className="cell">Zapíš si termín dňa otvorených dverí škôl, ktoré ťa zaujali</div>
+          <div className="cell">Nerozhoduj sa na mieste – doma si to v pokoji porovnaj</div>
+        </div>
+
+        <div className="rule" />
+        <h2 className="dh">Dni otvorených dverí</h2>
+        <p className="dl">
+          Veľtrh ti dá prehľad, deň otvorených dverí ti dá pocit z konkrétnej školy. Choď aspoň na
+          dve – porovnanie ti povie viac než ktorýkoľvek leták.
+        </p>
+        <DodFilter schools={dodData} />
+
+        <div className="helpbox">
+          <div>
+            <h4>Nestíhaš ani jeden veľtrh?</h4>
+            <p>Nevadí. Prejdi si ponuku škôl online a napíš priamo tej, ktorá ťa zaujme.</p>
+          </div>
+          <Link className="btn solid" href="/#filter">
+            Vyber si školu online →
+          </Link>
         </div>
       </section>
-
-      {/* DNI OTVORENÝCH DVERÍ */}
-      {dodSchools.length > 0 && (
-        <section className="band-grey">
-          <div className="wrap" style={{ paddingTop: 40, paddingBottom: 48 }}>
-            <h2 style={{ fontSize: 26, margin: "0 0 6px" }}>Dni otvorených dverí</h2>
-            <p style={{ color: "var(--ink2)", margin: "0 0 20px", maxWidth: "62ch" }}>
-              Veľtrh ti dá prehľad, deň otvorených dverí ti dá pocit z konkrétnej školy.
-            </p>
-            <div style={{ display: "grid", gap: 1, background: "var(--line2)" }}>
-              {dodSchools.map((s) => {
-                const dod = s.dods[0];
-                return (
-                  <div
-                    key={s.id}
-                    style={{
-                      background: "#fff",
-                      padding: "14px 18px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      gap: 16,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    <div>
-                      <Link href={`/skola/${s.slug}`} style={{ fontWeight: 600, textDecoration: "underline" }}>
-                        {s.name}
-                      </Link>
-                      <div style={{ fontSize: 13, color: "var(--ink2)" }}>
-                        {s.city === s.district ? s.city : `${s.city} · okres ${s.district}`}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 14, fontWeight: 600 }}>
-                      {fmtDate(dod.date)}{dod.time ? ` · ${dod.time}` : ""}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
     </>
   );
 }
