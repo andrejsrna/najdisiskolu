@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/session";
+import { uploadPublicImage } from "@/lib/s3";
 import { Role, PostType } from "@/generated/prisma/enums";
 import { parseRole, canManageRole } from "@/lib/roles";
 
@@ -161,6 +162,28 @@ export async function deletePost(id: string) {
   revalidatePath("/");
   revalidatePath("/spravy");
   if (post?.slug) revalidatePath(`/spravy/${post.slug}`);
+}
+
+/** Nahrať fotografie článku do galérie – vráti verejné URL nahraných súborov. */
+export async function uploadPostImages(formData: FormData): Promise<string[]> {
+  await assertStaff();
+  const files = formData
+    .getAll("files")
+    .filter((x): x is File => x instanceof File && x.size > 0);
+  const urls: string[] = [];
+  for (const file of files) {
+    const okType = ["image/jpeg", "image/png", "image/webp"].includes(file.type);
+    if (!okType || file.size > 10 * 1024 * 1024) continue;
+    const header = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+    const sig = Array.from(header.slice(0, 4)).join(",");
+    const isJpg = sig.startsWith("255,216,255");
+    const isPng = sig.startsWith("137,80,78,71");
+    const isWebp = file.type === "image/webp";
+    if (!isJpg && !isPng && !isWebp) continue;
+    const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+    urls.push(await uploadPublicImage(file, `news/${crypto.randomUUID()}.${extension}`));
+  }
+  return urls;
 }
 
 /* ================= RECENZIE (príbehy „Moja stredná je super") ================= */

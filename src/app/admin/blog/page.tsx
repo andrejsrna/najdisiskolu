@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
 import { savePost, deletePost } from "@/lib/admin-actions";
 import RichTextEditor from "@/components/RichTextEditor";
+import { BlogGalleryUpload } from "./BlogGalleryUpload";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
@@ -29,7 +30,6 @@ export default async function BlogPage({
     include: { images: { orderBy: { sort: "asc" }, take: 1 } },
     orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   });
-  const galleryImages = editing?.images.map((image) => `${image.url}${image.alt ? ` | ${image.alt}` : ""}`).join("\n") ?? "";
   const publishedDate = editing?.publishedAt?.toISOString().slice(0, 10) ?? new Date().toISOString().slice(0, 10);
 
   return (
@@ -91,8 +91,8 @@ export default async function BlogPage({
         </div>
         <div>
           <label className={label}>Fotogaléria</label>
-          <textarea name="galleryImages" defaultValue={galleryImages} rows={5} className={input} placeholder="Jedna fotografia na riadok: https://… | alternatívny popis" />
-          <p className="mt-1 text-xs text-slate-500">Poradie riadkov určuje poradie galérie. Popis za znakom | je voliteľný.</p>
+          <BlogGalleryUpload initial={editing?.images ?? []} />
+          <p className="mt-1 text-xs text-slate-500">Pretiahni fotky na nahratie, poradie určuješ pretiahnutím v mriežke.</p>
         </div>
         <div>
           <label className={label}>Popis galérie</label>
