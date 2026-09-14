@@ -289,7 +289,9 @@ model Post {
   slug           String?   @unique
   excerpt        String?   @db.Text
   body           String    @db.Text
-  box            String?   @db.Text // zvýraznený kontaktný blok (.artbox), utils články pomoci
+  box            String?   @db.Text // legacy HTML (fallback), boxTitle+boxBody sú preferované
+  boxTitle       String?   // názov zvýrazneného bloku (.lbl)
+  boxBody        String?   @db.Text // obsah bloku (rich text, cez SafeRichText)
   coverUrl       String?
   galleryCaption String?   @db.Text
 

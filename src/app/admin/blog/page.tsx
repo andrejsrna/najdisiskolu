@@ -82,9 +82,13 @@ export default async function BlogPage({
           <RichTextEditor name="body" defaultValue={editing?.body ?? ""} />
         </div>
         <div>
-          <label className={label}>Kontaktný box (HTML)</label>
-          <textarea name="box" defaultValue={editing?.box ?? ""} rows={5} className={input} placeholder="Napr. <div class=&quot;lbl&quot;>Kde nájdeš pomoc</div><div>E-mail: …</div>" />
-          <p className="mt-1 text-xs text-slate-500">Voliteľný zvýraznený blok na konci článku (čierny `.artbox`).</p>
+          <label className={label}>Názov kontaktného boxu</label>
+          <input name="boxTitle" defaultValue={editing?.boxTitle ?? ""} className={input} placeholder="Napr. Kde nájdeš pomoc" />
+        </div>
+        <div>
+          <label className={label}>Obsah kontaktného boxu (rich text)</label>
+          <RichTextEditor name="boxBody" defaultValue={editing?.boxBody ?? ""} />
+          <p className="mt-1 text-xs text-slate-500">Voliteľný zvýraznený blok (čierny `.artbox`) na konci článku. Formátuj bežnými tlačidlami — žiadne ručné značky.</p>
         </div>
         <div>
           <label className={label}>Titulná fotografia</label>

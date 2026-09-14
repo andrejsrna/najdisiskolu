@@ -60,7 +60,18 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
           {post.excerpt && <p className="article-excerpt">{post.excerpt}</p>}
         </header>
         <SafeRichText html={post.body} />
-        {post.box && <div className="artbox" dangerouslySetInnerHTML={{ __html: post.box }} />}
+        {(post.boxTitle || post.box) && (
+          <div className="artbox">
+            {post.boxTitle && <div className="lbl">{post.boxTitle}</div>}
+            {post.boxBody ? (
+              <div className="artbox-body">
+                <SafeRichText html={post.boxBody} />
+              </div>
+            ) : post.box ? (
+              <div dangerouslySetInnerHTML={{ __html: post.box }} />
+            ) : null}
+          </div>
+        )}
         <ArticleGallery images={post.images} caption={post.galleryCaption} />
         {more.length > 0 && (
           <>

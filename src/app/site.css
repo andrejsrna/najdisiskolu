@@ -1400,6 +1400,11 @@ padding-bottom:60px
 .site .artbox div + div { margin-top:7px;font-size:15.5px;line-height:1.5 }
 .site .artbox a { color:#fff;text-decoration:underline }
 .site .artbox b { color:var(--acid);font-weight:800;font-size:19px }
+.site .artbox-body .article-content p { margin:0 0 8px;max-width:none;color:#fff;font-size:15.5px;line-height:1.55 }
+.site .artbox-body .article-content p:last-child { margin-bottom:0 }
+.site .artbox-body .article-content a { color:#fff;text-decoration:underline }
+.site .artbox-body .article-content strong,
+.site .artbox-body .article-content b { color:var(--acid);font-weight:800 }
 .site .article-more { margin-top:52px;padding-top:28px;border-top:1px solid var(--line) }
 .site .article-more > h2 { margin:0 0 18px;font-size:26px;letter-spacing:-.025em }
 .site .article-more > div { display:grid;grid-template-columns:1fr 1fr;gap:26px }
