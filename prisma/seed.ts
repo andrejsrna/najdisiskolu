@@ -8,8 +8,9 @@ import { readFileSync } from "node:fs";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { Role, type Completion, type PostType } from "../src/generated/prisma/enums";
+import { Role, type Completion } from "../src/generated/prisma/enums";
 import { QA } from "../src/lib/qa-data";
+import { DEMO_NEWS } from "../src/lib/demo-news";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -142,6 +143,55 @@ async function migrateDemoReviews() {
   console.log(`✓ príbehy z demo HTML: ${added} nové, ${stories.length - added} aktualizované`);
 }
 
+async function migrateDemoNews() {
+  const imageBase = (process.env.S3_PUBLIC_URL ?? "https://s3.trnavavuc.sk/ttsk-media").replace(/\/$/, "");
+  const placeholderTitle = "Sem príde titulok článku o dianí na župných školách";
+  await prisma.post.deleteMany({ where: { type: "NEWS", title: placeholderTitle } });
+
+  for (const article of DEMO_NEWS) {
+    await prisma.post.upsert({
+      where: { slug: article.slug },
+      update: {
+        type: "NEWS",
+        title: article.title,
+        excerpt: article.excerpt,
+        body: article.body,
+        coverUrl: `${imageBase}/${article.coverKey}`,
+        galleryCaption: article.galleryCaption,
+        published: true,
+        publishedAt: new Date(`${article.publishedAt}T00:00:00`),
+        images: {
+          deleteMany: {},
+          create: article.gallery.map((image) => ({
+            url: `${imageBase}/${image.key}`,
+            alt: image.alt,
+            sort: image.sort,
+          })),
+        },
+      },
+      create: {
+        type: "NEWS",
+        slug: article.slug,
+        title: article.title,
+        excerpt: article.excerpt,
+        body: article.body,
+        coverUrl: `${imageBase}/${article.coverKey}`,
+        galleryCaption: article.galleryCaption,
+        published: true,
+        publishedAt: new Date(`${article.publishedAt}T00:00:00`),
+        images: {
+          create: article.gallery.map((image) => ({
+            url: `${imageBase}/${image.key}`,
+            alt: image.alt,
+            sort: image.sort,
+          })),
+        },
+      },
+    });
+  }
+  console.log(`✓ články z demo HTML: ${DEMO_NEWS.length} aktualizované`);
+}
+
 async function main() {
   const data: SeedData = JSON.parse(readFileSync("prisma/seed-data.json", "utf-8"));
 
@@ -149,6 +199,7 @@ async function main() {
   await migrateSuperPosts();
   await migrateFaq();
   await migrateDemoReviews();
+  await migrateDemoNews();
 
   if ((await prisma.school.count()) > 0) {
     console.log("ℹ️ DB už obsahuje školy — seed preskočený.");
@@ -231,16 +282,9 @@ async function main() {
   }
   console.log(`✓ ${data.reviews.length} recenzií`);
 
-  // 5. Posty (články „Dobré správy zo školstva")
-  for (const p of data.posts) {
-    await prisma.post.create({
-      data: {
-        type: p.type as PostType, title: p.title, body: p.body, coverUrl: p.coverUrl,
-        published: p.published, publishedAt: toDate(p.publishedAt), schoolId: null,
-      },
-    });
-  }
-  console.log(`✓ ${data.posts.length} postov`);
+  // 5. Články sa už idempotentne vložili z DEMO_NEWS vyššie. Starší seed-data.json
+  // obsahuje len historické placeholdery, preto ho sem zámerne znovu neimportujeme.
+  console.log(`✓ ${DEMO_NEWS.length} postov z finálneho demo HTML`);
 
   // 6. Používatelia (3 roly) — demo heslo „najdi2026"
   const pass = await bcrypt.hash("najdi2026", 10);

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BlockIllustration, Illustration } from "@/lib/illustrations";
 import { prisma } from "@/lib/prisma";
 import { FilterExplorer } from "./FilterExplorer";
@@ -34,9 +35,10 @@ export default async function HomePage() {
       orderBy: { sort: "asc" },
     }),
     prisma.post.findMany({
-      where: { published: true, type: "NEWS" },
+      where: { published: true, type: "NEWS", slug: { not: null } },
       include: { school: { select: { name: true } } },
       orderBy: { publishedAt: "desc" },
+      take: 3,
     }),
   ]);
 
@@ -143,6 +145,8 @@ export default async function HomePage() {
                     {stories.map((s) => (
                       <div className="story" key={s.id}>
                         {s.photoUrl ? (
+                          // S3 fotografie sú dynamický CMS obsah; Next remote optimizer tu nie je nakonfigurovaný.
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img src={s.photoUrl} alt={s.name} className="img" style={{ height: 200, width: "100%", objectFit: "cover" }} />
                         ) : (
                           <div className="ph img">PORTRÉT</div>
@@ -165,14 +169,20 @@ export default async function HomePage() {
                   <div className="modul">
                     <div className="mhead">
                       <h3>Dobré správy zo školstva</h3>
+                      <Link href="/spravy">Všetky články →</Link>
                     </div>
                     <div className="g3">
                       {news.map((p) => (
-                        <div className="post" key={p.id}>
-                          <div className="ph img">FOTO</div>
+                        <article className="post" key={p.id}>
+                          <Link href={`/spravy/${p.slug}`} className="photo" aria-label={`Prečítať: ${p.title}`}>
+                            {p.coverUrl ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={p.coverUrl} alt="" />
+                            ) : <span>FOTO</span>}
+                          </Link>
                           {p.publishedAt && <div className="date">{fmtDate(p.publishedAt)}</div>}
-                          <div className="t">{p.title}</div>
-                        </div>
+                          <div className="t"><Link href={`/spravy/${p.slug}`}>{p.title}</Link></div>
+                        </article>
                       ))}
                     </div>
                   </div>

@@ -20,12 +20,17 @@ export default async function BlogPage({
   if (user.role !== Role.ADMIN && user.role !== Role.SCHOLSTVO) redirect("/admin");
 
   const { edit } = await searchParams;
-  const editing = edit ? await prisma.post.findUnique({ where: { id: edit } }) : null;
+  const editing = edit
+    ? await prisma.post.findUnique({ where: { id: edit }, include: { images: { orderBy: { sort: "asc" } } } })
+    : null;
 
   const posts = await prisma.post.findMany({
     where: { type: "NEWS" },
-    orderBy: { createdAt: "desc" },
+    include: { images: { orderBy: { sort: "asc" }, take: 1 } },
+    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
   });
+  const galleryImages = editing?.images.map((image) => `${image.url}${image.alt ? ` | ${image.alt}` : ""}`).join("\n") ?? "";
+  const publishedDate = editing?.publishedAt?.toISOString().slice(0, 10) ?? new Date().toISOString().slice(0, 10);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -50,17 +55,43 @@ export default async function BlogPage({
         </div>
         {editing && <input type="hidden" name="id" value={editing.id} />}
 
-        <div>
-          <label className={label}>Nadpis</label>
-          <input name="title" defaultValue={editing?.title ?? ""} className={input} />
+        <div className="grid gap-3 sm:grid-cols-[1fr_180px]">
+          <div>
+            <label className={label}>Nadpis</label>
+            <input name="title" required defaultValue={editing?.title ?? ""} className={input} />
+          </div>
+          <div>
+            <label className={label}>Dátum publikovania</label>
+            <input name="publishedAt" type="date" defaultValue={publishedDate} className={input} />
+          </div>
         </div>
         <div>
-          <label className={label}>Text</label>
+          <label className={label}>URL článku</label>
+          <div className="flex items-center rounded-lg border border-slate-300 bg-slate-50 px-3 text-sm text-slate-500">
+            <span>/spravy/</span>
+            <input name="slug" defaultValue={editing?.slug ?? ""} placeholder="vygeneruje sa z nadpisu" className="min-w-0 flex-1 bg-transparent py-2 text-slate-900 outline-none" />
+          </div>
+        </div>
+        <div>
+          <label className={label}>Perex</label>
+          <textarea name="excerpt" defaultValue={editing?.excerpt ?? ""} rows={3} className={input} />
+        </div>
+        <div>
+          <label className={label}>Text článku</label>
           <RichTextEditor name="body" defaultValue={editing?.body ?? ""} />
         </div>
         <div>
-          <label className={label}>Obrázok (URL)</label>
-          <input name="coverUrl" defaultValue={editing?.coverUrl ?? ""} className={input} />
+          <label className={label}>Titulná fotografia (URL)</label>
+          <input name="coverUrl" type="url" defaultValue={editing?.coverUrl ?? ""} className={input} />
+        </div>
+        <div>
+          <label className={label}>Fotogaléria</label>
+          <textarea name="galleryImages" defaultValue={galleryImages} rows={5} className={input} placeholder="Jedna fotografia na riadok: https://… | alternatívny popis" />
+          <p className="mt-1 text-xs text-slate-500">Poradie riadkov určuje poradie galérie. Popis za znakom | je voliteľný.</p>
+        </div>
+        <div>
+          <label className={label}>Popis galérie</label>
+          <input name="galleryCaption" defaultValue={editing?.galleryCaption ?? ""} className={input} />
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-700">
           <input
@@ -96,12 +127,25 @@ export default async function BlogPage({
             {posts.map((p) => (
               <tr key={p.id} className="hover:bg-slate-50">
                 <td className="px-4 py-2.5">
-                  <a
-                    href={`/admin/blog?edit=${p.id}`}
-                    className="font-medium text-slate-900 hover:underline"
-                  >
-                    {p.title}
-                  </a>
+                  <div className="flex items-center gap-3">
+                    {p.images[0]?.url || p.coverUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.images[0]?.url ?? p.coverUrl ?? ""} alt="" className="h-10 w-14 rounded object-cover" />
+                    ) : null}
+                    <div>
+                      <a
+                        href={`/admin/blog?edit=${p.id}`}
+                        className="font-medium text-slate-900 hover:underline"
+                      >
+                        {p.title}
+                      </a>
+                      {p.slug && (
+                        <a href={`/spravy/${p.slug}`} target="_blank" rel="noreferrer" className="mt-0.5 block text-xs text-slate-500 hover:underline">
+                          /spravy/{p.slug} ↗
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </td>
                 <td className="px-4 py-2.5">
                   {p.published ? (

@@ -65,7 +65,11 @@ async function main() {
   });
   const veltrhy = await prisma.veltrh.findMany({ include: { schools: true } });
   const reviews = await prisma.review.findMany({ include: { school: { select: { slug: true } } }, orderBy: { sort: "asc" } });
-  const posts = await prisma.post.findMany({ where: { type: "NEWS" }, orderBy: { publishedAt: "desc" } });
+  const posts = await prisma.post.findMany({
+    where: { type: "NEWS" },
+    include: { images: { orderBy: { sort: "asc" } } },
+    orderBy: { publishedAt: "desc" },
+  });
   const faqs = await prisma.faq.findMany({ orderBy: { sort: "asc" } });
 
   const data = {
@@ -112,8 +116,17 @@ async function main() {
       published: r.published, sort: r.sort, schoolSlug: r.school?.slug ?? null,
     })),
     posts: posts.map((p) => ({
-      type: p.type, title: p.title, body: p.body, coverUrl: p.coverUrl,
-      published: p.published, publishedAt: d10(p.publishedAt), schoolSlug: null,
+      type: p.type,
+      title: p.title,
+      slug: p.slug,
+      excerpt: p.excerpt,
+      body: p.body,
+      coverUrl: p.coverUrl,
+      galleryCaption: p.galleryCaption,
+      images: p.images.map((image) => ({ url: image.url, alt: image.alt, sort: image.sort })),
+      published: p.published,
+      publishedAt: d10(p.publishedAt),
+      schoolSlug: null,
     })),
     faq: faqs.map((f) => ({ group: f.group, question: f.question, answer: f.answer, sort: f.sort })),
   };

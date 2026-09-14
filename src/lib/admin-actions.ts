@@ -18,6 +18,24 @@ const num = (v: FormDataEntryValue | null): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
+const slugify = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const parsePostImages = (value: string) =>
+  value
+    .split("\n")
+    .map((line, sort) => {
+      const [url, ...altParts] = line.split("|");
+      const cleanUrl = url.trim();
+      return cleanUrl ? { url: cleanUrl, alt: altParts.join("|").trim() || null, sort: (sort + 1) * 10 } : null;
+    })
+    .filter((image): image is { url: string; alt: string | null; sort: number } => Boolean(image));
+
 async function assertStaff() {
   const user = await getSessionUser();
   if (!user) redirect("/login");
@@ -98,18 +116,29 @@ export async function setVeltrhSchools(veltrhId: string, formData: FormData) {
 /* ================= BLOG ================= */
 
 export async function savePost(formData: FormData) {
-  await assertStaff();
+  const user = await assertStaff();
   const id = str(formData.get("id"));
   const title = str(formData.get("title"));
   if (!title) return;
+  const slug = slugify(str(formData.get("slug")) ?? title);
+  if (!slug) return;
+  const published = formData.has("published");
+  const publishedAt = str(formData.get("publishedAt"));
+  const images = parsePostImages(String(formData.get("galleryImages") ?? ""));
+  const previous = id ? await prisma.post.findUnique({ where: { id }, select: { slug: true } }) : null;
   const data = {
     title,
+    slug,
     type: PostType.NEWS,
+    excerpt: str(formData.get("excerpt")),
     body: str(formData.get("body")) ?? "",
     coverUrl: str(formData.get("coverUrl")),
+    galleryCaption: str(formData.get("galleryCaption")),
     schoolId: null,
-    published: formData.has("published"),
-    publishedAt: formData.has("published") ? new Date() : null,
+    authorId: user.id,
+    published,
+    publishedAt: published ? (publishedAt ? new Date(`${publishedAt}T00:00:00`) : new Date()) : null,
+    images: { deleteMany: {}, create: images },
   };
   if (id) {
     await prisma.post.update({ where: { id }, data });
@@ -117,12 +146,20 @@ export async function savePost(formData: FormData) {
     await prisma.post.create({ data });
   }
   revalidatePath("/admin/blog");
+  revalidatePath("/");
+  revalidatePath("/spravy");
+  revalidatePath(`/spravy/${slug}`);
+  if (previous?.slug && previous.slug !== slug) revalidatePath(`/spravy/${previous.slug}`);
 }
 
 export async function deletePost(id: string) {
   await assertStaff();
+  const post = await prisma.post.findUnique({ where: { id }, select: { slug: true } });
   await prisma.post.delete({ where: { id } });
   revalidatePath("/admin/blog");
+  revalidatePath("/");
+  revalidatePath("/spravy");
+  if (post?.slug) revalidatePath(`/spravy/${post.slug}`);
 }
 
 /* ================= RECENZIE (príbehy „Moja stredná je super") ================= */
