@@ -98,6 +98,11 @@ export default async function SchoolPage({
   const inekoS = school.inekoSkRank ? `${school.inekoSkRank}. ${school.inekoSkOf ?? "zo všetkých"}` : null;
   const dod = school.dods[0];
   const dodIcal = dod ? dod.date.toISOString().slice(0, 10).replace(/-/g, "") : "";
+  /* Google Maps embed fallback miesto placeholdera „MAPA“ – vyhľadanie podľa adresy/názvu a mesta */
+  const gmapQuery = [school.address, school.name, school.city].filter(Boolean).join(", ");
+  const gmapSrc = gmapQuery
+    ? `https://www.google.com/maps?q=${encodeURIComponent(gmapQuery)}&output=embed&hl=sk`
+    : null;
   /* zoznamy (certifikáty, krúžky) zlúčime do boxov v „Prečo práve sem" ako v návrhu */
   const chunk = (items: string[], label: string, label2: string, limit: number) => {
     const clean = items.map((x) => x.trim()).filter(Boolean);
@@ -416,12 +421,21 @@ export default async function SchoolPage({
                 <iframe
                   src={school.mapUrl}
                   title={`Mapa — ${school.name}`}
+                  className="gmap"
                   style={{ width: "100%", height: 260, border: 0, margin: "16px 0 14px" }}
                   loading="lazy"
                 />
-              ) : (
-                <div className="ph" style={{ height: 260, margin: "16px 0 14px" }}>MAPA</div>
-              )}
+              ) : gmapSrc ? (
+                <iframe
+                  src={gmapSrc}
+                  title={`Mapa — ${school.name}`}
+                  className="gmap"
+                  style={{ width: "100%", height: 260, border: 0, margin: "16px 0 14px" }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+              ) : null}
               <div className="p-only">
                 <table className="p-tab">
                   <tbody>
