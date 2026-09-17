@@ -43,7 +43,11 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
       {post.coverUrl ? (
         <div className="article-hero">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.coverUrl} alt="" />
+          <img
+            src={post.coverUrl}
+            alt=""
+            style={{ objectPosition: `${post.coverFocalX}% ${post.coverFocalY}%` }}
+          />
         </div>
       ) : (
         <div className="ph article-hero" style={{ height: 260, marginBottom: 0 }}>HEADER FOTO ČLÁNKU</div>

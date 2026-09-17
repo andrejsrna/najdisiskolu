@@ -548,6 +548,7 @@ export default async function SchoolEditPage({
             slug={school.slug}
             photos={school.photos.map((p) => ({
               id: p.id, url: p.url, alt: p.alt, isDetailCover: p.isDetailCover, isListCover: p.isListCover,
+              focalX: p.focalX, focalY: p.focalY,
             }))}
             schoolName={school.name}
           />

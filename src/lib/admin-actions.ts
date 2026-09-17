@@ -126,6 +126,7 @@ export async function savePost(formData: FormData) {
   const published = formData.has("published");
   const publishedAt = str(formData.get("publishedAt"));
   const images = parsePostImages(String(formData.get("galleryImages") ?? ""));
+  const focal = (key: string) => Math.max(0, Math.min(100, Number(formData.get(key)) || 50));
   const previous = id ? await prisma.post.findUnique({ where: { id }, select: { slug: true } }) : null;
   const data = {
     title,
@@ -137,6 +138,8 @@ export async function savePost(formData: FormData) {
     boxTitle: str(formData.get("boxTitle")),
     boxBody: str(formData.get("boxBody")),
     coverUrl: str(formData.get("coverUrl")),
+    coverFocalX: focal("coverFocalX"),
+    coverFocalY: focal("coverFocalY"),
     galleryCaption: str(formData.get("galleryCaption")),
     schoolId: null,
     authorId: user.id,

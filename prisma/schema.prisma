@@ -155,6 +155,8 @@ model SchoolPhoto {
   sort          Int     @default(0)
   isDetailCover Boolean @default(false) // titulná na detaile
   isListCover   Boolean @default(false) // titulná v zozname škôl
+  focalX        Int     @default(50) // viditeľný bod výrezu, 0 = vľavo
+  focalY        Int     @default(50) // viditeľný bod výrezu, 0 = hore
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -293,6 +295,8 @@ model Post {
   boxTitle       String?   // názov zvýrazneného bloku (.lbl)
   boxBody        String?   @db.Text // obsah bloku (rich text, cez SafeRichText)
   coverUrl       String?
+  coverFocalX    Int       @default(50)
+  coverFocalY    Int       @default(50)
   galleryCaption String?   @db.Text
 
   schoolId String?

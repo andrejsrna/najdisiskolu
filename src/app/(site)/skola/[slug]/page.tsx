@@ -129,9 +129,9 @@ export default async function SchoolPage({
     Number(b.isDetailCover) - Number(a.isDetailCover) || a.sort - b.sort,
   );
   const heroPhoto = orderedPhotos[0]
-    ? { url: orderedPhotos[0].url, alt: orderedPhotos[0].alt ?? school.name }
+    ? { url: orderedPhotos[0].url, alt: orderedPhotos[0].alt ?? school.name, focalX: orderedPhotos[0].focalX, focalY: orderedPhotos[0].focalY }
     : school.photoUrl
-      ? { url: school.photoUrl, alt: school.name }
+      ? { url: school.photoUrl, alt: school.name, focalX: 50, focalY: 50 }
       : null;
   const gcalUrl = dod
     ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
@@ -184,7 +184,7 @@ export default async function SchoolPage({
       {heroPhoto && (
         <div className="school-hero-photo">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={heroPhoto.url} alt={heroPhoto.alt} />
+          <img src={heroPhoto.url} alt={heroPhoto.alt} style={{ objectPosition: `${heroPhoto.focalX}% ${heroPhoto.focalY}%` }} />
         </div>
       )}
 

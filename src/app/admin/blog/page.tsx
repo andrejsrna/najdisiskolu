@@ -92,7 +92,12 @@ export default async function BlogPage({
         </div>
         <div>
           <label className={label}>Titulná fotografia</label>
-          <CoverImageUpload name="coverUrl" initial={editing?.coverUrl ?? ""} />
+          <CoverImageUpload
+              name="coverUrl"
+              initial={editing?.coverUrl ?? ""}
+              initialFocalX={editing?.coverFocalX ?? 50}
+              initialFocalY={editing?.coverFocalY ?? 50}
+            />
         </div>
         <div>
           <label className={label}>Fotogaléria</label>

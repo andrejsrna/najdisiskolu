@@ -5,10 +5,22 @@ import { uploadPostImages } from "@/lib/admin-actions";
 
 const ACCEPT = "image/jpeg,image/png,image/webp";
 
-export function CoverImageUpload({ name, initial }: { name: string; initial: string }) {
+export function CoverImageUpload({
+  name,
+  initial,
+  initialFocalX = 50,
+  initialFocalY = 50,
+}: {
+  name: string;
+  initial: string;
+  initialFocalX?: number;
+  initialFocalY?: number;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
   const hiddenRef = useRef<HTMLInputElement>(null);
   const [url, setUrl] = useState(initial);
+  const [focalX, setFocalX] = useState(initialFocalX);
+  const [focalY, setFocalY] = useState(initialFocalY);
   const [drag, setDrag] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,14 +53,9 @@ export function CoverImageUpload({ name, initial }: { name: string; initial: str
 
   return (
     <div className="space-y-3">
-      <input
-        ref={hiddenRef}
-        type="hidden"
-        name={name}
-        defaultValue={initial}
-        aria-hidden="true"
-        tabIndex={-1}
-      />
+      <input ref={hiddenRef} type="hidden" name={name} defaultValue={initial} aria-hidden="true" tabIndex={-1} />
+      <input type="hidden" name="coverFocalX" value={focalX} />
+      <input type="hidden" name="coverFocalY" value={focalY} />
 
       {url ? (
         <div className="flex items-start gap-3">
@@ -57,6 +64,7 @@ export function CoverImageUpload({ name, initial }: { name: string; initial: str
             src={url}
             alt="Titulná fotografia"
             className="h-24 w-40 shrink-0 rounded-lg border border-slate-200 object-cover"
+            style={{ objectPosition: `${focalX}% ${focalY}%` }}
           />
           <div className="flex flex-col gap-2">
             <span className="text-xs text-slate-500">Nahraná titulná fotografia</span>
@@ -112,6 +120,13 @@ export function CoverImageUpload({ name, initial }: { name: string; initial: str
           className="block w-full flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
         />
       </div>
+
+      {url && (
+        <div className="grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
+          <label>Výrez vodorovne ({focalX}%)<input className="mt-1 block w-full" type="range" min="0" max="100" value={focalX} onChange={(e) => setFocalX(Number(e.target.value))} /></label>
+          <label>Výrez zvisle ({focalY}%)<input className="mt-1 block w-full" type="range" min="0" max="100" value={focalY} onChange={(e) => setFocalY(Number(e.target.value))} /></label>
+        </div>
+      )}
 
       {error && <p className="text-sm text-red-600">{error}</p>}
     </div>

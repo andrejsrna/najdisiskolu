@@ -89,6 +89,8 @@ export default async function HomePage() {
     tags: s.tags.map((t) => ({ code: t.code, label: t.label })),
     badges: s.badges.map((b) => ({ label: b.label, kind: b.kind })),
     photoUrl: s.photos[0]?.url ?? s.photoUrl,
+    photoFocalX: s.photos[0]?.focalX ?? 50,
+    photoFocalY: s.photos[0]?.focalY ?? 50,
   }));
 
   const stories = reviews;

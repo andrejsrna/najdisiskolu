@@ -28,6 +28,8 @@ type School = {
   tags: { code: string; label: string }[];
   badges: { label: string; kind: string }[];
   photoUrl: string | null;
+  photoFocalX: number;
+  photoFocalY: number;
 };
 type Tag = { code: string; label: string };
 
@@ -403,7 +405,7 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                       <Link className="scard" href={`/skola/${s.slug}`} key={s.slug} aria-label={`Zobraziť detail školy: ${s.name}`}>
                         {s.photoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={s.photoUrl} alt="" className="img" style={{ height: 200, width: "100%", objectFit: "cover" }} />
+                          <img src={s.photoUrl} alt="" className="img" style={{ height: 200, width: "100%", objectFit: "cover", objectPosition: `${s.photoFocalX}% ${s.photoFocalY}%` }} />
                         ) : (
                           <div className="ph img">FOTO ŠKOLY</div>
                         )}

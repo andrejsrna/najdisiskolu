@@ -338,6 +338,21 @@ export async function deleteSchoolPhoto(schoolId: string, slug: string, photoId:
   revalidateSchool(slug);
 }
 
+export async function updateSchoolPhotoFocal(
+  schoolId: string,
+  slug: string,
+  photoId: string,
+  formData: FormData,
+) {
+  await assertCanEditSchool(schoolId);
+  const focal = (key: string) => Math.max(0, Math.min(100, Number(formData.get(key)) || 50));
+  await prisma.schoolPhoto.updateMany({
+    where: { id: photoId, schoolId },
+    data: { focalX: focal("focalX"), focalY: focal("focalY") },
+  });
+  revalidateSchool(slug);
+}
+
 export async function setSchoolPhotoCover(
   schoolId: string,
   slug: string,
