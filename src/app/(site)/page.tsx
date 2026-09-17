@@ -119,12 +119,13 @@ export default async function HomePage() {
       )}
 
       {/* TIMEBAR + ŠTATISTIKY */}
-      {timebarEnabled && (
-        <section className="band-ink">
+      <section className="band-ink">
+        {timebarEnabled && (
           <div className="timebar">
             <strong>{timebarTitle} <span className="hl">{timebarHighlight}</span></strong>
             {timebarLink ? <Link href={timebarLink}>{timebarLinkText}</Link> : <span>{timebarLinkText}</span>}
           </div>
+        )}
         <div className="creds">
           {creds.map((c) => (
             <div className="cred" key={c.t}>
@@ -134,8 +135,7 @@ export default async function HomePage() {
             </div>
           ))}
         </div>
-        </section>
-      )}
+      </section>
 
       {/* FILTER + RESULTS (klientsky interaktívny) */}
       <FilterExplorer schools={schoolData} tags={tagData} />

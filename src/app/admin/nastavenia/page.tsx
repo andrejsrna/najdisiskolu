@@ -77,7 +77,15 @@ export default async function NastaveniaPage() {
               Zobraziť informačný pruh
             </label>
             <div>
-              <label className={label}>Text</label>
+              <label className={label}>Úvod lišty</label>
+              <input name="timebarTitle" defaultValue={String(get("timebar.title", "⏱ Prihlášky na stredné školy:"))} className={input} />
+            </div>
+            <div>
+              <label className={label}>Zvýraznený termín (žltý)</label>
+              <input name="timebarHighlight" defaultValue={String(get("timebar.highlight", "do 20. februára"))} className={input} />
+            </div>
+            <div>
+              <label className={label}>Klikateľný text</label>
               <input name="timebarLinkText" defaultValue={String(get("timebar.linkText", "Chystáš sa na deň otvorených dverí? Pozri si všetky termíny."))} className={input} />
             </div>
             <div>

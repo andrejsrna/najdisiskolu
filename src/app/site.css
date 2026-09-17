@@ -204,9 +204,10 @@ font-size:23px
 background:var(--term);color:#fff;padding:14px 30px;font-size:14.5px;display:flex;gap:16px;
     align-items:center;flex-wrap:wrap
 }
-.site .timebar span {
-color:#fff
+.site .timebar span,.site .timebar a {
+ color:#fff
 }
+.site .timebar a { text-decoration:underline;text-underline-offset:3px }
 .site .timebar .hl {
  color:var(--acid)
 }
