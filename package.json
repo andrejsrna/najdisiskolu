@@ -20,7 +20,7 @@
     "bcryptjs": "^3.0.3",
     "embla-carousel-react": "^8.6.0",
     "next": "16.3.3",
-    "react": "19.2.8",
+    "react": "19.3.0",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1"
   },
