@@ -22,6 +22,9 @@ import {
   addDownload,
   deleteDownload,
   saveSimilarSchools,
+  addProject,
+  updateProject,
+  deleteProject,
 } from "@/lib/school-actions";
 
 const input =
@@ -57,6 +60,7 @@ export default async function SchoolEditPage({
       odbory: { orderBy: { sort: "asc" } },
       dods: true,
       downloads: { orderBy: { sort: "asc" } },
+      projects: { orderBy: { sort: "asc" } },
       badges: { orderBy: { createdAt: "desc" } },
       photos: { orderBy: { sort: "asc" } },
       similarTo: { orderBy: { name: "asc" } },
@@ -309,6 +313,52 @@ export default async function SchoolEditPage({
             <input name="supportTeam" defaultValue={school.supportTeam.join(", ")} placeholder="školský psychológ, kariérny poradca" className={input} />
           </div>
 
+          <div className="sm:col-span-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <h3 className="mb-3 text-sm font-semibold text-slate-900">Obsah verejného profilu</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className={label}>Prečo práve sem (jeden dôvod na riadok)</label>
+                <textarea name="whyUs" defaultValue={school.whyUs.join("\n")} rows={4} className={input} placeholder={"Moderné odborné učebne\nIndividuálny prístup"} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={label}>Partnerstvá a spolupráce</label>
+                <textarea name="partners" defaultValue={school.partners ?? ""} rows={3} className={input} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={label}>Priestory a vybavenie (popis)</label>
+                <textarea name="modernization" defaultValue={school.modernization ?? ""} rows={3} className={input} />
+              </div>
+              <div>
+                <label className={label}>Športoviská (čiarkou)</label>
+                <input name="sports" defaultValue={school.sports.join(", ")} className={input} placeholder="telocvičňa, ihrisko" />
+              </div>
+              <div>
+                <label className={label}>Stravovanie (čiarkou)</label>
+                <input name="canteenOptions" defaultValue={school.canteenOptions.join(", ")} className={input} placeholder="školská jedáleň, bufet" />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={label}>Čo po škole?</label>
+                <textarea name="graduates" defaultValue={school.graduates ?? ""} rows={3} className={input} placeholder="Kde sa absolventi uplatnia alebo pokračujú v štúdiu." />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={label}>Úspechy absolventov (nepovinné)</label>
+                <textarea name="achievements" defaultValue={school.achievements ?? ""} rows={2} className={input} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={label}>Praktické vyučovanie / duál (nepovinné)</label>
+                <textarea name="practice" defaultValue={school.practice ?? ""} rows={2} className={input} />
+              </div>
+              <div>
+                <label className={label}>Kurzy a certifikáty (čiarkou)</label>
+                <input name="certificates" defaultValue={school.certificates.join(", ")} className={input} />
+              </div>
+              <div>
+                <label className={label}>Krúžky (čiarkou)</label>
+                <input name="clubs" defaultValue={school.clubs.join(", ")} className={input} />
+              </div>
+            </div>
+          </div>
+
           <div className="sm:col-span-2">
             <button
               type="submit"
@@ -442,6 +492,46 @@ export default async function SchoolEditPage({
           >
             Pridať odbor
           </button>
+        </form>
+      </section>
+
+      {/* ============ PROJEKTY ŠKOLY ============ */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <h2 className="mb-1 text-sm font-semibold text-slate-900">Projekty školy</h2>
+        <p className="mb-4 text-xs text-slate-500">Tieto projekty sa zobrazujú na verejnom profile školy.</p>
+        <div className="space-y-3">
+          {school.projects.map((project) => (
+            <form key={project.id} action={updateProject.bind(null, school.id, school.slug, project.id)} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label className={label}>Názov projektu</label>
+                  <input name="title" defaultValue={project.title} className={input} />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className={label}>Popis</label>
+                  <textarea name="description" defaultValue={project.description} rows={3} className={input} />
+                </div>
+              </div>
+              <div className="mt-3 flex gap-2">
+                <button className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">Uložiť</button>
+                <button formAction={deleteProject.bind(null, school.id, school.slug, project.id)} className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50">Zmazať</button>
+              </div>
+            </form>
+          ))}
+        </div>
+        <form action={addProject.bind(null, school.id, school.slug)} className="mt-4 rounded-lg border border-dashed border-slate-300 p-4">
+          <div className="mb-3 text-sm font-medium text-slate-700">Pridať projekt</div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className={label}>Názov projektu</label>
+              <input name="title" className={input} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className={label}>Popis</label>
+              <textarea name="description" rows={3} className={input} />
+            </div>
+          </div>
+          <button className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Pridať projekt</button>
         </form>
       </section>
 

@@ -98,6 +98,11 @@ export async function updateSchoolBasic(
       languages: languageCodes,
       foreignLanguages: csv("foreignLanguages"),
       supportTeam: csv("supportTeam"),
+      whyUs: String(formData.get("whyUs") ?? "").split("\n").map((s) => s.trim()).filter(Boolean),
+      certificates: csv("certificates"),
+      clubs: csv("clubs"),
+      sports: csv("sports"),
+      canteenOptions: csv("canteenOptions"),
       websites: String(formData.get("websites") ?? "")
         .split(/[\n,]/)
         .map((s) => s.trim().replace(/^https?:\/\//, "").replace(/\/$/, ""))
@@ -118,6 +123,11 @@ export async function updateSchoolBasic(
       inekoSkOf: str(formData.get("inekoSkOf")),
       totalStudents: str(formData.get("totalStudents")),
       intro: str(formData.get("intro")),
+      partners: str(formData.get("partners")),
+      modernization: str(formData.get("modernization")),
+      graduates: str(formData.get("graduates")),
+      achievements: str(formData.get("achievements")),
+      practice: str(formData.get("practice")),
       accessibility: str(formData.get("accessibility")),
       internatType: str(formData.get("internatType")),
       internatInfo: str(formData.get("internatInfo")),
@@ -240,6 +250,33 @@ export async function deleteDownload(
 ) {
   await assertCanEditSchool(schoolId);
   await prisma.download.delete({ where: { id: downloadId } });
+  revalidateSchool(slug);
+}
+
+/* ================= PROJEKTY ŠKOLY ================= */
+
+export async function addProject(schoolId: string, slug: string, formData: FormData) {
+  await assertCanEditSchool(schoolId);
+  const title = str(formData.get("title"));
+  const description = str(formData.get("description"));
+  if (!title || !description) return;
+  const sort = (await prisma.project.count({ where: { schoolId } })) + 1;
+  await prisma.project.create({ data: { schoolId, title, description, sort } });
+  revalidateSchool(slug);
+}
+
+export async function updateProject(schoolId: string, slug: string, projectId: string, formData: FormData) {
+  await assertCanEditSchool(schoolId);
+  const title = str(formData.get("title"));
+  const description = str(formData.get("description"));
+  if (!title || !description) return;
+  await prisma.project.updateMany({ where: { id: projectId, schoolId }, data: { title, description } });
+  revalidateSchool(slug);
+}
+
+export async function deleteProject(schoolId: string, slug: string, projectId: string) {
+  await assertCanEditSchool(schoolId);
+  await prisma.project.deleteMany({ where: { id: projectId, schoolId } });
   revalidateSchool(slug);
 }
 

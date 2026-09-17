@@ -400,10 +400,10 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                     const ineko = s.inekoKrajRank ? `${s.inekoKrajRank}. ${s.inekoKrajOf ?? "zo všetkých"}` : null;
 
                     return (
-                      <div className="scard" key={s.slug}>
+                      <Link className="scard" href={`/skola/${s.slug}`} key={s.slug} aria-label={`Zobraziť detail školy: ${s.name}`}>
                         {s.photoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={s.photoUrl} alt={s.name} className="img" style={{ height: 200, width: "100%", objectFit: "cover" }} />
+                          <img src={s.photoUrl} alt="" className="img" style={{ height: 200, width: "100%", objectFit: "cover" }} />
                         ) : (
                           <div className="ph img">FOTO ŠKOLY</div>
                         )}
@@ -437,10 +437,10 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                             </div>
                           )}
                           <div className="foot">
-                            <Link className="btn sm" href={`/skola/${s.slug}`}>Detail školy</Link>
+                            <span className="btn sm">Detail školy</span>
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     );
                   })}
                 </div>

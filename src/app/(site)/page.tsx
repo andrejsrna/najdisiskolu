@@ -51,6 +51,10 @@ export default async function HomePage() {
   const heroMediaType = get("hero.mediaType", "video") === "image" ? "image" : "video";
   const heroMediaUrl = String(get("hero.mediaUrl", "") || "");
   const heroPosterUrl = String(get("hero.posterUrl", "") || "");
+  const noticeEnabled = Boolean(get("notice.enabled", false));
+  const noticeText = String(get("notice.text", "") || "");
+  const rawNoticeLink = String(get("notice.link", "") || "");
+  const noticeLink = rawNoticeLink.startsWith("/") || /^https?:\/\//i.test(rawNoticeLink) ? rawNoticeLink : "";
 
   const creds = [
     { n: String(get("cred.schools", schools.length)), t: "župných stredných škôl", icon: "credIcon1" as const, iconClass: "ico-wide" },
@@ -108,6 +112,22 @@ export default async function HomePage() {
             <a className="btn solid" style={{ padding: "12px 26px", fontSize: "15.5px" }} href={heroLink || "#filter"}>
               Vyber si školu
             </a>
+          </div>
+        </section>
+      )}
+
+      {noticeEnabled && noticeText && (
+        <section className="noticebar" aria-label="Dôležitá informácia">
+          <div className="wrap">
+            {noticeLink ? (
+              noticeLink.startsWith("/") ? (
+                <Link href={noticeLink}>{noticeText} <span aria-hidden="true">→</span></Link>
+              ) : (
+                <a href={noticeLink} target="_blank" rel="noopener noreferrer">{noticeText} <span aria-hidden="true">→</span></a>
+              )
+            ) : (
+              <span>{noticeText}</span>
+            )}
           </div>
         </section>
       )}

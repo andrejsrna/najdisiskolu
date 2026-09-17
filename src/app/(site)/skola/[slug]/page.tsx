@@ -189,7 +189,7 @@ export default async function SchoolPage({
       )}
 
       <div className="wrap dcols">
-        <Illustration name="detailShoe" />
+        {!(inekoK || inekoS) && <Illustration name="detailShoe" />}
         {/* HLAVNÝ STĹPEC */}
         <div>
           <div className="p-head">
