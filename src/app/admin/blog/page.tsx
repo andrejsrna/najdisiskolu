@@ -4,7 +4,6 @@ import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
 import { savePost, deletePost } from "@/lib/admin-actions";
 import RichTextEditor from "@/components/RichTextEditor";
-import { BlogGalleryUpload } from "./BlogGalleryUpload";
 import { CoverImageUpload } from "./CoverImageUpload";
 
 const input =
@@ -23,7 +22,7 @@ export default async function BlogPage({
 
   const { edit } = await searchParams;
   const editing = edit
-    ? await prisma.post.findUnique({ where: { id: edit }, include: { images: { orderBy: { sort: "asc" } } } })
+    ? await prisma.post.findUnique({ where: { id: edit } })
     : null;
 
   const posts = await prisma.post.findMany({
@@ -98,15 +97,6 @@ export default async function BlogPage({
               initialFocalX={editing?.coverFocalX ?? 50}
               initialFocalY={editing?.coverFocalY ?? 50}
             />
-        </div>
-        <div>
-          <label className={label}>Fotogaléria</label>
-          <BlogGalleryUpload initial={editing?.images ?? []} />
-          <p className="mt-1 text-xs text-slate-500">Pretiahni fotky na nahratie, poradie určuješ pretiahnutím v mriežke.</p>
-        </div>
-        <div>
-          <label className={label}>Popis galérie</label>
-          <input name="galleryCaption" defaultValue={editing?.galleryCaption ?? ""} className={input} />
         </div>
         <label className="flex items-center gap-2 text-sm text-slate-700">
           <input

@@ -9,7 +9,7 @@ export const DEMO_NEWS = [
     "boxTitle": null,
     "boxBody": null,
     "coverKey": "news/menstruacia/cover.jpg",
-    "coverUrl": "https://trnava-vuc.sk/wp-content/uploads/Starterpack-pre-tvoje-dni.jpg",
+    "coverUrl": "https://s3.trnavavuc.sk/ttsk-media/news/covers/menstruacia-original.jpg",
     "galleryCaption": "Z tlačovej besedy k pokračovaniu Iniciatívy za dôstojnú menštruáciu.",
     "gallery": [
       {
@@ -38,7 +38,7 @@ export const DEMO_NEWS = [
     "boxTitle": "Kde nájdeš pomoc",
     "boxBody": "<p>E-mailová poradňa: <a href=\"mailto:smetu@ipcko.sk\">smetu@ipcko.sk</a></p><p>Chatová poradňa: <a href=\"https://trnava-vuc.sk/spolu-tvorime-kraj/potrebujem-pomoc/\">potrebujempomoc.sk</a></p><p>Nonstop krízová linka: <b>0800 500 333</b></p>",
     "coverKey": "news/poradna/cover.jpg",
-    "coverUrl": "https://trnava-vuc.sk/wp-content/uploads/ipecko-banner.jpg",
+    "coverUrl": "https://s3.trnavavuc.sk/ttsk-media/news/covers/poradna-original.jpg",
     "galleryCaption": "Z podpisu spolupráce s IPčkom a z priestorov krízovej služby Káčko v Trnave.",
     "gallery": [
       {
@@ -67,7 +67,7 @@ export const DEMO_NEWS = [
     "boxTitle": "Kde TalentCentrum nájdeš",
     "boxBody": "<p>SOŠ elektrotechnická, Sibírska 1, Trnava</p><p>Viac o aktivitách: <a href=\"https://talentcentrumtrnava.sk\">talentcentrumtrnava.sk</a></p>",
     "coverKey": "news/talentcentrum/cover.jpg",
-    "coverUrl": "https://trnava-vuc.sk/wp-content/uploads/2022/10/ttsk-trnavska-zupa-otvorila-unikatne-talentcentrum-pre-ziakov-zakladnych-skol-pomoze-im-pri-vybere-strednej-skoly.jpg",
+    "coverUrl": "https://s3.trnavavuc.sk/ttsk-media/news/covers/talentcentrum-original.jpg",
     "galleryCaption": "Zo skupinového programu v TalentCentre na SOŠ elektrotechnickej v Trnave.",
     "gallery": [
       {
