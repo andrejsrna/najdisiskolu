@@ -51,10 +51,12 @@ export default async function HomePage() {
   const heroMediaType = get("hero.mediaType", "video") === "image" ? "image" : "video";
   const heroMediaUrl = String(get("hero.mediaUrl", "") || "");
   const heroPosterUrl = String(get("hero.posterUrl", "") || "");
-  const noticeEnabled = Boolean(get("notice.enabled", false));
-  const noticeText = String(get("notice.text", "") || "");
-  const rawNoticeLink = String(get("notice.link", "") || "");
-  const noticeLink = rawNoticeLink.startsWith("/") || /^https?:\/\//i.test(rawNoticeLink) ? rawNoticeLink : "";
+    const timebarEnabled = Boolean(get("timebar.enabled", true));
+    const timebarTitle = String(get("timebar.title", "⏱ Prihlášky na stredné školy:") || "");
+    const timebarHighlight = String(get("timebar.highlight", `do 20. februára ${deadlineYear()}`) || "");
+    const timebarLinkText = String(get("timebar.linkText", "Teraz je čas chodiť na dni otvorených dverí →") || "");
+    const rawTimebarLink = String(get("timebar.linkHref", "/veltrhy") || "");
+    const timebarLink = rawTimebarLink.startsWith("/") || /^https:\/\//.test(rawTimebarLink) ? rawTimebarLink : "";
 
   const creds = [
     { n: String(get("cred.schools", schools.length)), t: "župných stredných škôl", icon: "credIcon1" as const, iconClass: "ico-wide" },
@@ -116,28 +118,13 @@ export default async function HomePage() {
         </section>
       )}
 
-      {noticeEnabled && noticeText && (
-        <section className="noticebar" aria-label="Dôležitá informácia">
-          <div className="wrap">
-            {noticeLink ? (
-              noticeLink.startsWith("/") ? (
-                <Link href={noticeLink}>{noticeText} <span aria-hidden="true">→</span></Link>
-              ) : (
-                <a href={noticeLink} target="_blank" rel="noopener noreferrer">{noticeText} <span aria-hidden="true">→</span></a>
-              )
-            ) : (
-              <span>{noticeText}</span>
-            )}
-          </div>
-        </section>
-      )}
-
       {/* TIMEBAR + ŠTATISTIKY */}
-      <section className="band-ink">
-        <div className="timebar">
-          <strong>⏱ Prihlášky na stredné školy: <span className="hl">do 20. februára {deadlineYear()}</span></strong>
-          <span>Teraz je čas chodiť na dni otvorených dverí →</span>
-        </div>
+      {timebarEnabled && (
+        <section className="band-ink">
+          <div className="timebar">
+            <strong>{timebarTitle} <span className="hl">{timebarHighlight}</span></strong>
+            {timebarLink ? <Link href={timebarLink}>{timebarLinkText}</Link> : <span>{timebarLinkText}</span>}
+          </div>
         <div className="creds">
           {creds.map((c) => (
             <div className="cred" key={c.t}>
@@ -147,7 +134,8 @@ export default async function HomePage() {
             </div>
           ))}
         </div>
-      </section>
+        </section>
+      )}
 
       {/* FILTER + RESULTS (klientsky interaktívny) */}
       <FilterExplorer schools={schoolData} tags={tagData} />

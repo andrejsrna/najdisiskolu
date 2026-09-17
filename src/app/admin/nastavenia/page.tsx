@@ -70,19 +70,19 @@ export default async function NastaveniaPage() {
         </div>
 
         <div>
-          <div className="mb-2 text-sm font-semibold text-slate-900">Informačný pruh pod hero</div>
+          <div className="mb-2 text-sm font-semibold text-slate-900">Lišta pod hero</div>
           <div className="space-y-3">
             <label className="flex items-center gap-2 text-sm text-slate-700">
-              <input type="checkbox" name="noticeEnabled" defaultChecked={Boolean(get("notice.enabled", false))} className="h-4 w-4 rounded border-slate-300" />
+              <input type="checkbox" name="timebarEnabled" defaultChecked={Boolean(get("timebar.enabled", true))} className="h-4 w-4 rounded border-slate-300" />
               Zobraziť informačný pruh
             </label>
             <div>
               <label className={label}>Text</label>
-              <input name="noticeText" defaultValue={String(get("notice.text", "Chystáš sa na deň otvorených dverí? Pozri si všetky termíny."))} className={input} />
+              <input name="timebarLinkText" defaultValue={String(get("timebar.linkText", "Chystáš sa na deň otvorených dverí? Pozri si všetky termíny."))} className={input} />
             </div>
             <div>
               <label className={label}>Aktívny odkaz</label>
-              <input name="noticeLink" defaultValue={String(get("notice.link", "/veltrhy"))} placeholder="/veltrhy alebo https://…" className={input} />
+              <input name="timebarLinkHref" defaultValue={String(get("timebar.linkHref", "/veltrhy"))} placeholder="/veltrhy alebo https://…" className={input} />
             </div>
           </div>
         </div>

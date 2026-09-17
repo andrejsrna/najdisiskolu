@@ -322,9 +322,11 @@ export async function saveSettings(formData: FormData) {
   await upsert("hero.hidden", heroHidden);
   await upsert("hero.mediaType", heroMediaType);
   await upsert("hero.mediaUrl", str(formData.get("heroMediaUrl")) ?? "");
-  await upsert("notice.enabled", formData.has("noticeEnabled"));
-  await upsert("notice.text", str(formData.get("noticeText")) ?? "");
-  await upsert("notice.link", str(formData.get("noticeLink")) ?? "");
+  await upsert("timebar.enabled", formData.has("timebarEnabled"));
+  await upsert("timebar.title", str(formData.get("timebarTitle")) ?? "");
+  await upsert("timebar.highlight", str(formData.get("timebarHighlight")) ?? "");
+  await upsert("timebar.linkText", str(formData.get("timebarLinkText")) ?? "");
+  await upsert("timebar.linkHref", str(formData.get("timebarLinkHref")) ?? "");
   await upsert("cred.schools", num(formData.get("credSchools")) ?? 0);
   await upsert("cred.programs", num(formData.get("credPrograms")) ?? 0);
   await upsert("cred.places", num(formData.get("credPlaces")) ?? 0);
