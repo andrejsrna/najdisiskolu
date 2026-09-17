@@ -91,6 +91,14 @@ export default async function SchoolEditPage({
         <p className="text-sm text-slate-500">
           {school.city} · okres {school.district}
         </p>
+        <a
+          href={`/skola/${school.slug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-900 bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
+        >
+          Zobraziť školu na stránke ↗
+        </a>
       </div>
 
       {/* ============ ZÁKLADNÉ ÚDAJE ============ */}
