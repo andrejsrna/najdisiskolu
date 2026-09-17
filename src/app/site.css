@@ -207,7 +207,7 @@ background:var(--term);color:#fff;padding:14px 30px;font-size:14.5px;display:fle
 .site .timebar span,.site .timebar a {
  color:#fff
 }
-.site .timebar a { text-decoration:underline;text-underline-offset:3px }
+.site .timebar a { text-decoration:none }
 .site .timebar .hl {
  color:var(--acid)
 }

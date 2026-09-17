@@ -123,7 +123,7 @@ export default async function HomePage() {
         {timebarEnabled && (
           <div className="timebar">
             <strong>{timebarTitle} <span className="hl">{timebarHighlight}</span></strong>
-            {timebarLink ? <Link href={timebarLink}>{timebarLinkText}</Link> : <span>{timebarLinkText}</span>}
+            {timebarLink ? <Link href={timebarLink}>{timebarLinkText} <span aria-hidden="true">→</span></Link> : <span>{timebarLinkText}</span>}
           </div>
         )}
         <div className="creds">
