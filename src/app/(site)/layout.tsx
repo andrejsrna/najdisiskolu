@@ -2,10 +2,12 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { TTSK_HEADER_LOGO, TTSK_EMBLEM } from "@/lib/ttsk";
 import { Illustration } from "@/lib/illustrations";
+import { ScrollToTop } from "./ScrollToTop";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
     <div className="site">
+      <ScrollToTop />
       <nav className="nav">
         <Link href="/" className="logo" aria-label="Trnavský samosprávny kraj — Vyber si strednú">
           <span dangerouslySetInnerHTML={{ __html: TTSK_HEADER_LOGO }} />

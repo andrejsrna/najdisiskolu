@@ -30,9 +30,6 @@
 .site, .site * {
 box-sizing:border-box
 }
-html {
-scroll-behavior:smooth
-}
 .site {
 margin:0;background:var(--page);color:var(--ink);
     font-family:var(--ff);font-size:16px;line-height:1.6;font-weight:400;
