@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
-import { saveSettings } from "@/lib/admin-actions";
 import { HeroMediaUpload } from "./HeroMediaUpload";
+import { SettingsForm } from "./SettingsForm";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
@@ -24,10 +24,7 @@ export default async function NastaveniaPage() {
         <p className="text-sm text-slate-500">Hero sekcia a štatistiky na homepage.</p>
       </div>
 
-      <form
-        action={saveSettings}
-        className="space-y-5 rounded-xl border border-slate-200 bg-white p-5"
-      >
+      <SettingsForm>
         <div>
           <div className="mb-2 text-sm font-semibold text-slate-900">Hero (úvodná sekcia)</div>
           <div className="space-y-3">
@@ -119,10 +116,7 @@ export default async function NastaveniaPage() {
           </div>
         </div>
 
-        <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
-          Uložiť nastavenia
-        </button>
-      </form>
+      </SettingsForm>
     </div>
   );
 }
