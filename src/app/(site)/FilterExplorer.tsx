@@ -81,6 +81,7 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
   const [odbCat, setOdbCat] = useState("");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<"abc" | "odbor">("abc");
+  const [searched, setSearched] = useState(false);
 
   const toggle = (list: string[], v: string, set: (x: string[]) => void) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -145,7 +146,7 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
   const clearAll = () => {
     setZam([]); setOkres([]); setUk([]); setJaz([]);
     setPrak({ internat: false, strava: false, dual: false });
-    setOdbCat(""); setQ("");
+    setOdbCat(""); setQ(""); setSearched(false);
   };
 
   const chip = (on: boolean, onClick: () => void, label: string, cnt?: number, radio = false) => (
@@ -328,7 +329,10 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
             <button
               className="btn solid"
               style={{ padding: "14px 30px", fontSize: "15.5px" }}
-              onClick={() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => {
+                setSearched(true);
+                document.getElementById("results")?.scrollIntoView({ behavior: "smooth" });
+              }}
             >
               Vyhľadať školu <b style={{ marginLeft: 6 }}>({filtered.length})</b>
             </button>
@@ -340,7 +344,7 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
       </section>
 
       {/* ===================== RESULTS ===================== */}
-      {activeCount > 0 && (
+      {(searched || activeCount > 0) && (
       <section className="band-grey">
         <div className="wrap">
           <div className="results" id="results">
