@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import SafeRichText from "@/components/SafeRichText";
 import { BlockIllustration } from "@/lib/illustrations";
 import { prisma } from "@/lib/prisma";
+import ArticleGallery from "./ArticleGallery";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,7 @@ const fmtDate = (date: Date) => date.toLocaleDateString("sk-SK", { day: "numeric
 async function getPost(slug: string) {
   return prisma.post.findFirst({
     where: { slug, type: "NEWS", published: true },
+    include: { images: { orderBy: { sort: "asc" } } },
   });
 }
 
@@ -74,6 +76,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
             ) : null}
           </div>
         )}
+        <ArticleGallery images={post.images} caption={post.galleryCaption} />
         {more.length > 0 && (
           <>
             <BlockIllustration name="handRule" />

@@ -162,36 +162,49 @@ async function migrateDemoNews() {
   await prisma.post.deleteMany({ where: { type: "NEWS", title: placeholderTitle } });
 
   for (const article of DEMO_NEWS) {
-    const bodyWithImages = `${article.body}${article.gallery.map((image) => `<p><img src="${imageBase}/${image.key}" alt="${image.alt}" /></p>`).join("")}`;
-    const post = await prisma.post.upsert({
+    await prisma.post.upsert({
       where: { slug: article.slug },
       update: {
         type: "NEWS",
         title: article.title,
         excerpt: article.excerpt,
-        body: bodyWithImages,
+        body: article.body,
         boxTitle: article.boxTitle ?? null,
         boxBody: article.boxBody ?? null,
         coverUrl: article.coverUrl,
         galleryCaption: article.galleryCaption,
         published: true,
         publishedAt: new Date(`${article.publishedAt}T00:00:00`),
+        images: {
+          deleteMany: {},
+          create: article.gallery.map((image) => ({
+            url: `${imageBase}/${image.key}`,
+            alt: image.alt,
+            sort: image.sort,
+          })),
+        },
       },
       create: {
         type: "NEWS",
         slug: article.slug,
         title: article.title,
         excerpt: article.excerpt,
-        body: bodyWithImages,
+        body: article.body,
         boxTitle: article.boxTitle ?? null,
         boxBody: article.boxBody ?? null,
         coverUrl: article.coverUrl,
         galleryCaption: article.galleryCaption,
         published: true,
         publishedAt: new Date(`${article.publishedAt}T00:00:00`),
+        images: {
+          create: article.gallery.map((image) => ({
+            url: `${imageBase}/${image.key}`,
+            alt: image.alt,
+            sort: image.sort,
+          })),
+        },
       },
     });
-    await prisma.postImage.deleteMany({ where: { postId: post.id } });
   }
   console.log(`✓ články z demo HTML: ${DEMO_NEWS.length} aktualizované`);
 }

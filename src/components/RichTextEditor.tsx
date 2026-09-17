@@ -1,10 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
-import { uploadPostImages } from "@/lib/admin-actions";
 
 const btn =
   "rounded-md border border-transparent px-2 py-1 text-sm leading-none text-slate-700 hover:bg-slate-100 enabled:hover:border-slate-200";
@@ -43,11 +41,9 @@ export default function RichTextEditor({
   defaultValue?: string;
 }) {
   const hiddenRef = useRef<HTMLTextAreaElement>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
 
   const editor = useEditor({
-    extensions: [StarterKit, Image.configure({ allowBase64: false })],
+    extensions: [StarterKit],
     content: defaultValue ?? "",
     immediatelyRender: false,
     editorProps: {
@@ -71,20 +67,6 @@ export default function RichTextEditor({
   });
 
   if (!editor) return null;
-
-  const insertImage = async (file: File | undefined) => {
-    if (!file || uploadingImage) return;
-    setUploadingImage(true);
-    try {
-      const data = new FormData();
-      data.append("files", file);
-      const [url] = await uploadPostImages(data);
-      if (url) editor.chain().focus().setImage({ src: url, alt: "" }).run();
-    } finally {
-      if (imageInputRef.current) imageInputRef.current.value = "";
-      setUploadingImage(false);
-    }
-  };
 
   return (
     <div className="overflow-hidden rounded-lg border border-slate-300 bg-white">
@@ -152,10 +134,6 @@ export default function RichTextEditor({
           onToggle={() => editor.chain().focus().toggleCodeBlock().run()}
         />
         <span className="mx-1 h-4 w-px bg-slate-300" />
-        <button type="button" disabled={uploadingImage} onClick={() => imageInputRef.current?.click()} className={btn}>
-          {uploadingImage ? "Nahrávam…" : "▧ Obrázok"}
-        </button>
-        <span className="mx-1 h-4 w-px bg-slate-300" />
         <TBtn
           label="↺"
           title="Späť"
@@ -171,7 +149,6 @@ export default function RichTextEditor({
       </div>
 
       <EditorContent editor={editor} />
-      <input ref={imageInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => void insertImage(e.target.files?.[0])} />
 
       <textarea
         ref={hiddenRef}
