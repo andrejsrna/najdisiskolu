@@ -261,7 +261,7 @@ export default async function SchoolPage({
                     <tr>
                       <th>Odbor</th>
                       <th>Prijíma</th>
-                      <th>Vlani prihlásených</th>
+                      <th>Uchádzačov vlani</th>
                       <th>Dĺžka</th>
                       <th>Ukončenie</th>
                     </tr>

@@ -415,7 +415,7 @@ export default async function SchoolEditPage({
                   <input name="appliedLastYear" type="number" defaultValue={o.appliedLastYear ?? ""} className={input} />
                 </div>
                 <div>
-                  <label className={label}>Počet miest</label>
+                  <label className={label}>Počet miest vlani</label>
                   <input name="places" type="number" defaultValue={o.places ?? ""} className={input} />
                 </div>
                 <div className="col-span-2 sm:col-span-4">
@@ -478,7 +478,7 @@ export default async function SchoolEditPage({
               <input name="appliedLastYear" type="number" className={input} />
             </div>
             <div>
-              <label className={label}>Počet miest</label>
+              <label className={label}>Počet miest vlani</label>
               <input name="places" type="number" className={input} />
             </div>
             <div className="col-span-2">
