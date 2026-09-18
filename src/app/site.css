@@ -737,7 +737,7 @@ display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;ba
 background:var(--ink3);border-color:var(--ink)
 }
 .site .num {
-background:var(--ink);padding:22px 14px;text-align:center
+background:var(--ink);padding:22px 14px;text-align:center;display:flex;flex-direction:column;justify-content:center
 }
 .site .num .n {
 font-size:39px;font-weight:800;letter-spacing:-.026em;line-height:1;color:var(--acid)
