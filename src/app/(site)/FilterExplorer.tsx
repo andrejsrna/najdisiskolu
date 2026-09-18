@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Illustration } from "@/lib/illustrations";
 
@@ -85,17 +85,36 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
   const [sort, setSort] = useState<"abc" | "odbor">("abc");
   const [searched, setSearched] = useState(false);
 
-  useEffect(() => {
-    if (!new URLSearchParams(window.location.search).has("restoreFilters")) return;
+  /* Obnova uloženého stavu filtrov (breadcrumb ?restoreFilters=1, tvrdé back/forward
+     načítanie dokumentu, aj SPA popstate v prehliadači). */
+  const restoreSaved = useCallback(() => {
+    let saved: Record<string, unknown> = {};
     try {
-      const saved = JSON.parse(sessionStorage.getItem("school-filter-state") ?? "{}");
-      requestAnimationFrame(() => {
-        setTab(saved.tab ?? "zam"); setZam(saved.zam ?? []); setOkres(saved.okres ?? []); setUk(saved.uk ?? []); setJaz(saved.jaz ?? []);
-        setPrak(saved.prak ?? { internat: false, strava: false, dual: false }); setOdbCat(saved.odbCat ?? ""); setQ(saved.q ?? ""); setSort(saved.sort ?? "abc"); setSearched(true);
-        requestAnimationFrame(() => document.getElementById("results")?.scrollIntoView({ behavior: "auto" }));
-      });
-    } catch { /* stale/invalid local storage is ignored */ }
+      saved = JSON.parse(sessionStorage.getItem("school-filter-state") ?? "{}");
+    } catch { /* stale/invalid storage is ignored */ }
+    if (!("tab" in saved)) return;
+    requestAnimationFrame(() => {
+      setTab(String(saved.tab ?? "zam") as "zam" | "odb" | "sko"); setZam((saved.zam as string[]) ?? []); setOkres((saved.okres as string[]) ?? []); setUk((saved.uk as string[]) ?? []); setJaz((saved.jaz as string[]) ?? []);
+      setPrak((saved.prak as { internat: boolean; strava: boolean; dual: boolean }) ?? { internat: false, strava: false, dual: false }); setOdbCat(String(saved.odbCat ?? "")); setQ(String(saved.q ?? "")); setSort(String(saved.sort ?? "abc") as "abc" | "odbor"); setSearched(true);
+      requestAnimationFrame(() => document.getElementById("results")?.scrollIntoView({ behavior: "auto" }));
+    });
   }, []);
+
+  useEffect(() => {
+    const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    const isBackForward = nav?.type === "back_forward";
+    if (new URLSearchParams(window.location.search).has("restoreFilters") || isBackForward) restoreSaved();
+  }, [restoreSaved]);
+
+  /* Klient-side „späť" v prehliadači: popstate bez nového načítania dokumentu. */
+  useEffect(() => {
+    const onPop = () => {
+      if (window.location.pathname !== "/") return;
+      restoreSaved();
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [restoreSaved]);
 
   const saveFilterReturn = () => sessionStorage.setItem("school-filter-state", JSON.stringify({ tab, zam, okres, uk, jaz, prak, odbCat, q, sort }));
 
