@@ -67,10 +67,13 @@ export async function generateMetadata({
 
 export default async function SchoolPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { slug } = await params;
+  const { from } = await searchParams;
   const school = await prisma.school.findUnique({
     where: { slug },
     include: {
@@ -175,7 +178,7 @@ export default async function SchoolPage({
       />
       <div className="wrap">
         <div className="crumb">
-          <Link href="/" style={{ textDecoration: "none" }}>
+          <Link href={from === "filter" ? "/?restoreFilters=1#results" : "/"} style={{ textDecoration: "none" }}>
             ← Späť na výber školy
           </Link>
           <span aria-hidden="true">&nbsp; · &nbsp;</span>

@@ -35,6 +35,7 @@ export function PhotoReorder({
   const [overId, setOverId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [focal, setFocal] = useState(() => Object.fromEntries(photos.map((photo) => [photo.id, { x: photo.focalX, y: photo.focalY }])));
 
   const move = (id: string, dir: -1 | 1) => {
     setSaved(false);
@@ -93,15 +94,15 @@ export function PhotoReorder({
           >
             <span className="select-none text-xs text-slate-400">{index + 1}.</span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo.url} alt={photo.alt ?? schoolName} className="h-16 w-24 flex-none rounded object-cover" />
+            <img src={photo.url} alt={photo.alt ?? schoolName} className="h-16 w-24 flex-none rounded object-cover" style={{ objectPosition: `${focal[photo.id]?.x ?? photo.focalX}% ${focal[photo.id]?.y ?? photo.focalY}%` }} />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap gap-1 text-xs">
                 {photo.isDetailCover && <span className="rounded-full bg-slate-900 px-2 py-0.5 text-white">Titulná detailu</span>}
                 {photo.isListCover && <span className="rounded-full bg-slate-900 px-2 py-0.5 text-white">Titulná zoznamu</span>}
               </div>
               <form action={updateSchoolPhotoFocal.bind(null, schoolId, slug, photo.id)} className="mt-2 grid grid-cols-2 gap-1 text-[11px] text-slate-600">
-                <label>Vodorovne<input name="focalX" type="range" min="0" max="100" defaultValue={photo.focalX} className="block w-full" /></label>
-                <label>Zvisle<input name="focalY" type="range" min="0" max="100" defaultValue={photo.focalY} className="block w-full" /></label>
+                <label>Vodorovne<input name="focalX" type="range" min="0" max="100" value={focal[photo.id]?.x ?? photo.focalX} onChange={(e) => setFocal((current) => ({ ...current, [photo.id]: { x: Number(e.target.value), y: current[photo.id]?.y ?? photo.focalY } }))} className="block w-full" /></label>
+                <label>Zvisle<input name="focalY" type="range" min="0" max="100" value={focal[photo.id]?.y ?? photo.focalY} onChange={(e) => setFocal((current) => ({ ...current, [photo.id]: { x: current[photo.id]?.x ?? photo.focalX, y: Number(e.target.value) } }))} className="block w-full" /></label>
                 <button type="submit" className="col-span-2 rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Uložiť výrez</button>
               </form>
               <div className="mt-1 flex flex-wrap items-center gap-1">

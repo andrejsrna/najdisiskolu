@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Illustration } from "@/lib/illustrations";
 
@@ -84,6 +84,20 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<"abc" | "odbor">("abc");
   const [searched, setSearched] = useState(false);
+
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has("restoreFilters")) return;
+    try {
+      const saved = JSON.parse(sessionStorage.getItem("school-filter-state") ?? "{}");
+      requestAnimationFrame(() => {
+        setTab(saved.tab ?? "zam"); setZam(saved.zam ?? []); setOkres(saved.okres ?? []); setUk(saved.uk ?? []); setJaz(saved.jaz ?? []);
+        setPrak(saved.prak ?? { internat: false, strava: false, dual: false }); setOdbCat(saved.odbCat ?? ""); setQ(saved.q ?? ""); setSort(saved.sort ?? "abc"); setSearched(true);
+        requestAnimationFrame(() => document.getElementById("results")?.scrollIntoView({ behavior: "auto" }));
+      });
+    } catch { /* stale/invalid local storage is ignored */ }
+  }, []);
+
+  const saveFilterReturn = () => sessionStorage.setItem("school-filter-state", JSON.stringify({ tab, zam, okres, uk, jaz, prak, odbCat, q, sort }));
 
   const toggle = (list: string[], v: string, set: (x: string[]) => void) =>
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -316,7 +330,7 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                   <div className="sugg">
                     {suggestions.map((s) => (
                       <div key={s.slug}>
-                        <Link href={`/skola/${s.slug}`} onClick={() => setQ("")}>
+                        <Link href={`/skola/${s.slug}?from=filter`} onClick={() => { saveFilterReturn(); setQ(""); }}>
                           <b>{s.name}</b> · {s.city}
                         </Link>
                       </div>
@@ -402,7 +416,7 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                     const ineko = s.inekoKrajRank ? `${s.inekoKrajRank}. ${s.inekoKrajOf ?? "zo všetkých"}` : null;
 
                     return (
-                      <Link className="scard" href={`/skola/${s.slug}`} key={s.slug} aria-label={`Zobraziť detail školy: ${s.name}`}>
+                      <Link className="scard" href={`/skola/${s.slug}?from=filter`} onClick={saveFilterReturn} key={s.slug} aria-label={`Zobraziť detail školy: ${s.name}`}>
                         {s.photoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={s.photoUrl} alt="" className="img" style={{ height: 200, width: "100%", objectFit: "cover", objectPosition: `${s.photoFocalX}% ${s.photoFocalY}%` }} />
