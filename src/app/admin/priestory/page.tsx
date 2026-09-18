@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
 import { addPriestor, deletePriestor } from "@/lib/admin-actions";
+import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
@@ -34,9 +35,9 @@ export default async function PriestoryPage() {
           <label className={label}>Názov priestoru / vybavenia</label>
           <input name="name" placeholder="napr. telocvičňa, laboratóriá, dielne" className={input} />
         </div>
-        <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+        <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
           Pridať
-        </button>
+        </SaveButton>
       </form>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -62,9 +63,7 @@ export default async function PriestoryPage() {
                 <td className="px-4 py-2.5 text-right text-slate-600">{p._count.schools}</td>
                 <td className="px-4 py-2.5 text-right">
                   <form action={deletePriestor.bind(null, p.id)}>
-                    <button className="rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50">
-                      Zmazať
-                    </button>
+                    <DeleteButton message="Naozaj zmazať tento priestor?" />
                   </form>
                 </td>
               </tr>

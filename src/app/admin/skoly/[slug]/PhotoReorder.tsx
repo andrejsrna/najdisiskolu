@@ -7,6 +7,7 @@ import {
   setSchoolPhotoCover,
   updateSchoolPhotoFocal,
 } from "@/lib/school-actions";
+import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 
 type Photo = {
   id: string;
@@ -103,7 +104,7 @@ export function PhotoReorder({
               <form action={updateSchoolPhotoFocal.bind(null, schoolId, slug, photo.id)} className="mt-2 grid grid-cols-2 gap-1 text-[11px] text-slate-600">
                 <label>Vodorovne<input name="focalX" type="range" min="0" max="100" value={focal[photo.id]?.x ?? photo.focalX} onChange={(e) => setFocal((current) => ({ ...current, [photo.id]: { x: Number(e.target.value), y: current[photo.id]?.y ?? photo.focalY } }))} className="block w-full" /></label>
                 <label>Zvisle<input name="focalY" type="range" min="0" max="100" value={focal[photo.id]?.y ?? photo.focalY} onChange={(e) => setFocal((current) => ({ ...current, [photo.id]: { x: current[photo.id]?.x ?? photo.focalX, y: Number(e.target.value) } }))} className="block w-full" /></label>
-                <button type="submit" className="col-span-2 rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Uložiť výrez</button>
+                <SaveButton savedLabel="Výrez uložený ✓" className="col-span-2 rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Uložiť výrez</SaveButton>
               </form>
               <div className="mt-1 flex flex-wrap items-center gap-1">
                 <form action={setSchoolPhotoCover.bind(null, schoolId, slug, photo.id, "detail")}>
@@ -117,9 +118,10 @@ export function PhotoReorder({
                   </button>
                 </form>
                 <form action={deleteSchoolPhoto.bind(null, schoolId, slug, photo.id)}>
-                  <button type="submit" className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50">
-                    Zmazať
-                  </button>
+                  <DeleteButton
+                    message="Naozaj zmazať túto fotku z galérie?"
+                    className="rounded-md border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+                  />
                 </form>
               </div>
             </div>

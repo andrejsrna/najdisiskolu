@@ -13,6 +13,7 @@ import {
 } from "@/lib/constants";
 import { PhotoReorder } from "./PhotoReorder";
 import { PhotoUpload } from "./PhotoUpload";
+import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 import {
   updateSchoolBasic,
   addOdbor,
@@ -360,12 +361,9 @@ export default async function SchoolEditPage({
           </div>
 
           <div className="sm:col-span-2">
-            <button
-              type="submit"
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-            >
+            <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
               Uložiť základné údaje
-            </button>
+            </SaveButton>
           </div>
         </form>
       </section>
@@ -423,18 +421,14 @@ export default async function SchoolEditPage({
                   <input name="employment" defaultValue={o.employment ?? ""} className={input} />
                 </div>
                 <div className="col-span-2 flex items-end gap-2 sm:col-span-3">
-                  <button
-                    type="submit"
-                    className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                  >
+                  <SaveButton className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">
                     Uložiť
-                  </button>
-                  <button
+                  </SaveButton>
+                  <DeleteButton
                     formAction={deleteOdbor.bind(null, school.id, school.slug, o.id)}
+                    message="Naozaj zmazať tento odbor?"
                     className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    Zmazať
-                  </button>
+                  />
                 </div>
               </form>
             </div>
@@ -486,12 +480,9 @@ export default async function SchoolEditPage({
               <input name="employment" className={input} />
             </div>
           </div>
-          <button
-            type="submit"
-            className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-          >
-            Pridať odbor
-          </button>
+            <SaveButton className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+              Pridať odbor
+            </SaveButton>
         </form>
       </section>
 
@@ -513,8 +504,12 @@ export default async function SchoolEditPage({
                 </div>
               </div>
               <div className="mt-3 flex gap-2">
-                <button className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">Uložiť</button>
-                <button formAction={deleteProject.bind(null, school.id, school.slug, project.id)} className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50">Zmazať</button>
+                <SaveButton className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">Uložiť</SaveButton>
+                <DeleteButton
+                  formAction={deleteProject.bind(null, school.id, school.slug, project.id)}
+                  message="Naozaj zmazať tento projekt?"
+                  className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                />
               </div>
             </form>
           ))}
@@ -531,7 +526,7 @@ export default async function SchoolEditPage({
               <textarea name="description" rows={3} className={input} />
             </div>
           </div>
-          <button className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Pridať projekt</button>
+          <SaveButton className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Pridať projekt</SaveButton>
         </form>
       </section>
 
@@ -579,7 +574,7 @@ export default async function SchoolEditPage({
                 </label>
               ))}
             </div>
-            <button className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Uložiť podobné školy</button>
+            <SaveButton className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Uložiť podobné školy</SaveButton>
           </form>
         </section>
       )}
@@ -596,12 +591,9 @@ export default async function SchoolEditPage({
             <label className={label}>Čas</label>
             <input name="time" defaultValue={dod?.time ?? ""} placeholder="8:00 - 12:00" className={input} />
           </div>
-          <button
-            type="submit"
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-          >
+          <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
             Uložiť termín
-          </button>
+          </SaveButton>
         </form>
       </section>
 
@@ -619,9 +611,7 @@ export default async function SchoolEditPage({
                 <div className="truncate text-xs text-slate-400">{d.fileUrl}</div>
               </div>
               <form action={deleteDownload.bind(null, school.id, school.slug, d.id)}>
-                <button className="rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50">
-                  Zmazať
-                </button>
+                <DeleteButton message="Naozaj zmazať tento súbor zo stiahnutia?" />
               </form>
             </li>
           ))}
@@ -637,9 +627,9 @@ export default async function SchoolEditPage({
           </div>
           <div>
             <label className={label}>&nbsp;</label>
-            <button className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+            <SaveButton className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
               Pridať
-            </button>
+            </SaveButton>
           </div>
         </form>
       </section>

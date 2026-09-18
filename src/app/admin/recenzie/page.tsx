@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
 import { saveReview, deleteReview } from "@/lib/admin-actions";
+import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
@@ -112,9 +113,9 @@ export default async function RecenziePage({
           />
           Zverejnené
         </label>
-        <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+        <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
           {editing ? "Uložiť zmeny" : "Vytvoriť príbeh"}
-        </button>
+        </SaveButton>
       </form>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -164,9 +165,7 @@ export default async function RecenziePage({
                 </td>
                 <td className="px-4 py-2.5 text-right">
                   <form action={deleteReview.bind(null, r.id)}>
-                    <button className="rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50">
-                      Zmazať
-                    </button>
+                    <DeleteButton message="Naozaj zmazať tento príbeh?" />
                   </form>
                 </td>
               </tr>

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
 import { addVeltrh, deleteVeltrh, setVeltrhSchools } from "@/lib/admin-actions";
+import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
@@ -64,9 +65,9 @@ export default async function VeltrhyPage() {
           <input name="extra" className={input} />
         </div>
         <div className="col-span-3">
-          <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+          <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
             Pridať veľtrh
-          </button>
+          </SaveButton>
         </div>
       </form>
 
@@ -86,9 +87,7 @@ export default async function VeltrhyPage() {
                 {v.extra && <p className="mt-1 text-xs text-slate-400">{v.extra}</p>}
               </div>
               <form action={deleteVeltrh.bind(null, v.id)}>
-                <button className="rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50">
-                  Zmazať
-                </button>
+                <DeleteButton message="Naozaj zmazať tento veľtrh?" />
               </form>
             </div>
 
@@ -111,9 +110,9 @@ export default async function VeltrhyPage() {
                     </label>
                   ))}
                 </div>
-                <button className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+                <SaveButton savedLabel="Školy uložené ✓" className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
                   Uložiť výber škôl
-                </button>
+                </SaveButton>
               </form>
             </details>
           </div>

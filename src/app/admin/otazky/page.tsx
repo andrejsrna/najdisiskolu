@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
 import { saveFaq, deleteFaq } from "@/lib/admin-actions";
+import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 import RichTextEditor from "@/components/RichTextEditor";
 
 const input =
@@ -77,9 +78,9 @@ export default async function OtazkyPage({
           <input type="number" name="sort" defaultValue={editing?.sort ?? 0} className={input} />
         </div>
 
-        <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+        <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
           {editing ? "Uložiť zmeny" : "Pridať otázku"}
-        </button>
+        </SaveButton>
       </form>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -114,9 +115,7 @@ export default async function OtazkyPage({
                 </td>
                 <td className="px-4 py-2.5 text-right align-top">
                   <form action={deleteFaq.bind(null, f.id)}>
-                    <button className="rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50">
-                      Zmazať
-                    </button>
+                    <DeleteButton message="Naozaj zmazať túto otázku?" />
                   </form>
                 </td>
               </tr>

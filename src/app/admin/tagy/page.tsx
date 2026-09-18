@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
 import { addTag, deleteTag } from "@/lib/admin-actions";
+import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
@@ -39,9 +40,9 @@ export default async function TagyPage() {
           <input name="label" placeholder="Gymnáziá a všeobecné vzdelanie" className={input} />
         </div>
         <div className="col-span-2">
-          <button className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+          <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
             Pridať tag
-          </button>
+          </SaveButton>
         </div>
       </form>
 
@@ -63,9 +64,7 @@ export default async function TagyPage() {
                 <td className="px-4 py-2.5 text-right text-slate-600">{t._count.schools}</td>
                 <td className="px-4 py-2.5 text-right">
                   <form action={deleteTag.bind(null, t.id)}>
-                    <button className="rounded-lg border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50">
-                      Zmazať
-                    </button>
+                    <DeleteButton message="Naozaj zmazať tento tag?" />
                   </form>
                 </td>
               </tr>

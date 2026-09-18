@@ -5,6 +5,7 @@ import { Role } from "@/generated/prisma/enums";
 import { ROLE_LABEL } from "@/lib/constants";
 import { creatableRolesFor } from "@/lib/roles";
 import { updateUser, resetUserPassword, deleteUser } from "@/lib/admin-actions";
+import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 import CreateUserForm from "./CreateUserForm";
 
 const input =
@@ -73,9 +74,9 @@ export default async function PouzivateliaPage() {
                         </option>
                       ))}
                     </select>
-                    <button className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:bg-slate-100">
+                    <SaveButton savedLabel="Uložené ✓" className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:bg-slate-100">
                       Uložiť
-                    </button>
+                    </SaveButton>
                   </form>
                 </td>
                 <td className="px-4 py-2.5 text-slate-600">
@@ -90,9 +91,9 @@ export default async function PouzivateliaPage() {
                         </option>
                       ))}
                     </select>
-                    <button className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:bg-slate-100">
+                    <SaveButton savedLabel="Uložené ✓" className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:bg-slate-100">
                       Uložiť
-                    </button>
+                    </SaveButton>
                   </form>
                 </td>
                 <td className="px-4 py-2.5">
@@ -110,9 +111,10 @@ export default async function PouzivateliaPage() {
                     </form>
                     {u.id !== user.id && (
                       <form action={deleteUser.bind(null, u.id)}>
-                        <button className="rounded-lg border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50">
-                          Zmazať
-                        </button>
+                        <DeleteButton
+                          message="Naozaj zmazať tohto používateľa?"
+                          className="rounded-lg border border-red-200 px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+                        />
                       </form>
                     )}
                   </div>
