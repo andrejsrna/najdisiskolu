@@ -99,6 +99,9 @@ export default async function SchoolPage({
   const totalApplicantsLastYear = school.odbory.reduce((a, o) => a + (o.appliedLastYear ?? 0), 0);
   const totalPlacesLastYear = school.odbory.reduce((a, o) => a + (o.places ?? 0), 0);
   const applicantsPerPlace = totalPlacesLastYear ? Math.round((totalApplicantsLastYear / totalPlacesLastYear) * 10) / 10 : null;
+  /* „žiakov celkovo": z poľa vyťažíme číslo; slovo „približne" renderujeme male ako prefix */
+  const studentsNumber = school.totalStudents?.match(/\d[\d\s]*/)?.[0]?.replace(/\s/g, "") ?? "";
+  const studentsApprox = Boolean(studentsNumber) && /približ/i.test(school.totalStudents ?? "");
   const inekoK = school.inekoKrajRank ? `${school.inekoKrajRank}. ${school.inekoKrajOf ?? "zo všetkých"}` : null;
   const inekoS = school.inekoSkRank ? `${school.inekoSkRank}. ${school.inekoSkOf ?? "zo všetkých"}` : null;
   const dod = school.dods[0];
@@ -242,7 +245,14 @@ export default async function SchoolPage({
               <div className="t">{sklonOdbor(school.odbory.length)}, {ktore(school.odbory.length)}<br />škola otvára</div>
             </div>
             <div className={`num ${school.totalStudents ? "" : "nodata"}`}>
-              <div className={`n ${school.totalStudents ? "" : "nodata"}`}>{school.totalStudents ?? "—"}</div>
+              <div className={`n ${school.totalStudents ? "" : "nodata"}`}>
+                {studentsNumber
+                  ? <>
+                      {studentsApprox && <span className="approx">približne </span>}
+                      {studentsNumber}
+                    </>
+                  : "—"}
+              </div>
               <div className="t">žiakov<br />celkovo</div>
             </div>
           </div>

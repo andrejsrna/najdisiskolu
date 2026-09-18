@@ -757,6 +757,9 @@ font-size:12px;color:#fff;margin-top:9px;line-height:1.35
 .site .num.nodata .t {
 font-size:11px;color:#B2B2B2
 }
+.site .num .n .approx {
+font-size:14px;font-weight:600;color:#B2B2B2;letter-spacing:0
+}
 .site .rule {
 height:1px;background:var(--line2);margin:34px 0
 }
