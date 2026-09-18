@@ -248,7 +248,8 @@ export default async function SchoolPage({
               <div className={`n ${school.totalStudents ? "" : "nodata"}`}>
                 {studentsNumber
                   ? <>
-                      {studentsApprox && <span className="approx">približne </span>}
+                      {studentsApprox && <span className="approx">približne</span>}
+                      {studentsApprox && <br />}
                       {studentsNumber}
                     </>
                   : "—"}
