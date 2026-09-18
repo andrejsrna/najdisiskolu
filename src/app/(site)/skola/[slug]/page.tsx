@@ -229,11 +229,11 @@ export default async function SchoolPage({
           )}
 
           <div className="numbers" style={{ marginTop: (inekoK || inekoS) ? 0 : 24 }} aria-label="Základné údaje o škole">
-            <div className="num">
+            <div className={`num ${totalAccepts ? "" : "nodata"}`}>
               <div className={`n ${totalAccepts ? "" : "nodata"}`}>{totalAccepts || "—"}</div>
               <div className="t">miest pre prvákov<br />v šk. roku 2027/28</div>
             </div>
-            <div className="num">
+            <div className={`num ${applicantsPerPlace !== null ? "" : "nodata"}`}>
               <div className={`n ${applicantsPerPlace !== null ? "" : "nodata"}`}>{applicantsPerPlace ?? "—"}</div>
               <div className="t">uchádzačov na 1 miesto<br />vlani</div>
             </div>
@@ -241,7 +241,7 @@ export default async function SchoolPage({
               <div className="n">{school.odbory.length}</div>
               <div className="t">{sklonOdbor(school.odbory.length)}, {ktore(school.odbory.length)}<br />škola otvára</div>
             </div>
-            <div className="num">
+            <div className={`num ${school.totalStudents ? "" : "nodata"}`}>
               <div className={`n ${school.totalStudents ? "" : "nodata"}`}>{school.totalStudents ?? "—"}</div>
               <div className="t">žiakov<br />celkovo</div>
             </div>
