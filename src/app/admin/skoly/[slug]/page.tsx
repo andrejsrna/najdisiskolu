@@ -411,7 +411,7 @@ export default async function SchoolEditPage({
                   <input name="accepts" type="number" defaultValue={o.accepts ?? ""} className={input} />
                 </div>
                 <div>
-                  <label className={label}>Vlani na 1 miesto</label>
+                  <label className={label}>Uchádzačov vlani</label>
                   <input name="appliedLastYear" type="number" defaultValue={o.appliedLastYear ?? ""} className={input} />
                 </div>
                 <div>

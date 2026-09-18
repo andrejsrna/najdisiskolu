@@ -93,7 +93,9 @@ export default async function SchoolPage({
   const hasMat = school.odbory.some((o) => o.completion === "MATURITA" || o.completion === "MATURITA_A_VYUCNY_LIST");
   const hasVl = school.odbory.some((o) => o.completion === "VYUCNY_LIST" || o.completion === "MATURITA_A_VYUCNY_LIST");
   const totalAccepts = school.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0);
-  const totalApplied = school.odbory.reduce((a, o) => a + (o.appliedLastYear ?? 0), 0);
+  const totalApplicantsLastYear = school.odbory.reduce((a, o) => a + (o.appliedLastYear ?? 0), 0);
+  const totalPlacesLastYear = school.odbory.reduce((a, o) => a + (o.places ?? 0), 0);
+  const applicantsPerPlace = totalPlacesLastYear ? Math.round((totalApplicantsLastYear / totalPlacesLastYear) * 10) / 10 : null;
   const inekoK = school.inekoKrajRank ? `${school.inekoKrajRank}. ${school.inekoKrajOf ?? "zo všetkých"}` : null;
   const inekoS = school.inekoSkRank ? `${school.inekoSkRank}. ${school.inekoSkOf ?? "zo všetkých"}` : null;
   const dod = school.dods[0];
@@ -229,8 +231,8 @@ export default async function SchoolPage({
               <div className="t">miest pre prvákov<br />v šk. roku 2027/28</div>
             </div>
             <div className="num">
-              <div className={`n ${totalApplied ? "" : "nodata"}`}>{totalApplied || "—"}</div>
-              <div className="t">prihlásených na 1 miesto<br />vlani</div>
+              <div className={`n ${applicantsPerPlace !== null ? "" : "nodata"}`}>{applicantsPerPlace ?? "—"}</div>
+              <div className="t">uchádzačov na 1 miesto<br />vlani</div>
             </div>
             <div className="num">
               <div className="n">{school.odbory.length}</div>
@@ -384,7 +386,7 @@ export default async function SchoolPage({
               )}
               {school.canteenOptions.filter(Boolean).length > 0 && (
                 <>
-                  <div className="lbl" style={{ marginTop: 20 }}>Školský bufet</div>
+                  <div className="lbl" style={{ marginTop: 20 }}>Stravovanie</div>
                   <div className="tags">
                     {school.canteenOptions.filter(Boolean).map((x, i) => (
                       <span className="tag" key={i}>{x}</span>
@@ -395,18 +397,22 @@ export default async function SchoolPage({
             </>
           )}
 
+          {/* ÚSPECHY ABSOLVENTOV */}
+          {school.achievements && (
+            <div className="p-sec">
+              <div className="rule" />
+              <h2 className="dh">Úspechy absolventov</h2>
+              <div className="txtblk" style={{ whiteSpace: "pre-line" }}>{school.achievements}</div>
+            </div>
+          )}
+
           {/* ČO PO ŠKOLE */}
-          {(school.graduates || school.achievements) && (
+          {school.graduates && (
             <div className="p-sec">
               <div className="rule" />
               <h2 className="dh">Čo po škole?</h2>
               <p className="dl">Kam odchádzajú naši absolventi a kde sa uplatnia.</p>
-              {school.graduates && (
-                <div className="txtblk" style={{ whiteSpace: "pre-line" }}>{school.graduates}</div>
-              )}
-              {school.achievements && (
-                <div className="txtblk" style={{ marginTop: 14, whiteSpace: "pre-line" }}>{school.achievements}</div>
-              )}
+              <div className="txtblk" style={{ whiteSpace: "pre-line" }}>{school.graduates}</div>
             </div>
           )}
 
