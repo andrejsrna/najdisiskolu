@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { addSchoolPhoto } from "@/lib/school-actions";
 
 const ACCEPT = "image/jpeg,image/png,image/webp";
@@ -11,7 +10,6 @@ function readPreviewURL(file: File) {
 }
 
 export function PhotoUpload({ schoolId, slug }: { schoolId: string; slug: string }) {
-  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
@@ -59,7 +57,6 @@ export function PhotoUpload({ schoolId, slug }: { schoolId: string; slug: string
       setPreviews(failedPreviews);
       if (inputRef.current) inputRef.current.value = "";
       if (errors.length) setError(errors.join(" "));
-      router.refresh();
       setPending(false);
     })();
   };

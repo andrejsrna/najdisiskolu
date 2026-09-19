@@ -36,13 +36,15 @@ export function PhotoReorder({
   const [overId, setOverId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [savedOrder, setSavedOrder] = useState(() => photos.map((photo) => photo.id).join(","));
   const [focal, setFocal] = useState(() => Object.fromEntries(photos.map((photo) => [photo.id, { x: photo.focalX, y: photo.focalY }])));
 
-  // router.refresh() po nahraní dodá nový serverový zoznam; lokálny stav
-  // však potrebuje zosynchronizovať, aby sa nová fotka nestratila z mriežky.
+  // Pri obnovení stránky dodá server nový zoznam; lokálny stav ho potrebuje
+  // zosynchronizovať, aby sa nová fotka nestratila z mriežky.
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       setItems(photos);
+      setSavedOrder(photos.map((photo) => photo.id).join(","));
       setFocal(Object.fromEntries(photos.map((photo) => [photo.id, { x: photo.focalX, y: photo.focalY }])));
     });
     return () => cancelAnimationFrame(frame);
@@ -92,11 +94,20 @@ export function PhotoReorder({
   const save = () => {
     startTransition(async () => {
       await reorderSchoolPhotos(schoolId, slug, items.map((p) => p.id));
+      setSavedOrder(items.map((photo) => photo.id).join(","));
       setSaved(true);
     });
   };
 
-  const orderChanged = items.some((p, i) => p.id !== photos[i]?.id);
+  const setCover = (photoId: string, kind: "detail" | "list") => {
+    startTransition(async () => {
+      await setSchoolPhotoCover(schoolId, slug, photoId, kind);
+      const field = kind === "detail" ? "isDetailCover" : "isListCover";
+      setItems((current) => current.map((photo) => ({ ...photo, [field]: photo.id === photoId })));
+    });
+  };
+
+  const orderChanged = items.map((photo) => photo.id).join(",") !== savedOrder;
 
   return (
     <div>
@@ -130,16 +141,22 @@ export function PhotoReorder({
                 <SaveButton savedLabel="Výrez uložený ✓" className="col-span-2 rounded border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">Uložiť výrez</SaveButton>
               </form>
               <div className="mt-1 flex flex-wrap items-center gap-1">
-                <form action={setSchoolPhotoCover.bind(null, schoolId, slug, photo.id, "detail")}>
-                  <button type="submit" className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">
-                    Titulná detailu
-                  </button>
-                </form>
-                <form action={setSchoolPhotoCover.bind(null, schoolId, slug, photo.id, "list")}>
-                  <button type="submit" className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50">
-                    Titulná zoznamu
-                  </button>
-                </form>
+                <button
+                  type="button"
+                  onClick={() => setCover(photo.id, "detail")}
+                  disabled={pending}
+                  className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50 disabled:opacity-60"
+                >
+                  Titulná detailu
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCover(photo.id, "list")}
+                  disabled={pending}
+                  className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50 disabled:opacity-60"
+                >
+                  Titulná zoznamu
+                </button>
                 <form action={deleteSchoolPhoto.bind(null, schoolId, slug, photo.id)}>
                   <DeleteButton
                     message="Naozaj zmazať túto fotku z galérie?"

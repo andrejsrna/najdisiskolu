@@ -133,11 +133,13 @@ export default async function SchoolPage({
   if (school.otherTop) preco.push(school.otherTop);
   preco.length = Math.min(preco.length, 8 - extras.length);
   extras.forEach((x) => preco.push(x));
-  const orderedPhotos = [...school.photos].sort((a, b) =>
-    Number(b.isDetailCover) - Number(a.isDetailCover) || a.sort - b.sort,
-  );
-  const heroPhoto = orderedPhotos[0]
-    ? { url: orderedPhotos[0].url, alt: orderedPhotos[0].alt ?? school.name, focalX: orderedPhotos[0].focalX, focalY: orderedPhotos[0].focalY }
+  // Titulná detailu ovplyvňuje iba hero. Samotná galéria rešpektuje presne
+  // poradie, ktoré administrátor nastavil — titulka ju nesmie nútene predbehnúť.
+  const galleryPhotos = [...school.photos].sort((a, b) => a.sort - b.sort);
+  const detailCover = galleryPhotos.find((photo) => photo.isDetailCover);
+  const heroSource = detailCover ?? galleryPhotos[0];
+  const heroPhoto = heroSource
+    ? { url: heroSource.url, alt: heroSource.alt ?? school.name, focalX: heroSource.focalX, focalY: heroSource.focalY }
     : school.photoUrl
       ? { url: school.photoUrl, alt: school.name, focalX: 50, focalY: 50 }
       : null;
@@ -430,7 +432,7 @@ export default async function SchoolPage({
             </div>
           )}
 
-          <SchoolGallery photos={orderedPhotos} schoolName={school.name} />
+          <SchoolGallery photos={galleryPhotos} schoolName={school.name} />
 
           {/* KDE ŠKOLA SÍDLI */}
           {(school.address || school.phone || school.email || school.websites.length > 0 || school.facebook || school.instagram) && (
