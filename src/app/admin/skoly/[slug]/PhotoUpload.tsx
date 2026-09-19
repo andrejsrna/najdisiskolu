@@ -1,8 +1,8 @@
 "use client";
 
-import { startTransition, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { addSchoolPhotos } from "@/lib/school-actions";
+import { addSchoolPhoto } from "@/lib/school-actions";
 
 const ACCEPT = "image/jpeg,image/png,image/webp";
 
@@ -29,24 +29,39 @@ export function PhotoUpload({ schoolId, slug }: { schoolId: string; slug: string
 
   const upload = () => {
     if (!files.length || pending) return;
-    const form = new FormData();
-    files.forEach((f) => form.append("files", f));
+    const queuedFiles = [...files];
+    const queuedPreviews = [...previews];
     setPending(true);
     setError(null);
-    startTransition(async () => {
-      try {
-        await addSchoolPhotos(schoolId, slug, form);
-        previews.forEach((url) => URL.revokeObjectURL(url));
-        setFiles([]);
-        setPreviews([]);
-        if (inputRef.current) inputRef.current.value = "";
-        router.refresh();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Nahrávanie zlyhalo.");
-      } finally {
-        setPending(false);
+    void (async () => {
+      const failedFiles: File[] = [];
+      const failedPreviews: string[] = [];
+      const errors: string[] = [];
+
+      // Jeden súbor = jeden Server Action request. Pri výbere viacerých
+      // fotiek tak neprekročíme Next.js limit tela požiadavky.
+      for (const [index, file] of queuedFiles.entries()) {
+        try {
+          const form = new FormData();
+          form.append("file", file);
+          const photo = await addSchoolPhoto(schoolId, slug, form);
+          if (!photo) throw new Error("Fotka sa nepodarila spracovať.");
+          URL.revokeObjectURL(queuedPreviews[index]);
+          window.dispatchEvent(new CustomEvent("school-photo-uploaded", { detail: photo }));
+        } catch (e) {
+          failedFiles.push(file);
+          failedPreviews.push(queuedPreviews[index]);
+          errors.push(e instanceof Error ? e.message : `${file.name}: nahrávanie zlyhalo.`);
+        }
       }
-    });
+
+      setFiles(failedFiles);
+      setPreviews(failedPreviews);
+      if (inputRef.current) inputRef.current.value = "";
+      if (errors.length) setError(errors.join(" "));
+      router.refresh();
+      setPending(false);
+    })();
   };
 
   const removeFile = (index: number) => {

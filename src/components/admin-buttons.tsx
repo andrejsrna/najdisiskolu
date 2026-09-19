@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 /**
  * Submit tlačidlo so stavovou hláškou: počas odosielania „Ukladám…",
- * po dokončení akcie „Uložené ✓", kým sa znovu neklikne.
+ * po dokončení akcie krátko „Uložené ✓", potom sa vráti na pôvodný názov.
  */
 export function SaveButton({
   children = "Uložiť",
@@ -18,11 +18,23 @@ export function SaveButton({
 }) {
   const { pending } = useFormStatus();
   const [submitted, setSubmitted] = useState(false);
+  const resetTimer = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (resetTimer.current) window.clearTimeout(resetTimer.current);
+  }, []);
+
+  const showSavedBriefly = () => {
+    if (resetTimer.current) window.clearTimeout(resetTimer.current);
+    setSubmitted(true);
+    resetTimer.current = window.setTimeout(() => setSubmitted(false), 3500);
+  };
+
   return (
     <button
       type="submit"
       disabled={pending}
-      onClick={() => setSubmitted(true)}
+      onClick={showSavedBriefly}
       className={`${className} disabled:cursor-not-allowed disabled:opacity-60`}
     >
       {pending ? "Ukladám…" : submitted && !pending ? savedLabel : children}

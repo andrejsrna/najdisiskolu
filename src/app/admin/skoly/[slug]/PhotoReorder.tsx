@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   deleteSchoolPhoto,
   reorderSchoolPhotos,
@@ -37,6 +37,29 @@ export function PhotoReorder({
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [focal, setFocal] = useState(() => Object.fromEntries(photos.map((photo) => [photo.id, { x: photo.focalX, y: photo.focalY }])));
+
+  // router.refresh() po nahraní dodá nový serverový zoznam; lokálny stav
+  // však potrebuje zosynchronizovať, aby sa nová fotka nestratila z mriežky.
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setItems(photos);
+      setFocal(Object.fromEntries(photos.map((photo) => [photo.id, { x: photo.focalX, y: photo.focalY }])));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [photos]);
+
+  // Zobraz novú fotku hneď po úspešnom jednotlivom uploade, ešte pred
+  // dokončením obnovy serverovej stránky.
+  useEffect(() => {
+    const handleUpload = (event: Event) => {
+      const photo = (event as CustomEvent<Photo>).detail;
+      if (!photo) return;
+      setItems((current) => (current.some((item) => item.id === photo.id) ? current : [...current, photo]));
+      setFocal((current) => ({ ...current, [photo.id]: { x: photo.focalX, y: photo.focalY } }));
+    };
+    window.addEventListener("school-photo-uploaded", handleUpload);
+    return () => window.removeEventListener("school-photo-uploaded", handleUpload);
+  }, []);
 
   const move = (id: string, dir: -1 | 1) => {
     setSaved(false);

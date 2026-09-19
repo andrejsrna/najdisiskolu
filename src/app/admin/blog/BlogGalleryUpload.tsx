@@ -15,6 +15,7 @@ export function BlogGalleryUpload({ initial }: { initial: Item[] }) {
   const hiddenRef = useRef<HTMLTextAreaElement>(null);
   const [items, setItems] = useState<Item[]>(initial);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [pendFiles, setPendFiles] = useState<File[]>([]);
   const [pendUrls, setPendUrls] = useState<string[]>([]); // preview objectURLs, parallel to pendFiles
   const [drag, setDrag] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -27,38 +28,56 @@ export function BlogGalleryUpload({ initial }: { initial: Item[] }) {
   };
 
   const addFiles = (list: FileList | File[]) => {
-    const next = Array.from(list).filter((f) => f.size > 0).slice(0, 20 - items.length);
+    const next = Array.from(list).filter((f) => f.size > 0).slice(0, 20 - items.length - pendFiles.length);
     if (!next.length) return;
+    setPendFiles((p) => [...p, ...next]);
     setPendUrls((p) => [...p, ...next.map((f) => URL.createObjectURL(f))]);
     setError(null);
   };
 
   const uploadPending = async () => {
     if (!pendUrls.length || busy) return;
-    const input = inputRef.current;
+    const queuedFiles = [...pendFiles];
+    const queuedUrls = [...pendUrls];
     setBusy(true);
     setError(null);
     try {
-      const fileInput = input as HTMLInputElement;
-      const files = fileInput.files ? Array.from(fileInput.files).filter((f) => f.size > 0) : [];
-      const form = new FormData();
-      files.forEach((f) => form.append("files", f));
-      const urls = await uploadPostImages(form);
-      if (urls.length === 0) setError("Žiadna fotografia sa nenahrala — skontroluj formát/veľkosť.");
-      else setAndSync([...items, ...urls.map((url) => ({ url, alt: null }))]);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Nahrávanie zlyhalo.");
+      const nextItems = [...items];
+      const failedFiles: File[] = [];
+      const failedUrls: string[] = [];
+      const errors: string[] = [];
+
+      // Každá fotografia má samostatnú požiadavku — viac veľkých fotiek
+      // preto nenarazí na limit tela Server Action requestu.
+      for (const [index, file] of queuedFiles.entries()) {
+        try {
+          const form = new FormData();
+          form.append("files", file);
+          const urls = await uploadPostImages(form);
+          if (!urls.length) throw new Error(`${file.name}: nepodporovaný formát alebo veľkosť nad 10 MB.`);
+          nextItems.push(...urls.map((url) => ({ url, alt: null })));
+          URL.revokeObjectURL(queuedUrls[index]);
+        } catch (e) {
+          failedFiles.push(file);
+          failedUrls.push(queuedUrls[index]);
+          errors.push(e instanceof Error ? e.message : `${file.name}: nahrávanie zlyhalo.`);
+        }
+      }
+      setAndSync(nextItems);
+      setPendFiles(failedFiles);
+      setPendUrls(failedUrls);
+      if (errors.length) setError(errors.join(" "));
     } finally {
-      pendUrls.forEach((u) => URL.revokeObjectURL(u));
-      if (input) input.value = "";
-      setPendUrls([]);
+      if (inputRef.current) inputRef.current.value = "";
       setBusy(false);
     }
   };
 
   const removePending = (objectUrl: string) => {
     URL.revokeObjectURL(objectUrl);
+    const index = pendUrls.indexOf(objectUrl);
     setPendUrls((p) => p.filter((u) => u !== objectUrl));
+    setPendFiles((p) => p.filter((_, i) => i !== index));
   };
 
   const removeItem = (index: number) => setAndSync(items.filter((_, i) => i !== index));
@@ -149,11 +168,6 @@ export function BlogGalleryUpload({ initial }: { initial: Item[] }) {
           e.preventDefault();
           setDrag(false);
           addFiles(e.dataTransfer.files);
-          if (e.dataTransfer.files.length) {
-            const dt = new DataTransfer();
-            Array.from(e.dataTransfer.files).forEach((f) => f.size > 0 && dt.items.add(f));
-            if (inputRef.current) inputRef.current.files = dt.files;
-          }
         }}
         className={`cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition ${
           drag ? "border-slate-900 bg-slate-50" : "border-slate-300"

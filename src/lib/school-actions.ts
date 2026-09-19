@@ -287,7 +287,7 @@ export async function addSchoolPhoto(schoolId: string, slug: string, formData: F
   const upload = formData.get("file");
   const file = upload instanceof File && upload.size > 0 ? upload : null;
   const fallbackUrl = str(formData.get("url"));
-  if (!file && !fallbackUrl) return;
+  if (!file && !fallbackUrl) return null;
 
   let url = fallbackUrl;
   if (file) {
@@ -297,10 +297,12 @@ export async function addSchoolPhoto(schoolId: string, slug: string, formData: F
   }
 
   const sort = (await prisma.schoolPhoto.count({ where: { schoolId } })) + 1;
-  await prisma.schoolPhoto.create({
+  const photo = await prisma.schoolPhoto.create({
     data: { schoolId, url: url!, alt: str(formData.get("alt")), sort },
+    select: { id: true, url: true, alt: true, isDetailCover: true, isListCover: true, focalX: true, focalY: true },
   });
   revalidateSchool(slug);
+  return photo;
 }
 
 export async function addSchoolPhotos(schoolId: string, slug: string, formData: FormData) {
