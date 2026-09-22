@@ -620,7 +620,10 @@ export default async function SchoolEditPage({
 
       {/* ============ NA STIAHNUTIE (bočný panel dole) ============ */}
       <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="mb-4 text-sm font-semibold text-slate-900">Na stiahnutie</h2>
+        <h2 className="mb-1 text-sm font-semibold text-slate-900">Na stiahnutie</h2>
+        <p className="mb-4 text-xs font-medium text-red-600">
+          ⚠️ Tieto súbory (napr. kritériá prijímacieho konania) treba každý rok aktualizovať na aktuálny školský rok!
+        </p>
         <ul className="mb-4 space-y-2">
           {school.downloads.length === 0 && (
             <li className="text-sm text-slate-400">Žiadne súbory.</li>
