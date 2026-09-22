@@ -36,7 +36,7 @@ type SeedSchool = {
   whyUs: string[]; clubs: string[]; sports: string[]; canteenOptions: string[];
   supportTeam: string[]; certificates: string[];
   isComplete: boolean; isPublished: boolean;
-  tagCodes: string[]; priestorNames: string[];
+  tagCodes: string[];
   odbory: { code: string; name: string; length: number; completion: string; accepts: number | null; appliedLastYear: number | null; places: number | null; employment: string | null; sort: number }[];
   projects: { title: string; description: string; sort: number }[];
   dods: { date: string | null; time: string | null; note: string | null }[];
@@ -51,7 +51,6 @@ type SeedReview = {
 
 type SeedData = {
   tags: { code: string; label: string }[];
-  priestory: { name: string }[];
   settings: { key: string; value: unknown }[];
   schools: SeedSchool[];
   veltrhy: { city: string; date: string | null; time: string; place: string; address: string; description: string | null; extra: string | null; schoolSlugs: string[] }[];
@@ -270,9 +269,8 @@ async function main() {
     return;
   }
 
-  // 1. Tagy + priestory + settings
+  // 1. Tagy + settings
   await prisma.tag.createMany({ data: data.tags });
-  await prisma.priestor.createMany({ data: data.priestory });
   for (const s of data.settings) {
     await prisma.setting.upsert({
       where: { key: s.key },
@@ -305,7 +303,6 @@ async function main() {
         supportTeam: s.supportTeam, certificates: s.certificates,
         isComplete: s.isComplete, isPublished: s.isPublished,
         tags: { connect: s.tagCodes.map((code) => ({ code })) },
-        priestory: { connect: s.priestorNames.map((name) => ({ name })) },
         odbory: { create: s.odbory.map((o) => ({ code: o.code, name: o.name, length: o.length, completion: o.completion as Completion, accepts: o.accepts, appliedLastYear: o.appliedLastYear, places: o.places, employment: o.employment, sort: o.sort })) },
         projects: { create: s.projects.map((p) => ({ title: p.title, description: p.description, sort: p.sort })) },
         dods: { create: s.dods.map((d) => ({ date: toDate(d.date)!, time: d.time, note: d.note })) },

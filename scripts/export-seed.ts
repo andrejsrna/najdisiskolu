@@ -88,7 +88,7 @@ async function main() {
 
   // 3. Export všetkých dát.
   const schools = await prisma.school.findMany({
-    include: { tags: true, priestory: true, odbory: true, projects: true, dods: true, downloads: true, badges: true },
+    include: { tags: true, odbory: true, projects: true, dods: true, downloads: true, badges: true },
   });
   const veltrhy = await prisma.veltrh.findMany({ include: { schools: true } });
   const reviews = await prisma.review.findMany({ include: { school: { select: { slug: true } } }, orderBy: { sort: "asc" } });
@@ -101,7 +101,6 @@ async function main() {
 
   const data = {
     tags: (await prisma.tag.findMany({ orderBy: { code: "asc" } })).map((t) => ({ code: t.code, label: t.label })),
-    priestory: (await prisma.priestor.findMany({ orderBy: { name: "asc" } })).map((p) => ({ name: p.name })),
     settings: (await prisma.setting.findMany({ orderBy: { key: "asc" } })).map((s) => ({ key: s.key, value: s.value })),
     schools: schools.map((s) => ({
       name: s.name, slug: s.slug, city: s.city, district: s.district,
@@ -123,7 +122,6 @@ async function main() {
       supportTeam: s.supportTeam, certificates: s.certificates,
       isComplete: s.isComplete, isPublished: s.isPublished,
       tagCodes: s.tags.map((t) => t.code),
-      priestorNames: s.priestory.map((p) => p.name),
       odbory: s.odbory.map((o) => ({
         code: o.code, name: o.name, length: o.length, completion: o.completion,
         accepts: o.accepts, appliedLastYear: o.appliedLastYear, places: o.places,

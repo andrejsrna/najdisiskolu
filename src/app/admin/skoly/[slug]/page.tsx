@@ -57,7 +57,6 @@ export default async function SchoolEditPage({
     where: { slug },
     include: {
       tags: true,
-      priestory: true,
       odbory: { orderBy: { sort: "asc" } },
       dods: true,
       downloads: { orderBy: { sort: "asc" } },
@@ -73,7 +72,7 @@ export default async function SchoolEditPage({
   const canEdit = isAdmin || (user.role === Role.SKOLA && user.schoolId === school.id);
   if (!canEdit) redirect("/admin");
 
-  const [allTags, allSchools, allPriestory] = await Promise.all([
+  const [allTags, allSchools] = await Promise.all([
     prisma.tag.findMany({ orderBy: { label: "asc" } }),
     isAdmin
       ? prisma.school.findMany({
@@ -82,7 +81,6 @@ export default async function SchoolEditPage({
           orderBy: [{ name: "asc" }, { city: "asc" }],
         })
       : Promise.resolve([]),
-    prisma.priestor.findMany({ orderBy: { name: "asc" } }),
   ]);
   const dod = school.dods[0];
 
@@ -325,23 +323,6 @@ export default async function SchoolEditPage({
           {/* Priestory a vybavenie */}
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
             <h3 className="mb-3 text-sm font-semibold text-slate-900">Priestory a vybavenie</h3>
-            <div className="mb-4">
-              <label className={label}>Priestory a vybavenie (výber)</label>
-              <div className="flex flex-wrap gap-x-5 gap-y-2">
-                {allPriestory.map((p) => (
-                  <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700">
-                    <input
-                      type="checkbox"
-                      name="priestory"
-                      value={p.id}
-                      defaultChecked={school.priestory.some((x) => x.id === p.id)}
-                      className="h-4 w-4 rounded border-slate-300"
-                    />
-                    {p.name}
-                  </label>
-                ))}
-              </div>
-            </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label className={label}>Priestory a vybavenie (popis)</label>

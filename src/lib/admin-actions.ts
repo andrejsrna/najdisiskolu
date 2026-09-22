@@ -65,24 +65,6 @@ export async function deleteTag(id: string) {
   revalidatePath("/admin/tagy");
 }
 
-/* ================= PRIESTORY ================= */
-
-export async function addPriestor(formData: FormData) {
-  const actor = await assertStaff();
-  const name = str(formData.get("name"));
-  if (!name) return;
-  const priestor = await prisma.priestor.create({ data: { name } });
-  await logAudit(actor, "create", "Priestor", priestor.id, name);
-  revalidatePath("/admin/priestory");
-}
-
-export async function deletePriestor(id: string) {
-  const actor = await assertStaff();
-  const priestor = await prisma.priestor.delete({ where: { id } });
-  await logAudit(actor, "delete", "Priestor", id, priestor.name);
-  revalidatePath("/admin/priestory");
-}
-
 /* ================= VEĽTRHY ================= */
 
 export async function addVeltrh(formData: FormData) {

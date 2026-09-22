@@ -18,7 +18,6 @@ export default async function SchoolsPage() {
   const schools = await prisma.school.findMany({
     include: {
       tags: { orderBy: { code: "asc" } },
-      priestory: true,
       _count: { select: { odbory: true } },
     },
     orderBy: { name: "asc" },

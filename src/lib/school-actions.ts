@@ -82,7 +82,6 @@ export async function updateSchoolBasic(
 ) {
   const actor = await assertCanEditSchool(schoolId);
   const tagCodes = formData.getAll("tags").map(String);
-  const priestoryIds = formData.getAll("priestory").map(String);
   const languageCodes = formData.getAll("languages").map(String);
   const csv = (k: string) =>
     String(formData.get(k) ?? "")
@@ -142,7 +141,6 @@ export async function updateSchoolBasic(
       hasNadstavba: formData.has("hasNadstavba"),
       hasNativeSpeaker: formData.has("hasNativeSpeaker"),
       tags: { set: tagCodes.map((code) => ({ code })) },
-      priestory: { set: priestoryIds.map((id) => ({ id })) },
     },
   });
   await logAudit(actor, "update", "School", schoolId, String(formData.get("name") ?? slug));

@@ -123,7 +123,6 @@ model School {
   isPublished Boolean @default(true)
 
   tags      Tag[]
-  priestory Priestor[]
   odbory    Odbor[]
   projects  Project[]
   dods      Dod[]
@@ -194,15 +193,6 @@ model Tag {
   code    String   @unique // gym / tech / it / dop / eko / gas / zdr / ume / pol / spo
   label   String
   schools School[]
-}
-
-// ============ PRIESTOR (priestory a vybavenie) ============
-
-model Priestor {
-  id        String   @id @default(cuid())
-  name      String   @unique // "telocvičňa", "posilňovňa", "dielne", ...
-  isDefault Boolean  @default(true) // predvybraté odborom školstva; je možné vytvoriť nové
-  schools   School[]
 }
 
 // ============ PROJECT (projekty školy) ============
