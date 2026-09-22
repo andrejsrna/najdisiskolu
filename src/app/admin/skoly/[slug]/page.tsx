@@ -35,7 +35,7 @@ const input =
 const label = "mb-1 block text-xs font-medium text-slate-600";
 
 const INEKO_CATEGORIES = [
-  "zo všetkých",
+  "zo všetkých škôl",
   "z gymnázií",
   "z odborných škôl",
   "zo športových škôl",
@@ -146,7 +146,7 @@ export default async function SchoolEditPage({
                 <label className={label}>INEKO — poradie v kraji</label>
                 <div className="flex gap-2">
                   <input name="inekoKrajRank" type="number" min={1} defaultValue={school.inekoKrajRank ?? ""} placeholder="poradie" className={input} />
-                  <select name="inekoKrajOf" defaultValue={school.inekoKrajOf ?? "zo všetkých"} className={input}>
+                  <select name="inekoKrajOf" defaultValue={school.inekoKrajOf ?? "zo všetkých škôl"} className={input}>
                     {INEKO_CATEGORIES.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
@@ -157,7 +157,7 @@ export default async function SchoolEditPage({
                 <label className={label}>INEKO — poradie na Slovensku</label>
                 <div className="flex gap-2">
                   <input name="inekoSkRank" type="number" min={1} defaultValue={school.inekoSkRank ?? ""} placeholder="poradie" className={input} />
-                  <select name="inekoSkOf" defaultValue={school.inekoSkOf ?? "zo všetkých"} className={input}>
+                  <select name="inekoSkOf" defaultValue={school.inekoSkOf ?? "zo všetkých škôl"} className={input}>
                     {INEKO_CATEGORIES.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}

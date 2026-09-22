@@ -446,7 +446,7 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                     const totalApplied = s.odbory.reduce((a, o) => a + (o.appliedLastYear ?? 0), 0);
                     const totalPlaces = s.odbory.reduce((a, o) => a + (o.places ?? 0), 0);
                     const applicantsPerPlace = totalPlaces ? Math.round((totalApplied / totalPlaces) * 10) / 10 : null;
-                    const ineko = s.inekoKrajRank ? `${s.inekoKrajRank}. ${s.inekoKrajOf ?? "zo všetkých"}` : null;
+                    const ineko = s.inekoKrajRank ? `${s.inekoKrajRank}. ${s.inekoKrajOf ?? "zo všetkých škôl"}` : null;
 
                     return (
                       <Link className="scard" href={`/skola/${s.slug}?from=filter`} onClick={saveFilterReturn} key={s.slug} aria-label={`Zobraziť detail školy: ${s.name}`}>

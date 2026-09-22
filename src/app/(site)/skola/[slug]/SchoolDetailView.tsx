@@ -37,8 +37,8 @@ export function SchoolDetailView({
   const applicantsPerPlace = totalPlacesLastYear ? Math.round((totalApplicantsLastYear / totalPlacesLastYear) * 10) / 10 : null;
   const studentsNumber = school.totalStudents?.match(/\d[\d\s]*/)?.[0]?.replace(/\s/g, "") ?? "";
   const studentsApprox = Boolean(studentsNumber) && /približ/i.test(school.totalStudents ?? "");
-  const inekoK = school.inekoKrajRank ? `${school.inekoKrajRank}. ${school.inekoKrajOf ?? "zo všetkých"}` : null;
-  const inekoS = school.inekoSkRank ? `${school.inekoSkRank}. ${school.inekoSkOf ?? "zo všetkých"}` : null;
+  const inekoK = school.inekoKrajRank ? `${school.inekoKrajRank}. ${school.inekoKrajOf ?? "zo všetkých škôl"}` : null;
+  const inekoS = school.inekoSkRank ? `${school.inekoSkRank}. ${school.inekoSkOf ?? "zo všetkých škôl"}` : null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const upcomingDods = school.dods.filter((d) => d.date >= today);
