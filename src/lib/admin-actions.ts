@@ -112,6 +112,27 @@ export async function deleteVeltrh(id: string) {
   revalidatePath("/admin/veltrhy");
 }
 
+export async function updateVeltrh(id: string, formData: FormData) {
+  const actor = await assertStaff();
+  const city = str(formData.get("city"));
+  const dateStr = str(formData.get("date"));
+  if (!city || !dateStr) return;
+  const veltrh = await prisma.veltrh.update({
+    where: { id },
+    data: {
+      city,
+      date: new Date(`${dateStr}T00:00:00`),
+      time: str(formData.get("time")) ?? "",
+      place: str(formData.get("place")) ?? "",
+      address: str(formData.get("address")) ?? "",
+      description: str(formData.get("description")),
+      extra: str(formData.get("extra")),
+    },
+  });
+  await logAudit(actor, "update", "Veltrh", id, veltrh.city);
+  revalidatePath("/admin/veltrhy");
+}
+
 export async function setVeltrhSchools(veltrhId: string, formData: FormData) {
   await assertStaff();
   const schoolIds = formData.getAll("schools").map(String);

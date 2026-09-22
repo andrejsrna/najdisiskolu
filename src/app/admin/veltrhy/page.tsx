@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
-import { addVeltrh, deleteVeltrh, saveVeltrhySections } from "@/lib/admin-actions";
+import { addVeltrh, deleteVeltrh, updateVeltrh, saveVeltrhySections } from "@/lib/admin-actions";
 import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 import { VeltrhSchoolsPicker } from "./VeltrhSchoolsPicker";
 import {
@@ -107,6 +107,50 @@ export default async function VeltrhyPage() {
                 <DeleteButton message="Naozaj zmazať tento veľtrh?" />
               </form>
             </div>
+
+            <details className="mt-4">
+              <summary className="cursor-pointer text-sm font-medium text-slate-700">
+                Upraviť údaje veľtrhu
+              </summary>
+              <form
+                action={updateVeltrh.bind(null, v.id)}
+                className="mt-3 grid grid-cols-2 gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-3"
+              >
+                <div>
+                  <label className={label}>Mesto</label>
+                  <input name="city" defaultValue={v.city} className={input} />
+                </div>
+                <div>
+                  <label className={label}>Dátum</label>
+                  <input name="date" type="date" defaultValue={fmtDate(v.date)} className={input} />
+                </div>
+                <div>
+                  <label className={label}>Čas</label>
+                  <input name="time" defaultValue={v.time} className={input} />
+                </div>
+                <div>
+                  <label className={label}>Miesto</label>
+                  <input name="place" defaultValue={v.place} className={input} />
+                </div>
+                <div className="col-span-2">
+                  <label className={label}>Adresa</label>
+                  <input name="address" defaultValue={v.address} className={input} />
+                </div>
+                <div className="col-span-3">
+                  <label className={label}>Popis</label>
+                  <textarea name="description" defaultValue={v.description ?? ""} rows={2} className={input} />
+                </div>
+                <div className="col-span-3">
+                  <label className={label}>Sprievodné podujatie (voliteľné)</label>
+                  <input name="extra" defaultValue={v.extra ?? ""} className={input} />
+                </div>
+                <div className="col-span-3">
+                  <SaveButton savedLabel="Uložené ✓" className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+                    Uložiť zmeny
+                  </SaveButton>
+                </div>
+              </form>
+            </details>
 
             <details className="mt-4">
               <summary className="cursor-pointer text-sm font-medium text-slate-700">
