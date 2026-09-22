@@ -8,6 +8,7 @@ type Odbor = {
   completion: string;
   accepts: number | null;
   appliedLastYear: number | null;
+  places: number | null;
   name: string;
   code: string;
   length: number | null;
@@ -442,7 +443,9 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                       : benefit(s);
                     const thirdCls = s.hasDual ? "dual" : s.hasInternat ? "dorm" : s.hasNadstavba ? "nad" : "";
                     const totalAccepts = s.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0);
-                    const maxApplied = s.odbory.some((o) => o.appliedLastYear) ? Math.max(...s.odbory.map((o) => o.appliedLastYear ?? 0)) : null;
+                    const totalApplied = s.odbory.reduce((a, o) => a + (o.appliedLastYear ?? 0), 0);
+                    const totalPlaces = s.odbory.reduce((a, o) => a + (o.places ?? 0), 0);
+                    const applicantsPerPlace = totalPlaces ? Math.round((totalApplied / totalPlaces) * 10) / 10 : null;
                     const ineko = s.inekoKrajRank ? `${s.inekoKrajRank}. ${s.inekoKrajOf ?? "zo všetkých"}` : null;
 
                     return (
@@ -482,7 +485,7 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                           )}
                           <div className="tags">
                             {totalAccepts > 0 && <span className="tag hi">prijímajú {totalAccepts} žiakov</span>}
-                            {maxApplied != null && <span className="tag hi">vlani {maxApplied} prihlásených na 1 miesto</span>}
+                            {applicantsPerPlace != null && <span className="tag hi">vlani {applicantsPerPlace} uchádzačov na 1 miesto</span>}
                           </div>
                           {ineko && (
                             <div className="tags">

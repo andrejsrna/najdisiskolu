@@ -91,6 +91,7 @@ export default async function HomePage() {
       completion: o.completion,
       accepts: o.accepts,
       appliedLastYear: o.appliedLastYear,
+      places: o.places,
       name: o.name,
       code: o.code,
       length: o.length,
