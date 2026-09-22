@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
-import { addVeltrh, deleteVeltrh, setVeltrhSchools, saveVeltrhySections } from "@/lib/admin-actions";
+import { addVeltrh, deleteVeltrh, saveVeltrhySections } from "@/lib/admin-actions";
 import { SaveButton, DeleteButton } from "@/components/admin-buttons";
+import { VeltrhSchoolsPicker } from "./VeltrhSchoolsPicker";
 import {
   VELTRHY_SECTIONS_DEFAULT,
   VELTRHY_SECTIONS_KEY,
@@ -111,25 +112,11 @@ export default async function VeltrhyPage() {
               <summary className="cursor-pointer text-sm font-medium text-slate-700">
                 Školy na tomto veľtrhu ({v.schools.length})
               </summary>
-              <form action={setVeltrhSchools.bind(null, v.id)} className="mt-3">
-                <div className="max-h-60 overflow-auto rounded-lg border border-slate-200 p-3">
-                  {schools.map((s) => (
-                    <label key={s.id} className="flex items-center gap-2 py-0.5 text-sm text-slate-700">
-                      <input
-                        type="checkbox"
-                        name="schools"
-                        value={s.id}
-                        defaultChecked={v.schools.some((vs) => vs.id === s.id)}
-                        className="h-4 w-4 rounded border-slate-300"
-                      />
-                      {s.name}
-                    </label>
-                  ))}
-                </div>
-                <SaveButton savedLabel="Školy uložené ✓" className="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
-                  Uložiť výber škôl
-                </SaveButton>
-              </form>
+              <VeltrhSchoolsPicker
+                veltrhId={v.id}
+                schools={schools.map((s) => ({ id: s.id, name: s.name }))}
+                initialSelected={v.schools.map((vs) => vs.id)}
+              />
             </details>
           </div>
         ))}
