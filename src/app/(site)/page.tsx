@@ -25,7 +25,7 @@ export default async function HomePage() {
         tags: true,
         odbory: true,
         badges: true,
-        photos: { where: { isListCover: true }, take: 1 },
+        photos: { orderBy: { sort: "asc" } },
       },
       orderBy: { name: "asc" },
     }),
@@ -98,9 +98,14 @@ export default async function HomePage() {
     })),
     tags: s.tags.map((t) => ({ code: t.code, label: t.label })),
     badges: s.badges.map((b) => ({ label: b.label, kind: b.kind })),
-    photoUrl: s.photos[0]?.url ?? s.photoUrl,
-    photoFocalX: s.photos[0]?.focalX ?? 50,
-    photoFocalY: s.photos[0]?.focalY ?? 50,
+    ...(() => {
+      const listPhoto = s.photos.find((p) => p.isListCover) ?? s.photos.find((p) => p.isDetailCover) ?? s.photos[0];
+      return {
+        photoUrl: listPhoto?.url ?? s.photoUrl,
+        photoFocalX: listPhoto?.focalX ?? 50,
+        photoFocalY: listPhoto?.focalY ?? 50,
+      };
+    })(),
   }));
 
   const stories = reviews;

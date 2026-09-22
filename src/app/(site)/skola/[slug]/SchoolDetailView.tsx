@@ -592,7 +592,7 @@ export function SchoolDetailView({
           <p className="dl">Ak ťa zaujala táto škola, pozri sa aj na tieto.</p>
           <div className="cards">
             {school.similarTo.map((similar) => {
-              const photo = similar.photos[0];
+              const photo = similar.photos.find((p) => p.isListCover) ?? similar.photos.find((p) => p.isDetailCover) ?? similar.photos[0];
               return (
                 <Link key={similar.id} href={`/skola/${similar.slug}`} className="scard">
                   {photo ? (

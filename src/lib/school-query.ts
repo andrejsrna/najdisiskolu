@@ -12,7 +12,7 @@ export const schoolDetailInclude = {
   photos: { orderBy: { sort: "asc" } },
   similarTo: {
     where: { isPublished: true },
-    include: { photos: { where: { isListCover: true }, take: 1 } },
+    include: { photos: { orderBy: { sort: "asc" } } },
     take: 3,
   },
 } satisfies Prisma.SchoolInclude;
