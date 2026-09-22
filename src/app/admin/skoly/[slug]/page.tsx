@@ -13,6 +13,7 @@ import {
 } from "@/lib/constants";
 import { PhotoReorder } from "./PhotoReorder";
 import { PhotoUpload } from "./PhotoUpload";
+import { SimilarSchoolsPicker } from "./SimilarSchoolsPicker";
 import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 import {
   updateSchoolBasic,
@@ -22,7 +23,6 @@ import {
   saveDod,
   addDownload,
   deleteDownload,
-  saveSimilarSchools,
   addProject,
   updateProject,
   deleteProject,
@@ -627,24 +627,13 @@ export default async function SchoolEditPage({
       {isAdmin && (
         <section className="rounded-xl border border-slate-200 bg-white p-6">
           <h2 className="mb-1 text-sm font-semibold text-slate-900">Podobné školy</h2>
-          <p className="mb-4 text-xs text-slate-500">Vyber najviac 3 školy, ktoré sa zobrazia na konci verejného detailu.</p>
-          <form action={saveSimilarSchools.bind(null, school.id, school.slug)}>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {allSchools.map((candidate) => (
-                <label key={candidate.id} className="flex items-center gap-2 rounded-md px-2 py-1 text-sm text-slate-700 hover:bg-slate-50">
-                  <input
-                    type="checkbox"
-                    name="similarSchools"
-                    value={candidate.id}
-                    defaultChecked={school.similarTo.some((item) => item.id === candidate.id)}
-                    className="h-4 w-4 rounded border-slate-300"
-                  />
-                  {candidate.name} <span className="text-slate-400">· {candidate.city}</span>
-                </label>
-              ))}
-            </div>
-            <SaveButton className="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Uložiť podobné školy</SaveButton>
-          </form>
+          <p className="mb-4 text-xs text-slate-500">Vyhľadaj a vyber najviac 3 školy, ktoré sa zobrazia na konci verejného detailu.</p>
+          <SimilarSchoolsPicker
+            schoolId={school.id}
+            slug={school.slug}
+            candidates={allSchools}
+            initialSelected={school.similarTo.map((item) => item.id)}
+          />
         </section>
       )}
 
