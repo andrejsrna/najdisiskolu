@@ -603,25 +603,31 @@ export default async function SchoolPage({
             </div>
           </div>
 
+          {school.downloads.length > 0 && (
+            <div className="sidebox downloads">
+              <div className="lbl">Na stiahnutie</div>
+              <div>
+                {school.downloads.map((download) => (
+                  <a
+                    key={download.id}
+                    href={download.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="download-link"
+                  >
+                    ↓ {download.title}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           {school.badges.length > 0 && (
             <div className="sidebox">
               {school.badges.map((b) => (
                 <span key={b.id} className="tag hi" style={{ marginRight: 6, marginBottom: 6 }}>
                   {b.label}
                 </span>
-              ))}
-            </div>
-          )}
-
-          {school.downloads.length > 0 && (
-            <div className="sidebox">
-              <div className="lbl">Na stiahnutie</div>
-              {school.downloads.map((d) => (
-                <div key={d.id} style={{ marginBottom: 8 }}>
-                  <a href={d.fileUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>
-                    ↓ {d.title}
-                  </a>
-                </div>
               ))}
             </div>
           )}
