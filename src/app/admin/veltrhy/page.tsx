@@ -2,8 +2,13 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
-import { addVeltrh, deleteVeltrh, setVeltrhSchools } from "@/lib/admin-actions";
+import { addVeltrh, deleteVeltrh, setVeltrhSchools, saveVeltrhySections } from "@/lib/admin-actions";
 import { SaveButton, DeleteButton } from "@/components/admin-buttons";
+import {
+  VELTRHY_SECTIONS_DEFAULT,
+  VELTRHY_SECTIONS_KEY,
+  type VeltrhySections,
+} from "@/lib/veltrhy-content";
 
 const input =
   "block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
@@ -22,6 +27,17 @@ export default async function VeltrhyPage() {
     orderBy: { date: "asc" },
   });
   const schools = await prisma.school.findMany({ orderBy: { name: "asc" } });
+  const setting = await prisma.setting.findUnique({ where: { key: VELTRHY_SECTIONS_KEY } });
+  const stored = (setting?.value ?? {}) as Partial<VeltrhySections>;
+  const sections: VeltrhySections = {
+    lead: stored.lead ?? VELTRHY_SECTIONS_DEFAULT.lead,
+    whatCells: stored.whatCells?.length ? stored.whatCells : VELTRHY_SECTIONS_DEFAULT.whatCells,
+    tipsIntro: stored.tipsIntro ?? VELTRHY_SECTIONS_DEFAULT.tipsIntro,
+    tipsCells: stored.tipsCells?.length ? stored.tipsCells : VELTRHY_SECTIONS_DEFAULT.tipsCells,
+    dodIntro: stored.dodIntro ?? VELTRHY_SECTIONS_DEFAULT.dodIntro,
+    helpHeading: stored.helpHeading ?? VELTRHY_SECTIONS_DEFAULT.helpHeading,
+    helpText: stored.helpText ?? VELTRHY_SECTIONS_DEFAULT.helpText,
+  };
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -117,6 +133,66 @@ export default async function VeltrhyPage() {
             </details>
           </div>
         ))}
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="mb-1 text-sm font-semibold text-slate-900">Karty na stránke Veľtrhy</h2>
+        <p className="mb-4 text-sm text-slate-500">
+          Statické texty na verejnej stránke <code>/veltrhy</code> — úvod, karty „Čo tam na teba
+          čaká“ a „Ako z toho vyťažiť čo najviac“, a box na konci stránky. Jedna položka na riadok.
+        </p>
+        <form action={saveVeltrhySections} className="space-y-4">
+          <div>
+            <label className={label}>Úvodný text (pod nadpisom „Veľtrhy škôl“)</label>
+            <textarea name="lead" defaultValue={sections.lead} rows={3} className={input} />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className={label}>„Čo tam na teba čaká“ — karty (jedna na riadok)</label>
+              <textarea
+                name="whatCells"
+                defaultValue={sections.whatCells.join("\n")}
+                rows={6}
+                className={input}
+              />
+            </div>
+            <div>
+              <label className={label}>„Ako z toho vyťažiť čo najviac“ — karty (jedna na riadok)</label>
+              <textarea
+                name="tipsCells"
+                defaultValue={sections.tipsCells.join("\n")}
+                rows={6}
+                className={input}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className={label}>Úvod k tipom (nad kartami vyššie vpravo)</label>
+            <textarea name="tipsIntro" defaultValue={sections.tipsIntro} rows={2} className={input} />
+          </div>
+
+          <div>
+            <label className={label}>Úvod k dňom otvorených dverí</label>
+            <textarea name="dodIntro" defaultValue={sections.dodIntro} rows={2} className={input} />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className={label}>Nadpis pomocného boxu na konci stránky</label>
+              <input name="helpHeading" defaultValue={sections.helpHeading} className={input} />
+            </div>
+            <div>
+              <label className={label}>Text pomocného boxu</label>
+              <input name="helpText" defaultValue={sections.helpText} className={input} />
+            </div>
+          </div>
+
+          <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+            Uložiť karty
+          </SaveButton>
+        </form>
       </div>
     </div>
   );

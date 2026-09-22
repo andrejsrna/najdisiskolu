@@ -122,6 +122,33 @@ export async function setVeltrhSchools(veltrhId: string, formData: FormData) {
   revalidatePath("/admin/veltrhy");
 }
 
+/** Editovateľné statické karty na verejnej stránke /veltrhy (uložené v Setting["veltrhy.sections"]). */
+export async function saveVeltrhySections(formData: FormData) {
+  const actor = await assertStaff();
+  const lines = (key: string) =>
+    String(formData.get(key) ?? "")
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  const value = {
+    lead: str(formData.get("lead")) ?? "",
+    whatCells: lines("whatCells"),
+    tipsIntro: str(formData.get("tipsIntro")) ?? "",
+    tipsCells: lines("tipsCells"),
+    dodIntro: str(formData.get("dodIntro")) ?? "",
+    helpHeading: str(formData.get("helpHeading")) ?? "",
+    helpText: str(formData.get("helpText")) ?? "",
+  };
+  await prisma.setting.upsert({
+    where: { key: "veltrhy.sections" },
+    update: { value },
+    create: { key: "veltrhy.sections", value },
+  });
+  await logAudit(actor, "update", "Setting", "veltrhy.sections", "Karty na stránke Veľtrhy");
+  revalidatePath("/admin/veltrhy");
+  revalidatePath("/veltrhy");
+}
+
 /* ================= BLOG ================= */
 
 export async function savePost(formData: FormData) {
