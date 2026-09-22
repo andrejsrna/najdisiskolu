@@ -1348,6 +1348,25 @@ font-size:8pt;margin-bottom:2px
 .site a[href]:after {
 content:""
 }
+.site .no-print {
+display:none !important
+}
+}
+.site .print-batch-toolbar {
+position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+    gap:16px;padding:14px 20px;background:var(--ink);color:#fff
+}
+.site .print-batch-toolbar span {
+font-size:14px;font-weight:600
+}
+.site .print-batch-item {
+border-bottom:8px solid var(--fill2)
+}
+.site .print-batch-item #detail {
+max-width:900px;margin:0 auto
+}
+.site .print-batch-item .dcols {
+display:block !important
 }
 .site .hidden {
 display:none !important

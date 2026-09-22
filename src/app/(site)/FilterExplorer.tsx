@@ -409,6 +409,17 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                 <option value="abc">Zoradiť: abecedne</option>
                 <option value="odbor">Zoradiť: podľa počtu odborov</option>
               </select>
+              {filtered.length > 0 && (
+                <a
+                  className="btn sm"
+                  style={{ marginLeft: 12, whiteSpace: "nowrap" }}
+                  href={`/tlac?skoly=${filtered.map((s) => s.slug).join(",")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  🖨 Vytlačiť všetky ({filtered.length})
+                </a>
+              )}
             </div>
             {filtered.length === 0 ? (
               <div className="empty">
