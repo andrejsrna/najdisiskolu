@@ -1,7 +1,8 @@
 // Centrálna konfigurácia webu — doména, názov a pomocné SEO funkcie.
 // Doménu zmeň cez env NEXT_PUBLIC_SITE_URL (bez koncovej lomky).
+// Fallback zodpovedá produkčnej doméne v Coolify.
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://www.najdisiskolu.sk"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://najdi.trnavavuc.sk"
 ).replace(/\/+$/, "");
 
 export const SITE_NAME = "Najdi si školu — Trnavský samosprávny kraj";
