@@ -13,7 +13,7 @@ export default function CreateUserForm({
   schools,
   creatableRoles,
 }: {
-  schools: { id: string; name: string }[];
+  schools: { id: string; name: string; city: string }[];
   creatableRoles: RoleOption[];
 }) {
   const [role, setRole] = useState(creatableRoles.at(-1)?.value ?? "SKOLA");
@@ -65,7 +65,7 @@ export default function CreateUserForm({
           <option value="">— žiadna —</option>
           {schools.map((s) => (
             <option key={s.id} value={s.id}>
-              {s.name}
+              {s.name} · {s.city}
             </option>
           ))}
         </select>

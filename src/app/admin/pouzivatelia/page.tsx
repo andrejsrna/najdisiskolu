@@ -27,13 +27,16 @@ export default async function PouzivateliaPage() {
   const creatableOptions = ROLE_OPTIONS.filter((o) => creatable.includes(o.value));
 
   const allUsers = await prisma.user.findMany({
-    include: { school: { select: { name: true } } },
+    include: { school: { select: { name: true, city: true } } },
     orderBy: { email: "asc" },
   });
   // Editor nevidí administrátorov.
   const users = isAdmin ? allUsers : allUsers.filter((u) => u.role !== Role.ADMIN);
 
-  const schools = await prisma.school.findMany({ orderBy: { name: "asc" } });
+  const schools = await prisma.school.findMany({
+    select: { id: true, name: true, city: true },
+    orderBy: [{ name: "asc" }, { city: "asc" }],
+  });
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -87,7 +90,7 @@ export default async function PouzivateliaPage() {
                       <option value="">— žiadna —</option>
                       {schools.map((s) => (
                         <option key={s.id} value={s.id}>
-                          {s.name}
+                          {s.name} · {s.city}
                         </option>
                       ))}
                     </select>
