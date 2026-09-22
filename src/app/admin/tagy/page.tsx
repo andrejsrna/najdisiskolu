@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { Role } from "@/generated/prisma/enums";
-import { addTag, deleteTag } from "@/lib/admin-actions";
+import { addTag, deleteTag, updateTag } from "@/lib/admin-actions";
 import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 
 const input =
@@ -54,14 +54,39 @@ export default async function TagyPage() {
               <th className="px-4 py-2.5 font-medium">Popis</th>
               <th className="px-4 py-2.5 text-right font-medium">Škôl</th>
               <th className="px-4 py-2.5" />
+              <th className="px-4 py-2.5" />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {tags.map((t) => (
               <tr key={t.id} className="hover:bg-slate-50">
-                <td className="px-4 py-2.5 font-mono text-xs text-slate-700">{t.code}</td>
-                <td className="px-4 py-2.5 text-slate-800">{t.label}</td>
+                <td className="px-2 py-1.5">
+                  <form id={`tag-form-${t.id}`} action={updateTag.bind(null, t.id)}>
+                    <input
+                      name="code"
+                      defaultValue={t.code}
+                      className="w-full rounded border border-transparent bg-transparent px-2 py-1 font-mono text-xs text-slate-700 hover:border-slate-200 focus:border-slate-400 focus:bg-white focus:outline-none"
+                    />
+                  </form>
+                </td>
+                <td className="px-2 py-1.5">
+                  <input
+                    name="label"
+                    form={`tag-form-${t.id}`}
+                    defaultValue={t.label}
+                    className="w-full rounded border border-transparent bg-transparent px-2 py-1 text-slate-800 hover:border-slate-200 focus:border-slate-400 focus:bg-white focus:outline-none"
+                  />
+                </td>
                 <td className="px-4 py-2.5 text-right text-slate-600">{t._count.schools}</td>
+                <td className="px-2 py-1.5 text-right">
+                  <button
+                    type="submit"
+                    form={`tag-form-${t.id}`}
+                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  >
+                    Uložiť
+                  </button>
+                </td>
                 <td className="px-4 py-2.5 text-right">
                   <form action={deleteTag.bind(null, t.id)}>
                     <DeleteButton message="Naozaj zmazať tento tag?" />

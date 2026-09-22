@@ -68,6 +68,14 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
             </div>
           </div>
         </div>
+        <div className="wrap">
+          <p style={{ fontSize: "0.75rem", opacity: 0.7, marginTop: "1.5rem", lineHeight: 1.5 }}>
+            Nota bene: Informácie na tomto webe majú informatívny a orientačný charakter. Slúžia ako pomôcka pre
+            žiakov a rodičov. Za prípadné nepresnosti alebo neaktuálnosť údajov nenesie Trnavský samosprávny kraj
+            zodpovednosť. V prípade rozdielu medzi informáciami na tomto webe a oficiálnymi informáciami školy sú
+            rozhodujúce údaje zverejnené školou na jej oficiálnom webovom sídle.
+          </p>
+        </div>
       </footer>
     </div>
   );

@@ -65,6 +65,16 @@ export async function deleteTag(id: string) {
   revalidatePath("/admin/tagy");
 }
 
+export async function updateTag(id: string, formData: FormData) {
+  const actor = await assertStaff();
+  const code = str(formData.get("code"))?.toLowerCase();
+  const label = str(formData.get("label"));
+  if (!code || !label) return;
+  const tag = await prisma.tag.update({ where: { id }, data: { code, label } });
+  await logAudit(actor, "update", "Tag", tag.id, label);
+  revalidatePath("/admin/tagy");
+}
+
 /* ================= VEĽTRHY ================= */
 
 export async function addVeltrh(formData: FormData) {
