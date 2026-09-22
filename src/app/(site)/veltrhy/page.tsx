@@ -19,14 +19,17 @@ export const metadata: Metadata = {
 };
 
 export default async function VeltrhyPage() {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
   const [veltrhy, dodSchools, settings] = await Promise.all([
     prisma.veltrh.findMany({
       include: { schools: { orderBy: { name: "asc" } } },
       orderBy: { date: "asc" },
     }),
     prisma.school.findMany({
-      where: { dods: { some: {} }, isPublished: true },
-      include: { dods: { orderBy: { date: "asc" } } },
+      where: { dods: { some: { date: { gte: todayStart } } }, isPublished: true },
+      include: { dods: { where: { date: { gte: todayStart } }, orderBy: { date: "asc" } } },
       orderBy: { name: "asc" },
     }),
     prisma.setting.findUnique({ where: { key: VELTRHY_SECTIONS_KEY } }),
@@ -47,19 +50,16 @@ export default async function VeltrhyPage() {
     helpText: stored.helpText ?? VELTRHY_SECTIONS_DEFAULT.helpText,
   };
 
-  const dodData = dodSchools
-    .map((s) => {
-      const dod = s.dods[0];
-      return {
-        slug: s.slug,
-        name: s.name,
-        city: s.city,
-        district: s.district,
-        dodDate: dod ? dod.date.toISOString() : null,
-        dodTime: dod?.time ?? null,
-      };
-    })
-    .filter((s) => s.dodDate);
+  const dodData = dodSchools.flatMap((s) =>
+    s.dods.map((dod) => ({
+      slug: s.slug,
+      name: s.name,
+      city: s.city,
+      district: s.district,
+      dodDate: dod.date.toISOString(),
+      dodTime: dod.time ?? null,
+    })),
+  );
 
   return (
     <>

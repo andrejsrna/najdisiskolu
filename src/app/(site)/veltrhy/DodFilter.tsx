@@ -67,7 +67,7 @@ export default function DodFilter({ schools }: { schools: DodSchool[] }) {
 
       <div className="dodbox">
         {list.map((s) => (
-          <Link href={`/skola/${s.slug}`} className="dodrow" key={s.slug} style={{ textDecoration: "none", color: "inherit" }}>
+          <Link href={`/skola/${s.slug}`} className="dodrow" key={`${s.slug}-${s.dodDate}`} style={{ textDecoration: "none", color: "inherit" }}>
             <div>
               <div className="dn">{s.name}</div>
               <div className="dm">{s.city === s.district ? s.city : `${s.city} · okres ${s.district}`}</div>

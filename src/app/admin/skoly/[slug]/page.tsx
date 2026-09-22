@@ -20,7 +20,9 @@ import {
   addOdbor,
   updateOdbor,
   deleteOdbor,
-  saveDod,
+  addDod,
+  updateDod,
+  deleteDod,
   addDownload,
   deleteDownload,
   addProject,
@@ -58,7 +60,7 @@ export default async function SchoolEditPage({
     include: {
       tags: true,
       odbory: { orderBy: { sort: "asc" } },
-      dods: true,
+      dods: { orderBy: { date: "asc" } },
       downloads: { orderBy: { sort: "asc" } },
       projects: { orderBy: { sort: "asc" } },
       badges: { orderBy: { createdAt: "desc" } },
@@ -82,8 +84,6 @@ export default async function SchoolEditPage({
         })
       : Promise.resolve([]),
   ]);
-  const dod = school.dods[0];
-
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <div>
@@ -400,20 +400,63 @@ export default async function SchoolEditPage({
         </form>
       </section>
 
-      {/* ============ DEŇ OTVORENÝCH DVERÍ (bočný panel hore) ============ */}
+      {/* ============ DNI OTVORENÝCH DVERÍ (bočný panel hore) ============ */}
       <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="mb-4 text-sm font-semibold text-slate-900">Deň otvorených dverí</h2>
-        <form action={saveDod.bind(null, school.id, school.slug)} className="flex flex-wrap items-end gap-3">
+        <h2 className="mb-4 text-sm font-semibold text-slate-900">Dni otvorených dverí</h2>
+        <div className="space-y-3">
+          {school.dods.length === 0 && (
+            <p className="text-sm text-slate-400">Žiadne termíny.</p>
+          )}
+          {school.dods.map((d) => (
+            <form
+              key={d.id}
+              action={updateDod.bind(null, school.id, school.slug, d.id)}
+              className="flex flex-wrap items-end gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3"
+            >
+              <div>
+                <label className={label}>Dátum</label>
+                <input name="date" type="date" defaultValue={fmtDate(d.date)} className={input} />
+              </div>
+              <div>
+                <label className={label}>Čas</label>
+                <input name="time" defaultValue={d.time ?? ""} placeholder="8:00 - 12:00" className={input} />
+              </div>
+              <div className="flex-1 min-w-[160px]">
+                <label className={label}>Poznámka (voliteľné)</label>
+                <input name="note" defaultValue={d.note ?? ""} placeholder="napr. len pre 9. ročník" className={input} />
+              </div>
+              <div className="flex gap-2">
+                <SaveButton className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">
+                  Uložiť
+                </SaveButton>
+                <DeleteButton
+                  formAction={deleteDod.bind(null, school.id, school.slug, d.id)}
+                  message="Naozaj zmazať tento termín DOD?"
+                  className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                />
+              </div>
+            </form>
+          ))}
+        </div>
+        <form
+          action={addDod.bind(null, school.id, school.slug)}
+          className="mt-4 flex flex-wrap items-end gap-3 rounded-lg border border-dashed border-slate-300 p-4"
+        >
+          <div className="mb-1 w-full text-sm font-medium text-slate-700">Pridať termín</div>
           <div>
             <label className={label}>Dátum</label>
-            <input name="date" type="date" defaultValue={dod ? fmtDate(dod.date) : ""} className={input} />
+            <input name="date" type="date" className={input} />
           </div>
           <div>
             <label className={label}>Čas</label>
-            <input name="time" defaultValue={dod?.time ?? ""} placeholder="8:00 - 12:00" className={input} />
+            <input name="time" placeholder="8:00 - 12:00" className={input} />
+          </div>
+          <div className="flex-1 min-w-[160px]">
+            <label className={label}>Poznámka (voliteľné)</label>
+            <input name="note" placeholder="napr. len pre 9. ročník" className={input} />
           </div>
           <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
-            Uložiť termín
+            Pridať termín
           </SaveButton>
         </form>
       </section>

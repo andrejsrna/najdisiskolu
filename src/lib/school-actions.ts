@@ -212,23 +212,34 @@ export async function deleteOdbor(
 
 /* ================= DOD ================= */
 
-export async function saveDod(schoolId: string, slug: string, formData: FormData) {
-  await assertCanEditSchool(schoolId);
+export async function addDod(schoolId: string, slug: string, formData: FormData) {
+  const actor = await assertCanEditSchool(schoolId);
   const dateStr = str(formData.get("date"));
   const time = str(formData.get("time"));
-  const existing = await prisma.dod.findFirst({ where: { schoolId } });
+  const note = str(formData.get("note"));
+  if (!dateStr) return;
+  const date = new Date(`${dateStr}T00:00:00`);
+  const dod = await prisma.dod.create({ data: { schoolId, date, time, note } });
+  await logAudit(actor, "create", "Dod", dod.id, dateStr);
+  revalidateSchool(slug);
+}
 
-  if (!dateStr) {
-    // prázdny dátum → zmazať DOD
-    if (existing) await prisma.dod.delete({ where: { id: existing.id } });
-  } else {
-    const date = new Date(`${dateStr}T00:00:00`);
-    if (existing) {
-      await prisma.dod.update({ where: { id: existing.id }, data: { date, time } });
-    } else {
-      await prisma.dod.create({ data: { schoolId, date, time } });
-    }
-  }
+export async function updateDod(schoolId: string, slug: string, dodId: string, formData: FormData) {
+  const actor = await assertCanEditSchool(schoolId);
+  const dateStr = str(formData.get("date"));
+  const time = str(formData.get("time"));
+  const note = str(formData.get("note"));
+  if (!dateStr) return;
+  const date = new Date(`${dateStr}T00:00:00`);
+  await prisma.dod.updateMany({ where: { id: dodId, schoolId }, data: { date, time, note } });
+  await logAudit(actor, "update", "Dod", dodId, dateStr);
+  revalidateSchool(slug);
+}
+
+export async function deleteDod(schoolId: string, slug: string, dodId: string) {
+  const actor = await assertCanEditSchool(schoolId);
+  await prisma.dod.deleteMany({ where: { id: dodId, schoolId } });
+  await logAudit(actor, "delete", "Dod", dodId);
   revalidateSchool(slug);
 }
 

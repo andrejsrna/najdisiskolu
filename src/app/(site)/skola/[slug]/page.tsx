@@ -80,7 +80,7 @@ export default async function SchoolPage({
       tags: { orderBy: { label: "asc" } },
       odbory: { orderBy: { sort: "asc" } },
       projects: { orderBy: { sort: "asc" } },
-      dods: true,
+      dods: { orderBy: { date: "asc" } },
       downloads: { orderBy: { sort: "asc" } },
       badges: { orderBy: { createdAt: "desc" } },
       photos: { orderBy: { sort: "asc" } },
@@ -104,7 +104,10 @@ export default async function SchoolPage({
   const studentsApprox = Boolean(studentsNumber) && /približ/i.test(school.totalStudents ?? "");
   const inekoK = school.inekoKrajRank ? `${school.inekoKrajRank}. ${school.inekoKrajOf ?? "zo všetkých"}` : null;
   const inekoS = school.inekoSkRank ? `${school.inekoSkRank}. ${school.inekoSkOf ?? "zo všetkých"}` : null;
-  const dod = school.dods[0];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const upcomingDods = school.dods.filter((d) => d.date >= today);
+  const dod = upcomingDods[0];
   const dodIcal = dod ? dod.date.toISOString().slice(0, 10).replace(/-/g, "") : "";
   /* Google Maps embed fallback miesto placeholdera „MAPA“ – vyhľadanie podľa adresy/názvu a mesta */
   const gmapQuery = [school.address, school.name, school.city].filter(Boolean).join(", ");
@@ -549,12 +552,17 @@ export default async function SchoolPage({
 
         {/* BOČNÝ PANEL */}
         <div className="side">
-          {dod && (
+          {upcomingDods.length > 0 && (
             <div className="sidebox dod">
-              <div className="lbl">Deň otvorených dverí</div>
-              <div style={{ fontSize: 26, fontWeight: 800, marginBottom: 2 }}>{fmtDate(dod.date)}</div>
-              {dod.time && <div style={{ fontSize: 13.5, color: "var(--ink2)", margin: "4px 0 14px" }}>{dod.time}</div>}
-              <a className="btn sm full" href={gcalUrl} target="_blank" rel="noopener noreferrer">
+              <div className="lbl">{upcomingDods.length > 1 ? "Dni otvorených dverí" : "Deň otvorených dverí"}</div>
+              {upcomingDods.map((d, i) => (
+                <div key={d.id} style={{ marginBottom: i < upcomingDods.length - 1 ? 12 : 0 }}>
+                  <div style={{ fontSize: 26, fontWeight: 800, marginBottom: 2 }}>{fmtDate(d.date)}</div>
+                  {d.time && <div style={{ fontSize: 13.5, color: "var(--ink2)", margin: "4px 0 4px" }}>{d.time}</div>}
+                  {d.note && <div style={{ fontSize: 12.5, color: "var(--ink2)" }}>{d.note}</div>}
+                </div>
+              ))}
+              <a className="btn sm full" style={{ marginTop: 10 }} href={gcalUrl} target="_blank" rel="noopener noreferrer">
                 Pridať do kalendára
               </a>
             </div>
