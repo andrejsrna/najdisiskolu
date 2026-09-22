@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/session";
 import { compressAndUploadImage } from "@/lib/image";
+import { logAudit } from "@/lib/audit";
 import { Role, type Completion } from "@/generated/prisma/enums";
 
 const COMPLETION_VALUES = new Set([
@@ -79,7 +80,7 @@ export async function updateSchoolBasic(
   slug: string,
   formData: FormData,
 ) {
-  await assertCanEditSchool(schoolId);
+  const actor = await assertCanEditSchool(schoolId);
   const tagCodes = formData.getAll("tags").map(String);
   const priestoryIds = formData.getAll("priestory").map(String);
   const languageCodes = formData.getAll("languages").map(String);
@@ -144,17 +145,18 @@ export async function updateSchoolBasic(
       priestory: { set: priestoryIds.map((id) => ({ id })) },
     },
   });
+  await logAudit(actor, "update", "School", schoolId, String(formData.get("name") ?? slug));
   revalidateSchool(slug);
 }
 
 /* ================= ODBOR (repeater) ================= */
 
 export async function addOdbor(schoolId: string, slug: string, formData: FormData) {
-  await assertCanEditSchool(schoolId);
+  const actor = await assertCanEditSchool(schoolId);
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return;
   const completion = String(formData.get("completion") ?? "MATURITA");
-  await prisma.odbor.create({
+  const odbor = await prisma.odbor.create({
     data: {
       schoolId,
       code: str(formData.get("code")) ?? "",
@@ -169,6 +171,7 @@ export async function addOdbor(schoolId: string, slug: string, formData: FormDat
       employment: str(formData.get("employment")),
     },
   });
+  await logAudit(actor, "create", "Odbor", odbor.id, name);
   revalidateSchool(slug);
 }
 
@@ -203,8 +206,9 @@ export async function deleteOdbor(
   slug: string,
   odborId: string,
 ) {
-  await assertCanEditSchool(schoolId);
+  const actor = await assertCanEditSchool(schoolId);
   await prisma.odbor.delete({ where: { id: odborId } });
+  await logAudit(actor, "delete", "Odbor", odborId);
   revalidateSchool(slug);
 }
 
@@ -233,13 +237,14 @@ export async function saveDod(schoolId: string, slug: string, formData: FormData
 /* ================= DOWNLOAD ================= */
 
 export async function addDownload(schoolId: string, slug: string, formData: FormData) {
-  await assertCanEditSchool(schoolId);
+  const actor = await assertCanEditSchool(schoolId);
   const title = str(formData.get("title"));
   const fileUrl = str(formData.get("fileUrl"));
   if (!title || !fileUrl) return;
-  await prisma.download.create({
+  const download = await prisma.download.create({
     data: { schoolId, title, fileUrl, fileName: str(formData.get("fileName")) },
   });
+  await logAudit(actor, "create", "Download", download.id, title);
   revalidateSchool(slug);
 }
 
@@ -248,42 +253,46 @@ export async function deleteDownload(
   slug: string,
   downloadId: string,
 ) {
-  await assertCanEditSchool(schoolId);
+  const actor = await assertCanEditSchool(schoolId);
   await prisma.download.delete({ where: { id: downloadId } });
+  await logAudit(actor, "delete", "Download", downloadId);
   revalidateSchool(slug);
 }
 
 /* ================= PROJEKTY ŠKOLY ================= */
 
 export async function addProject(schoolId: string, slug: string, formData: FormData) {
-  await assertCanEditSchool(schoolId);
+  const actor = await assertCanEditSchool(schoolId);
   const title = str(formData.get("title"));
   const description = str(formData.get("description"));
   if (!title || !description) return;
   const sort = (await prisma.project.count({ where: { schoolId } })) + 1;
-  await prisma.project.create({ data: { schoolId, title, description, sort } });
+  const project = await prisma.project.create({ data: { schoolId, title, description, sort } });
+  await logAudit(actor, "create", "Project", project.id, title);
   revalidateSchool(slug);
 }
 
 export async function updateProject(schoolId: string, slug: string, projectId: string, formData: FormData) {
-  await assertCanEditSchool(schoolId);
+  const actor = await assertCanEditSchool(schoolId);
   const title = str(formData.get("title"));
   const description = str(formData.get("description"));
   if (!title || !description) return;
   await prisma.project.updateMany({ where: { id: projectId, schoolId }, data: { title, description } });
+  await logAudit(actor, "update", "Project", projectId, title);
   revalidateSchool(slug);
 }
 
 export async function deleteProject(schoolId: string, slug: string, projectId: string) {
-  await assertCanEditSchool(schoolId);
+  const actor = await assertCanEditSchool(schoolId);
   await prisma.project.deleteMany({ where: { id: projectId, schoolId } });
+  await logAudit(actor, "delete", "Project", projectId);
   revalidateSchool(slug);
 }
 
 /* ================= FOTOGALÉRIA ================= */
 
 export async function addSchoolPhoto(schoolId: string, slug: string, formData: FormData) {
-  await assertCanEditSchool(schoolId);
+  const actor = await assertCanEditSchool(schoolId);
   const upload = formData.get("file");
   const file = upload instanceof File && upload.size > 0 ? upload : null;
   const fallbackUrl = str(formData.get("url"));
@@ -300,12 +309,13 @@ export async function addSchoolPhoto(schoolId: string, slug: string, formData: F
     data: { schoolId, url: url!, alt: str(formData.get("alt")), sort },
     select: { id: true, url: true, alt: true, isDetailCover: true, isListCover: true, focalX: true, focalY: true },
   });
+  await logAudit(actor, "create", "SchoolPhoto", photo.id, schoolId);
   revalidateSchool(slug);
   return photo;
 }
 
 export async function addSchoolPhotos(schoolId: string, slug: string, formData: FormData) {
-  await assertCanEditSchool(schoolId);
+  const actor = await assertCanEditSchool(schoolId);
   const files = formData
     .getAll("files")
     .filter((x): x is File => x instanceof File && x.size > 0);
@@ -319,6 +329,7 @@ export async function addSchoolPhotos(schoolId: string, slug: string, formData: 
     rows.push({ schoolId, url, alt: null, sort: baseSort + i + 1 });
   }
   await prisma.schoolPhoto.createMany({ data: rows });
+  await logAudit(actor, "create", "SchoolPhoto", schoolId, `${rows.length} fotiek`);
   revalidateSchool(slug);
 }
 
@@ -333,8 +344,9 @@ export async function reorderSchoolPhotos(schoolId: string, slug: string, photoI
 }
 
 export async function deleteSchoolPhoto(schoolId: string, slug: string, photoId: string) {
-  await assertCanEditSchool(schoolId);
+  const actor = await assertCanEditSchool(schoolId);
   await prisma.schoolPhoto.deleteMany({ where: { id: photoId, schoolId } });
+  await logAudit(actor, "delete", "SchoolPhoto", photoId, schoolId);
   revalidateSchool(slug);
 }
 
@@ -373,7 +385,7 @@ export async function setSchoolPhotoCover(
 /* ================= PODOBNÉ ŠKOLY (len ADMIN + SCHOLSTVO) ================= */
 
 export async function saveSimilarSchools(schoolId: string, slug: string, formData: FormData) {
-  await assertSchoolAdmin();
+  const actor = await assertSchoolAdmin();
   const ids = [...new Set(formData.getAll("similarSchools").map(String))]
     .filter((id) => id !== schoolId)
     .slice(0, 3);
@@ -381,16 +393,17 @@ export async function saveSimilarSchools(schoolId: string, slug: string, formDat
     where: { id: schoolId },
     data: { similarTo: { set: ids.map((id) => ({ id })) } },
   });
+  await logAudit(actor, "update", "School", schoolId, "Podobné školy");
   revalidateSchool(slug);
 }
 
 /* ================= BADGE (len ADMIN/SCHOLSTVO) ================= */
 
 export async function addBadge(schoolId: string, slug: string, formData: FormData) {
-  await assertSchoolAdmin();
+  const actor = await assertSchoolAdmin();
   const label = str(formData.get("label"));
   if (!label) return;
-  await prisma.badge.create({
+  const badge = await prisma.badge.create({
     data: {
       schoolId,
       label,
@@ -398,11 +411,13 @@ export async function addBadge(schoolId: string, slug: string, formData: FormDat
       note: str(formData.get("note")),
     },
   });
+  await logAudit(actor, "create", "Badge", badge.id, label);
   revalidateSchool(slug);
 }
 
 export async function deleteBadge(schoolId: string, slug: string, badgeId: string) {
-  await assertSchoolAdmin();
+  const actor = await assertSchoolAdmin();
   await prisma.badge.delete({ where: { id: badgeId } });
+  await logAudit(actor, "delete", "Badge", badgeId);
   revalidateSchool(slug);
 }

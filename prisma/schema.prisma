@@ -369,3 +369,21 @@ model Setting {
   key   String @id
   value Json
 }
+
+// ============ AUDIT LOG (jednoduché revízie „kto čo urobil“) ============
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userEmail String? // zachytené v čase akcie, aby log prežil zmazanie usera
+  userName  String?
+  action    String  // create / update / delete
+  entity    String  // School, SchoolPhoto, User, Post, Review, Badge, Faq, Veltrh, Tag, Priestor, Setting, Odbor, Download, Project, Dod
+  entityId  String?
+  label     String? // ľudsky čitateľný popis (napr. názov školy, email usera)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity, entityId])
+  @@index([userId])
+}

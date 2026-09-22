@@ -35,6 +35,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
   if (user.role === Role.ADMIN || user.role === Role.SCHOLSTVO) {
     items.push({ href: "/admin/pouzivatelia", label: "Používatelia" });
+    items.push({ href: "/admin/revizie", label: "Revízie" });
   }
 
   return (

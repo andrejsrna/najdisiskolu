@@ -8,6 +8,7 @@ import { uploadPublicImage } from "@/lib/s3";
 import { compressAndUploadImage } from "@/lib/image";
 import { Role, PostType } from "@/generated/prisma/enums";
 import { parseRole, canManageRole } from "@/lib/roles";
+import { logAudit } from "@/lib/audit";
 
 const str = (v: FormDataEntryValue | null): string | null => {
   const s = String(v ?? "").trim();
@@ -48,44 +49,48 @@ async function assertStaff() {
 /* ================= TAGY ================= */
 
 export async function addTag(formData: FormData) {
-  await assertStaff();
+  const actor = await assertStaff();
   const code = str(formData.get("code"))?.toLowerCase();
   const label = str(formData.get("label"));
   if (!code || !label) return;
-  await prisma.tag.upsert({ where: { code }, update: { label }, create: { code, label } });
+  const tag = await prisma.tag.upsert({ where: { code }, update: { label }, create: { code, label } });
+  await logAudit(actor, "update", "Tag", tag.id, label);
   revalidatePath("/admin/tagy");
 }
 
 export async function deleteTag(id: string) {
-  await assertStaff();
-  await prisma.tag.delete({ where: { id } });
+  const actor = await assertStaff();
+  const tag = await prisma.tag.delete({ where: { id } });
+  await logAudit(actor, "delete", "Tag", id, tag.label);
   revalidatePath("/admin/tagy");
 }
 
 /* ================= PRIESTORY ================= */
 
 export async function addPriestor(formData: FormData) {
-  await assertStaff();
+  const actor = await assertStaff();
   const name = str(formData.get("name"));
   if (!name) return;
-  await prisma.priestor.create({ data: { name } });
+  const priestor = await prisma.priestor.create({ data: { name } });
+  await logAudit(actor, "create", "Priestor", priestor.id, name);
   revalidatePath("/admin/priestory");
 }
 
 export async function deletePriestor(id: string) {
-  await assertStaff();
-  await prisma.priestor.delete({ where: { id } });
+  const actor = await assertStaff();
+  const priestor = await prisma.priestor.delete({ where: { id } });
+  await logAudit(actor, "delete", "Priestor", id, priestor.name);
   revalidatePath("/admin/priestory");
 }
 
 /* ================= VEĽTRHY ================= */
 
 export async function addVeltrh(formData: FormData) {
-  await assertStaff();
+  const actor = await assertStaff();
   const city = str(formData.get("city"));
   const dateStr = str(formData.get("date"));
   if (!city || !dateStr) return;
-  await prisma.veltrh.create({
+  const veltrh = await prisma.veltrh.create({
     data: {
       city,
       date: new Date(`${dateStr}T00:00:00`),
@@ -96,12 +101,14 @@ export async function addVeltrh(formData: FormData) {
       extra: str(formData.get("extra")),
     },
   });
+  await logAudit(actor, "create", "Veltrh", veltrh.id, city);
   revalidatePath("/admin/veltrhy");
 }
 
 export async function deleteVeltrh(id: string) {
-  await assertStaff();
-  await prisma.veltrh.delete({ where: { id } });
+  const actor = await assertStaff();
+  const veltrh = await prisma.veltrh.delete({ where: { id } });
+  await logAudit(actor, "delete", "Veltrh", id, veltrh.city);
   revalidatePath("/admin/veltrhy");
 }
 
@@ -148,10 +155,13 @@ export async function savePost(formData: FormData) {
     publishedAt: published ? (publishedAt ? new Date(`${publishedAt}T00:00:00`) : new Date()) : null,
     images: { deleteMany: {}, create: images },
   };
+  let post;
   if (id) {
-    await prisma.post.update({ where: { id }, data });
+    post = await prisma.post.update({ where: { id }, data });
+    await logAudit(user, "update", "Post", post.id, title);
   } else {
-    await prisma.post.create({ data });
+    post = await prisma.post.create({ data });
+    await logAudit(user, "create", "Post", post.id, title);
   }
   revalidatePath("/admin/blog");
   revalidatePath("/");
@@ -161,9 +171,10 @@ export async function savePost(formData: FormData) {
 }
 
 export async function deletePost(id: string) {
-  await assertStaff();
-  const post = await prisma.post.findUnique({ where: { id }, select: { slug: true } });
+  const actor = await assertStaff();
+  const post = await prisma.post.findUnique({ where: { id }, select: { slug: true, title: true } });
   await prisma.post.delete({ where: { id } });
+  await logAudit(actor, "delete", "Post", id, post?.title);
   revalidatePath("/admin/blog");
   revalidatePath("/");
   revalidatePath("/spravy");
@@ -216,7 +227,7 @@ export async function uploadHeroMedia(formData: FormData): Promise<string[]> {
 /* ================= RECENZIE (príbehy „Moja stredná je super") ================= */
 
 export async function saveReview(formData: FormData) {
-  await assertStaff();
+  const actor = await assertStaff();
   const id = str(formData.get("id"));
   const name = str(formData.get("name"));
   if (!name) return;
@@ -232,17 +243,20 @@ export async function saveReview(formData: FormData) {
     sort: num(formData.get("sort")) ?? 0,
   };
   if (id) {
-    await prisma.review.update({ where: { id }, data });
+    const review = await prisma.review.update({ where: { id }, data });
+    await logAudit(actor, "update", "Review", review.id, name);
   } else {
-    await prisma.review.create({ data });
+    const review = await prisma.review.create({ data });
+    await logAudit(actor, "create", "Review", review.id, name);
   }
   revalidatePath("/admin/recenzie");
   revalidatePath("/");
 }
 
 export async function deleteReview(id: string) {
-  await assertStaff();
-  await prisma.review.delete({ where: { id } });
+  const actor = await assertStaff();
+  const review = await prisma.review.delete({ where: { id } });
+  await logAudit(actor, "delete", "Review", id, review.name);
   revalidatePath("/admin/recenzie");
   revalidatePath("/");
 }
@@ -252,7 +266,7 @@ export async function deleteReview(id: string) {
 const BADGE_KINDS = new Set(["ok", "mat", "vl", "term"]);
 
 export async function saveBadge(formData: FormData) {
-  await assertStaff();
+  const actor = await assertStaff();
   const id = str(formData.get("id"));
   const label = str(formData.get("label"));
   const schoolId = str(formData.get("schoolId"));
@@ -264,20 +278,23 @@ export async function saveBadge(formData: FormData) {
     kind,
     schoolId,
     note: str(formData.get("note")),
-    createdBy: (await getSessionUser())?.id ?? null,
+    createdBy: actor.id,
   };
   if (id) {
-    await prisma.badge.update({ where: { id }, data });
+    const badge = await prisma.badge.update({ where: { id }, data });
+    await logAudit(actor, "update", "Badge", badge.id, label);
   } else {
-    await prisma.badge.create({ data });
+    const badge = await prisma.badge.create({ data });
+    await logAudit(actor, "create", "Badge", badge.id, label);
   }
   revalidatePath("/admin/badge");
   revalidatePath("/");
 }
 
 export async function deleteBadge(id: string) {
-  await assertStaff();
-  await prisma.badge.delete({ where: { id } });
+  const actor = await assertStaff();
+  const badge = await prisma.badge.delete({ where: { id } });
+  await logAudit(actor, "delete", "Badge", id, badge.label);
   revalidatePath("/admin/badge");
   revalidatePath("/");
 }
@@ -285,7 +302,7 @@ export async function deleteBadge(id: string) {
 /* ================= FAQ (často kladené otázky) ================= */
 
 export async function saveFaq(formData: FormData) {
-  await assertStaff();
+  const actor = await assertStaff();
   const id = str(formData.get("id"));
   const group = str(formData.get("group"));
   const question = str(formData.get("question"));
@@ -297,17 +314,20 @@ export async function saveFaq(formData: FormData) {
     sort: num(formData.get("sort")) ?? 0,
   };
   if (id) {
-    await prisma.faq.update({ where: { id }, data });
+    const faq = await prisma.faq.update({ where: { id }, data });
+    await logAudit(actor, "update", "Faq", faq.id, question);
   } else {
-    await prisma.faq.create({ data });
+    const faq = await prisma.faq.create({ data });
+    await logAudit(actor, "create", "Faq", faq.id, question);
   }
   revalidatePath("/admin/otazky");
   revalidatePath("/otazky");
 }
 
 export async function deleteFaq(id: string) {
-  await assertStaff();
-  await prisma.faq.delete({ where: { id } });
+  const actor = await assertStaff();
+  const faq = await prisma.faq.delete({ where: { id } });
+  await logAudit(actor, "delete", "Faq", id, faq.question);
   revalidatePath("/admin/otazky");
   revalidatePath("/otazky");
 }
@@ -338,6 +358,7 @@ export async function saveSettings(formData: FormData) {
   await upsert("cred.places", num(formData.get("credPlaces")) ?? 0);
   await upsert("cred.dual", num(formData.get("credDual")) ?? 0);
 
+  await logAudit(user, "update", "Setting", "site", "Nastavenia webu");
   revalidatePath("/admin/nastavenia");
   revalidatePath("/");
 }
@@ -369,6 +390,7 @@ export async function createUser(formData: FormData) {
       schoolId: role === Role.SKOLA ? schoolId : null,
     },
   });
+  await logAudit(actor, "create", "User", email, `${name ?? email} (${role})`);
   revalidatePath("/admin/pouzivatelia");
 }
 
@@ -394,6 +416,7 @@ export async function updateUser(userId: string, formData: FormData) {
       name: str(formData.get("name")),
     },
   });
+  await logAudit(actor, "update", "User", target.email, `${target.name ?? target.email} → ${role}`);
   revalidatePath("/admin/pouzivatelia");
 }
 
@@ -407,6 +430,7 @@ export async function resetUserPassword(userId: string, formData: FormData) {
     where: { id: userId },
     data: { passwordHash: await bcrypt.hash(password, 10) },
   });
+  await logAudit(actor, "update", "User", target.email, `Reset hesla: ${target.name ?? target.email}`);
   revalidatePath("/admin/pouzivatelia");
 }
 
@@ -418,5 +442,6 @@ export async function deleteUser(userId: string) {
   if (target.id === actor.id) return;
   if (!canManageRole(actor.role, target.role)) redirect("/admin");
   await prisma.user.delete({ where: { id: userId } });
+  await logAudit(actor, "delete", "User", target.email, target.name ?? target.email);
   revalidatePath("/admin/pouzivatelia");
 }
