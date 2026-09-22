@@ -393,10 +393,19 @@ export async function saveSettings(formData: FormData) {
   await upsert("timebar.highlight", str(formData.get("timebarHighlight")) ?? "");
   await upsert("timebar.linkText", str(formData.get("timebarLinkText")) ?? "");
   await upsert("timebar.linkHref", str(formData.get("timebarLinkHref")) ?? "");
-  await upsert("cred.schools", num(formData.get("credSchools")) ?? 0);
-  await upsert("cred.programs", num(formData.get("credPrograms")) ?? 0);
-  await upsert("cred.places", num(formData.get("credPlaces")) ?? 0);
-  await upsert("cred.dual", num(formData.get("credDual")) ?? 0);
+  const credSchools = num(formData.get("credSchools"));
+  const credPrograms = num(formData.get("credPrograms"));
+  const credPlaces = num(formData.get("credPlaces"));
+  const credDual = num(formData.get("credDual"));
+  // Prázdne pole = zmazať manuálny override a vrátiť sa k automatickému dopočtu z dát škôl.
+  if (credSchools === null) await prisma.setting.deleteMany({ where: { key: "cred.schools" } });
+  else await upsert("cred.schools", credSchools);
+  if (credPrograms === null) await prisma.setting.deleteMany({ where: { key: "cred.programs" } });
+  else await upsert("cred.programs", credPrograms);
+  if (credPlaces === null) await prisma.setting.deleteMany({ where: { key: "cred.places" } });
+  else await upsert("cred.places", credPlaces);
+  if (credDual === null) await prisma.setting.deleteMany({ where: { key: "cred.dual" } });
+  else await upsert("cred.dual", credDual);
 
   await logAudit(user, "update", "Setting", "site", "Nastavenia webu");
   revalidatePath("/admin/nastavenia");

@@ -13,9 +13,29 @@ export default async function NastaveniaPage() {
   const user = await requireUser();
   if (user.role !== Role.ADMIN) redirect("/admin");
 
-  const rows = await prisma.setting.findMany();
+  const [rows, schools] = await Promise.all([
+    prisma.setting.findMany(),
+    prisma.school.findMany({
+      where: { isPublished: true },
+      select: { hasDual: true, odbory: { select: { code: true, accepts: true } } },
+    }),
+  ]);
   const map = new Map(rows.map((r) => [r.key, r.value]));
   const get = (k: string, d: unknown): unknown => map.get(k) ?? d;
+
+  const autoStats = {
+    schools: schools.length,
+    programs: new Set(schools.flatMap((s) => s.odbory.map((o) => o.code))).size,
+    places: schools.reduce((sum, s) => sum + s.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0), 0),
+    dual: schools
+      .filter((s) => s.hasDual)
+      .reduce((sum, s) => sum + s.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0), 0),
+  };
+  // Manuálny override existuje len vtedy, keď je v DB explicitne uložený Setting záznam.
+  const credSchoolsValue = map.has("cred.schools") ? String(map.get("cred.schools")) : "";
+  const credProgramsValue = map.has("cred.programs") ? String(map.get("cred.programs")) : "";
+  const credPlacesValue = map.has("cred.places") ? String(map.get("cred.places")) : "";
+  const credDualValue = map.has("cred.dual") ? String(map.get("cred.dual")) : "";
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -96,22 +116,26 @@ export default async function NastaveniaPage() {
           <div className="mb-2 text-sm font-semibold text-slate-900">
             Štatistiky (4 čísla v riadku)
           </div>
+          <p className="mb-3 text-xs text-slate-500">
+            Nechaj pole prázdne = číslo sa automaticky dopočíta z aktuálnych dát škôl (počet škôl, odborov, voľných
+            miest a žiakov v duáli). Zadaj číslo = použije sa vždy toto manuálne číslo namiesto výpočtu.
+          </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div>
               <label className={label}>Škôl</label>
-              <input name="credSchools" type="number" defaultValue={String(get("cred.schools", 44))} className={input} />
+              <input name="credSchools" type="number" placeholder={`auto: ${autoStats.schools}`} defaultValue={credSchoolsValue} className={input} />
             </div>
             <div>
               <label className={label}>Odborov</label>
-              <input name="credPrograms" type="number" defaultValue={String(get("cred.programs", 126))} className={input} />
+              <input name="credPrograms" type="number" placeholder={`auto: ${autoStats.programs}`} defaultValue={credProgramsValue} className={input} />
             </div>
             <div>
               <label className={label}>Voľných miest</label>
-              <input name="credPlaces" type="number" defaultValue={String(get("cred.places", 4403))} className={input} />
+              <input name="credPlaces" type="number" placeholder={`auto: ${autoStats.places}`} defaultValue={credPlacesValue} className={input} />
             </div>
             <div>
               <label className={label}>Žiakov v duáli</label>
-              <input name="credDual" type="number" defaultValue={String(get("cred.dual", 911))} className={input} />
+              <input name="credDual" type="number" placeholder={`auto: ${autoStats.dual}`} defaultValue={credDualValue} className={input} />
             </div>
           </div>
         </div>

@@ -58,11 +58,20 @@ export default async function HomePage() {
     const rawTimebarLink = String(get("timebar.linkHref", "/veltrhy") || "");
     const timebarLink = rawTimebarLink.startsWith("/") || /^https:\/\//.test(rawTimebarLink) ? rawTimebarLink : "";
 
+  // Automatický dopočet zo živých dát škôl — použije sa vždy, keď v nastaveniach
+  // nie je vyplnený manuálny override (ten má prednosť, keď je zadaný).
+  const autoSchools = schools.length;
+  const autoPrograms = new Set(schools.flatMap((s) => s.odbory.map((o) => o.code))).size;
+  const autoPlaces = schools.reduce((sum, s) => sum + s.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0), 0);
+  const autoDual = schools
+    .filter((s) => s.hasDual)
+    .reduce((sum, s) => sum + s.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0), 0);
+
   const creds = [
-    { n: String(get("cred.schools", schools.length)), t: "župných stredných škôl", icon: "credIcon1" as const, iconClass: "ico-wide" },
-    { n: String(get("cred.programs", "-")), t: "študijných a učebných odborov", icon: "credIcon2" as const, iconClass: "ico-sq" },
-    { n: String(get("cred.places", "-")), t: "voľných miest pre prvákov", icon: "credIcon3" as const, iconClass: "ico-mid" },
-    { n: String(get("cred.dual", "-")), t: "žiakov v duálnom vzdelávaní", icon: "credIcon4" as const, iconClass: "" },
+    { n: String(get("cred.schools", autoSchools)), t: "župných stredných škôl", icon: "credIcon1" as const, iconClass: "ico-wide" },
+    { n: String(get("cred.programs", autoPrograms)), t: "študijných a učebných odborov", icon: "credIcon2" as const, iconClass: "ico-sq" },
+    { n: String(get("cred.places", autoPlaces)), t: "voľných miest pre prvákov", icon: "credIcon3" as const, iconClass: "ico-mid" },
+    { n: String(get("cred.dual", autoDual)), t: "žiakov v duálnom vzdelávaní", icon: "credIcon4" as const, iconClass: "" },
   ];
 
   const tagData = tags.map((t) => ({ code: t.code, label: t.label }));
