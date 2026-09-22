@@ -4,6 +4,7 @@ import { COMPLETION_LABEL, LANGUAGE_LABEL } from "@/lib/constants";
 import { SITE_URL } from "@/lib/site";
 import { PrintButton } from "./PrintButton";
 import { SchoolGallery } from "./SchoolGallery";
+import { SchoolCard } from "../../SchoolCard";
 import type { SchoolDetailData } from "@/lib/school-query";
 
 const fmtDate = (d: Date) =>
@@ -592,25 +593,28 @@ export function SchoolDetailView({
           <p className="dl">Ak ťa zaujala táto škola, pozri sa aj na tieto.</p>
           <div className="cards">
             {school.similarTo.map((similar) => {
-              const photo = similar.photos.find((p) => p.isListCover) ?? similar.photos.find((p) => p.isDetailCover) ?? similar.photos[0];
+              const listPhoto = similar.photos.find((p) => p.isListCover) ?? similar.photos.find((p) => p.isDetailCover) ?? similar.photos[0];
               return (
-                <Link key={similar.id} href={`/skola/${similar.slug}`} className="scard">
-                  {photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photo.url} alt={photo.alt ?? similar.name} className="img" loading="lazy" decoding="async" />
-                  ) : (
-                    <div className="ph img">FOTO</div>
-                  )}
-                  <div className="body">
-                    <div className="name">{similar.name}</div>
-                    <div className="loc">
-                      {similar.city === similar.district ? similar.city : `${similar.city} · okres ${similar.district}`}
-                    </div>
-                    <div className="foot">
-                      <span className="btn sm">Detail školy</span>
-                    </div>
-                  </div>
-                </Link>
+                <SchoolCard
+                  key={similar.id}
+                  s={{
+                    slug: similar.slug,
+                    name: similar.name,
+                    city: similar.city,
+                    district: similar.district,
+                    languages: similar.languages,
+                    hasInternat: similar.hasInternat,
+                    hasDual: similar.hasDual,
+                    hasNadstavba: similar.hasNadstavba,
+                    inekoKrajRank: similar.inekoKrajRank,
+                    inekoKrajOf: similar.inekoKrajOf,
+                    odbory: similar.odbory,
+                    badges: similar.badges,
+                    photoUrl: listPhoto?.url ?? similar.photoUrl,
+                    photoFocalX: listPhoto?.focalX ?? 50,
+                    photoFocalY: listPhoto?.focalY ?? 50,
+                  }}
+                />
               );
             })}
           </div>

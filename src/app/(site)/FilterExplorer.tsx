@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Illustration } from "@/lib/illustrations";
+import { SchoolCard } from "./SchoolCard";
 
 type Odbor = {
   completion: string;
@@ -62,17 +63,6 @@ const JAZ_SHORT: Record<string, string> = { hu: "maďarský", en: "anglický", r
 const hasMat = (o: Odbor) => o.completion === "MATURITA" || o.completion === "MATURITA_A_VYUCNY_LIST";
 const hasVl = (o: Odbor) => o.completion === "VYUCNY_LIST" || o.completion === "MATURITA_A_VYUCNY_LIST";
 const sklonOdbor = (n: number) => (n === 1 ? "odbor" : n < 5 ? "odbory" : "odborov");
-
-/* keď škola nemá duál, internát, cudzí vyučovací jazyk ani nadstavbu,
-   ukážeme na karte niečo, čo uchádzačovi reálne pomôže rozhodnúť sa (ako v návrhu) */
-function benefit(s: School) {
-  if (s.inekoKrajRank) return "INEKO rebríček";
-  return s.odbory.length === 1 ? "jediný odbor" : "široký výber odborov";
-}
-
-function locTxt(m: string, o: string) {
-  return m === o ? m : `${m} · okres ${o}`;
-}
 
 export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag[] }) {
   const [tab, setTab] = useState<"zam" | "odb" | "sko">("zam");
@@ -431,74 +421,9 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
             ) : (
 
                 <div className="cards">
-                  {filtered.map((s) => {
-                    const mat = s.odbory.some(hasMat);
-                    const vl = s.odbory.some(hasVl);
-                    const ukon = mat && vl ? "maturita + výučný" : mat ? "maturita" : "výučný list";
-                    const ukonCls = mat && vl ? "matvl" : mat ? "mat" : "vl";
-                    const third = s.hasDual ? "duál"
-                      : s.hasInternat ? "internát"
-                      : !s.languages.includes("sk") && s.languages.length ? JAZ_SHORT[s.languages[0]] ?? "cudzí jazyk"
-                      : s.hasNadstavba ? "nadstavbové štúdium"
-                      : benefit(s);
-                    const thirdCls = s.hasDual ? "dual" : s.hasInternat ? "dorm" : s.hasNadstavba ? "nad" : "";
-                    const totalAccepts = s.odbory.reduce((a, o) => a + (o.accepts ?? 0), 0);
-                    const totalApplied = s.odbory.reduce((a, o) => a + (o.appliedLastYear ?? 0), 0);
-                    const totalPlaces = s.odbory.reduce((a, o) => a + (o.places ?? 0), 0);
-                    const applicantsPerPlace = totalPlaces ? Math.round((totalApplied / totalPlaces) * 10) / 10 : null;
-                    const ineko = s.inekoKrajRank ? `${s.inekoKrajRank}. ${s.inekoKrajOf ?? "zo všetkých škôl"}` : null;
-
-                    return (
-                      <Link className="scard" href={`/skola/${s.slug}?from=filter`} onClick={saveFilterReturn} key={s.slug} aria-label={`Zobraziť detail školy: ${s.name}`}>
-                        {s.photoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={s.photoUrl}
-                            alt=""
-                            className="img"
-                            style={{ height: 200, width: "100%", objectFit: "cover", objectPosition: `${s.photoFocalX}% ${s.photoFocalY}%` }}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        ) : (
-                          <div className="ph img">FOTO ŠKOLY</div>
-                        )}
-                        <div className="body">
-                          <div className="name">{s.name}</div>
-                          <div className="loc">{locTxt(s.city, s.district)}</div>
-                          <div className="tags tags3">
-                            <span className={`tag ${ukonCls}`}>{ukon}</span>
-                            <span className="tag">{s.odbory.length} {sklonOdbor(s.odbory.length)}</span>
-                            <span className={`tag ${thirdCls}`}>{third}</span>
-                          </div>
-                          {s.badges.length > 0 && (
-                            <div className="tags">
-                              {s.badges.map((b) => (
-                                <span
-                                  key={b.label}
-                                  className={`tag hi ${b.kind && b.kind !== "ok" ? "k-" + b.kind : ""}`}
-                                >
-                                  {b.label}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                          <div className="tags">
-                            {totalAccepts > 0 && <span className="tag hi">prijímajú {totalAccepts} žiakov</span>}
-                            {applicantsPerPlace != null && <span className="tag hi">vlani {applicantsPerPlace} uchádzačov na 1 miesto</span>}
-                          </div>
-                          {ineko && (
-                            <div className="tags">
-                              <span className="tag hi">INEKO: {ineko.replace(/(ých|ich)$/, " škôl")}</span>
-                            </div>
-                          )}
-                          <div className="foot">
-                            <span className="btn sm">Detail školy</span>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
+                  {filtered.map((s) => (
+                    <SchoolCard key={s.slug} s={s} onClick={saveFilterReturn} />
+                  ))}
                 </div>
             )}
           </div>
