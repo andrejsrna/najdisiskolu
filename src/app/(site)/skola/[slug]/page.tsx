@@ -131,7 +131,7 @@ export default async function SchoolPage({
   ].slice(0, 3);
   const preco = [...school.whyUs];
   if (school.otherTop) preco.push(school.otherTop);
-  preco.length = Math.min(preco.length, 8 - extras.length);
+  preco.length = Math.min(preco.length, 6 - extras.length);
   extras.forEach((x) => preco.push(x));
   // Titulná detailu ovplyvňuje iba hero. Samotná galéria rešpektuje presne
   // poradie, ktoré administrátor nastavil — titulka ju nesmie nútene predbehnúť.
