@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/session";
 import { uploadPublicImage } from "@/lib/s3";
+import { compressAndUploadImage } from "@/lib/image";
 import { Role, PostType } from "@/generated/prisma/enums";
 import { parseRole, canManageRole } from "@/lib/roles";
 
@@ -185,8 +186,7 @@ export async function uploadPostImages(formData: FormData): Promise<string[]> {
     const isPng = sig.startsWith("137,80,78,71");
     const isWebp = file.type === "image/webp";
     if (!isJpg && !isPng && !isWebp) continue;
-    const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-    urls.push(await uploadPublicImage(file, `news/${crypto.randomUUID()}.${extension}`));
+    urls.push(await compressAndUploadImage(file, `news/${crypto.randomUUID()}`));
   }
   return urls;
 }
@@ -204,8 +204,11 @@ export async function uploadHeroMedia(formData: FormData): Promise<string[]> {
     const isImage = ["image/jpeg", "image/png", "image/webp"].includes(file.type);
     if (!isVideo && !isImage) continue;
     if (file.size > (isVideo ? 60 * 1024 * 1024 : 10 * 1024 * 1024)) continue;
-    const extension = isVideo ? "mp4" : file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-    urls.push(await uploadPublicImage(file, `hero/${crypto.randomUUID()}.${extension}`));
+    if (isVideo) {
+      urls.push(await uploadPublicImage(file, `hero/${crypto.randomUUID()}.mp4`));
+    } else {
+      urls.push(await compressAndUploadImage(file, `hero/${crypto.randomUUID()}`));
+    }
   }
   return urls;
 }

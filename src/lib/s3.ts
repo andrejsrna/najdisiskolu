@@ -105,6 +105,61 @@ export async function uploadPublicImage(file: File, key: string): Promise<string
       "x-amz-content-sha256": payloadHash,
       "x-amz-date": amzDate,
     },
+    body: payload as BodyInit,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Nahratie fotografie zlyhalo (${response.status}).`);
+  }
+
+  return `${config.publicUrl}/${encodedKey(key)}`;
+}
+
+/** Ako uploadPublicImage, ale s bufferom + typom obsahu priamo (napr. po kompresii). */
+export async function uploadPublicBuffer(
+  payloadInput: Uint8Array,
+  contentType: string,
+  key: string,
+): Promise<string> {
+  const payload = new Uint8Array(payloadInput);
+  const config = getConfig();
+  const payloadHash = await sha256(payload);
+  const { amzDate, date } = amzDateParts(new Date());
+  const endpoint = new URL(config.endpoint);
+  const path = `/${config.bucket}/${encodedKey(key)}`;
+  const host = endpoint.host;
+  const canonicalHeaders =
+    `content-type:${contentType}\n` +
+    `host:${host}\n` +
+    `x-amz-content-sha256:${payloadHash}\n` +
+    `x-amz-date:${amzDate}\n`;
+  const signedHeaders = "content-type;host;x-amz-content-sha256;x-amz-date";
+  const canonicalRequest = [
+    "PUT",
+    path,
+    "",
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash,
+  ].join("\n");
+  const scope = `${date}/${config.region}/s3/aws4_request`;
+  const stringToSign = [
+    "AWS4-HMAC-SHA256",
+    amzDate,
+    scope,
+    await sha256(encoder.encode(canonicalRequest)),
+  ].join("\n");
+  const signature = Buffer.from(await hmac(await signingKey(config.secretAccessKey, date, config.region), stringToSign)).toString("hex");
+
+  const response = await fetch(`${config.endpoint}${path}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `AWS4-HMAC-SHA256 Credential=${config.accessKeyId}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}`,
+      "Content-Type": contentType,
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "x-amz-content-sha256": payloadHash,
+      "x-amz-date": amzDate,
+    },
     body: payload,
   });
 

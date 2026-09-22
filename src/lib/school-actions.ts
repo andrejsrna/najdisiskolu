@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser } from "@/lib/session";
-import { uploadPublicImage } from "@/lib/s3";
+import { compressAndUploadImage } from "@/lib/image";
 import { Role, type Completion } from "@/generated/prisma/enums";
 
 const COMPLETION_VALUES = new Set([
@@ -292,8 +292,7 @@ export async function addSchoolPhoto(schoolId: string, slug: string, formData: F
   let url = fallbackUrl;
   if (file) {
     await assertSupportedImage(file);
-    const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-    url = await uploadPublicImage(file, `skoly/${schoolId}/${crypto.randomUUID()}.${extension}`);
+    url = await compressAndUploadImage(file, `skoly/${schoolId}/${crypto.randomUUID()}`);
   }
 
   const sort = (await prisma.schoolPhoto.count({ where: { schoolId } })) + 1;
@@ -316,8 +315,7 @@ export async function addSchoolPhotos(schoolId: string, slug: string, formData: 
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     await assertSupportedImage(file);
-    const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-    const url = await uploadPublicImage(file, `skoly/${schoolId}/${crypto.randomUUID()}.${extension}`);
+    const url = await compressAndUploadImage(file, `skoly/${schoolId}/${crypto.randomUUID()}`);
     rows.push({ schoolId, url, alt: null, sort: baseSort + i + 1 });
   }
   await prisma.schoolPhoto.createMany({ data: rows });
