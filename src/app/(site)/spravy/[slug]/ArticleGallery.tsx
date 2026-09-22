@@ -30,7 +30,7 @@ export default function ArticleGallery({ images, caption }: { images: Image[]; c
         {images.map((image, index) => (
           <button type="button" key={image.url} onClick={() => setActive(index)} aria-label={`Zväčšiť fotku ${index + 1}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={image.url} alt={image.alt ?? "Fotografia k článku"} />
+            <img src={image.url} alt={image.alt ?? "Fotografia k článku"} loading={index === 0 ? "eager" : "lazy"} decoding="async" />
           </button>
         ))}
       </div>
@@ -40,7 +40,7 @@ export default function ArticleGallery({ images, caption }: { images: Image[]; c
           <button type="button" className="article-lightbox-close" onClick={() => setActive(null)} aria-label="Zavrieť náhľad">×</button>
           {images.length > 1 && <button type="button" className="article-lightbox-prev" onClick={() => setActive((active + images.length - 1) % images.length)} aria-label="Predchádzajúca fotka">←</button>}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={images[active].url} alt={images[active].alt ?? "Fotografia k článku"} />
+          <img src={images[active].url} alt={images[active].alt ?? "Fotografia k článku"} decoding="async" />
           {images.length > 1 && <button type="button" className="article-lightbox-next" onClick={() => setActive((active + 1) % images.length)} aria-label="Ďalšia fotka">→</button>}
           <span className="article-lightbox-count">{active + 1} / {images.length}</span>
         </div>

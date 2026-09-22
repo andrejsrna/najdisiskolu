@@ -197,7 +197,14 @@ export default async function SchoolPage({
       {heroPhoto && (
         <div className="school-hero-photo">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={heroPhoto.url} alt={heroPhoto.alt} style={{ objectPosition: `${heroPhoto.focalX}% ${heroPhoto.focalY}%` }} />
+          <img
+            src={heroPhoto.url}
+            alt={heroPhoto.alt}
+            style={{ objectPosition: `${heroPhoto.focalX}% ${heroPhoto.focalY}%` }}
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+          />
         </div>
       )}
 
@@ -655,7 +662,7 @@ export default async function SchoolPage({
                 <Link key={similar.id} href={`/skola/${similar.slug}`} className="scard">
                   {photo ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photo.url} alt={photo.alt ?? similar.name} className="img" />
+                    <img src={photo.url} alt={photo.alt ?? similar.name} className="img" loading="lazy" decoding="async" />
                   ) : (
                     <div className="ph img">FOTO</div>
                   )}

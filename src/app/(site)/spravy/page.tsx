@@ -26,7 +26,7 @@ export default async function NewsPage() {
                 <Link href={`/spravy/${post.slug}`} className="news-card-image" aria-label={`Prečítať: ${post.title}`}>
                   {post.coverUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={post.coverUrl} alt="" />
+                    <img src={post.coverUrl} alt="" loading="lazy" decoding="async" />
                   ) : <span>Dobré správy zo školstva</span>}
                 </Link>
                 <div className="news-card-body">

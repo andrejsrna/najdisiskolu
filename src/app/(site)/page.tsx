@@ -158,7 +158,7 @@ export default async function HomePage() {
                         {s.photoUrl ? (
                           // S3 fotografie sú dynamický CMS obsah; Next remote optimizer tu nie je nakonfigurovaný.
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={s.photoUrl} alt={s.name} className="img" style={{ height: 200, width: "100%", objectFit: "cover" }} />
+                          <img src={s.photoUrl} alt={s.name} className="img" style={{ height: 200, width: "100%", objectFit: "cover" }} loading="lazy" decoding="async" />
                         ) : (
                           <div className="ph img">PORTRÉT</div>
                         )}
@@ -189,7 +189,7 @@ export default async function HomePage() {
                           <Link href={`/spravy/${p.slug}`} className="photo" aria-label={`Prečítať: ${p.title}`}>
                             {p.coverUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={p.coverUrl} alt="" />
+                              <img src={p.coverUrl} alt="" loading="lazy" decoding="async" />
                             ) : <span>FOTO</span>}
                           </Link>
                           {p.publishedAt && <div className="date">{fmtDate(p.publishedAt)}</div>}

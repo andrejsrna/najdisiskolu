@@ -438,7 +438,14 @@ export function FilterExplorer({ schools, tags }: { schools: School[]; tags: Tag
                       <Link className="scard" href={`/skola/${s.slug}?from=filter`} onClick={saveFilterReturn} key={s.slug} aria-label={`Zobraziť detail školy: ${s.name}`}>
                         {s.photoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={s.photoUrl} alt="" className="img" style={{ height: 200, width: "100%", objectFit: "cover", objectPosition: `${s.photoFocalX}% ${s.photoFocalY}%` }} />
+                          <img
+                            src={s.photoUrl}
+                            alt=""
+                            className="img"
+                            style={{ height: 200, width: "100%", objectFit: "cover", objectPosition: `${s.photoFocalX}% ${s.photoFocalY}%` }}
+                            loading="lazy"
+                            decoding="async"
+                          />
                         ) : (
                           <div className="ph img">FOTO ŠKOLY</div>
                         )}

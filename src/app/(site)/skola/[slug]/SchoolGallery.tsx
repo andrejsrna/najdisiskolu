@@ -60,6 +60,9 @@ export function SchoolGallery({ photos, schoolName }: { photos: Photo[]; schoolN
                   src={photo.url}
                   alt={photo.alt || schoolName}
                   className="h-auto max-h-[520px] w-full object-cover"
+                  loading={index === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  fetchPriority={index === 0 ? "high" : undefined}
                 />
               </button>
             </div>
@@ -103,6 +106,7 @@ export function SchoolGallery({ photos, schoolName }: { photos: Photo[]; schoolN
             src={photos[lightboxIndex].url}
             alt={photos[lightboxIndex].alt || schoolName}
             className="max-h-[90vh] max-w-full object-contain"
+            decoding="async"
             onClick={(event) => event.stopPropagation()}
           />
           {photos.length > 1 && (
