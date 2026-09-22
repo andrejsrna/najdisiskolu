@@ -106,248 +106,179 @@ export default async function SchoolEditPage({
         </a>
       </div>
 
+      {/*
+        Poradie sekcií nižšie kopíruje tok verejného detailu školy zhora nadol:
+        Základné údaje (hlavička + rýchly prehľad) → Deň otvorených dverí (bočný panel hore) →
+        Odbory → Projekty → Fotogaléria → Podobné školy → Na stiahnutie (bočný panel dole).
+        Všetky polia „Základných údajov“ zostávajú v jednom formulári/jednom uložení —
+        vnútri sú len preusporiadané podľa toho, v akom poradí sa rovnaké údaje objavujú na fronte.
+      */}
+
       {/* ============ ZÁKLADNÉ ÚDAJE ============ */}
       <section className="rounded-xl border border-slate-200 bg-white p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-900">Základné údaje</h2>
-        <form action={updateSchoolBasic.bind(null, school.id, school.slug)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <label className={label}>Názov školy</label>
-            <input name="name" defaultValue={school.name} className={input} />
-          </div>
-          <div>
-            <label className={label}>Mesto</label>
-            <input name="city" defaultValue={school.city} className={input} />
-          </div>
-          <div>
-            <label className={label}>Okres</label>
-            <select name="district" defaultValue={school.district} className={input}>
-              {DISTRICTS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className={label}>Weby školy (jeden na riadok, bez https://)</label>
-            <textarea
-              name="websites"
-              defaultValue={(school.websites ?? []).join("\n")}
-              rows={2}
-              placeholder={"www.skola.sk\nwww.druhyweb.sk"}
-              className={input}
-            />
-          </div>
-          <div>
-            <label className={label}>Email</label>
-            <input name="email" defaultValue={school.email ?? ""} className={input} />
-          </div>
-          <div>
-            <label className={label}>Telefón</label>
-            <input name="phone" defaultValue={school.phone ?? ""} className={input} />
-          </div>
-          <div>
-            <label className={label}>Facebook (napr. facebook.com/skola)</label>
-            <input name="facebook" defaultValue={school.facebook ?? ""} placeholder="facebook.com/skola" className={input} />
-          </div>
-          <div>
-            <label className={label}>Instagram (handle bez @, napr. skola.tt)</label>
-            <input name="instagram" defaultValue={school.instagram ?? ""} placeholder="skola.tt" className={input} />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={label}>Adresa</label>
-            <input name="address" defaultValue={school.address ?? ""} className={input} />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={label}>Mapa (iframe embed URL)</label>
-            <input name="mapUrl" defaultValue={school.mapUrl ?? ""} placeholder="https://www.openstreetmap.org/export/embed.html?…" className={input} />
-          </div>
-          <div>
-            <label className={label}>INEKO — poradie v kraji</label>
-            <div className="flex gap-2">
-              <input name="inekoKrajRank" type="number" min={1} defaultValue={school.inekoKrajRank ?? ""} placeholder="poradie" className={input} />
-              <select name="inekoKrajOf" defaultValue={school.inekoKrajOf ?? "zo všetkých"} className={input}>
-                {INEKO_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+        <form action={updateSchoolBasic.bind(null, school.id, school.slug)} className="space-y-6">
+          {/* Identifikácia — zodpovedá nadpisu a podnadpisu na detaile */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label className={label}>Názov školy</label>
+              <input name="name" defaultValue={school.name} className={input} />
+            </div>
+            <div>
+              <label className={label}>Mesto</label>
+              <input name="city" defaultValue={school.city} className={input} />
+            </div>
+            <div>
+              <label className={label}>Okres</label>
+              <select name="district" defaultValue={school.district} className={input}>
+                {DISTRICTS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
-          <div>
-            <label className={label}>INEKO — poradie na Slovensku</label>
-            <div className="flex gap-2">
-              <input name="inekoSkRank" type="number" min={1} defaultValue={school.inekoSkRank ?? ""} placeholder="poradie" className={input} />
-              <select name="inekoSkOf" defaultValue={school.inekoSkOf ?? "zo všetkých"} className={input}>
-                {INEKO_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+
+          {/* Rýchly prehľad + tagy — zodpovedá bočnému panelu „Rýchly prehľad“ a tagom pod nadpisom */}
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <h3 className="mb-3 text-sm font-semibold text-slate-900">Rýchly prehľad a tagy</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className={label}>INEKO — poradie v kraji</label>
+                <div className="flex gap-2">
+                  <input name="inekoKrajRank" type="number" min={1} defaultValue={school.inekoKrajRank ?? ""} placeholder="poradie" className={input} />
+                  <select name="inekoKrajOf" defaultValue={school.inekoKrajOf ?? "zo všetkých"} className={input}>
+                    {INEKO_CATEGORIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className={label}>INEKO — poradie na Slovensku</label>
+                <div className="flex gap-2">
+                  <input name="inekoSkRank" type="number" min={1} defaultValue={school.inekoSkRank ?? ""} placeholder="poradie" className={input} />
+                  <select name="inekoSkOf" defaultValue={school.inekoSkOf ?? "zo všetkých"} className={input}>
+                    {INEKO_CATEGORIES.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className={label}>Celkovo žiakov</label>
+                <input name="totalStudents" defaultValue={school.totalStudents ?? ""} placeholder="napr. približne 550" className={input} />
+              </div>
+              <div>
+                <label className={label}>Bezbariérovosť</label>
+                <select name="accessibility" defaultValue={school.accessibility ?? "Nie"} className={input}>
+                  {ACCESSIBILITY_OPTIONS.map((a) => (
+                    <option key={a.value} value={a.value}>{a.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={label}>Internát — typ</label>
+                <select name="internatType" defaultValue={school.internatType ?? ""} className={input}>
+                  <option value="">— žiadny —</option>
+                  {INTERNAT_OPTIONS.map((i) => (
+                    <option key={i.value} value={i.value}>{i.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={label}>Ubytovanie — doplnkový popis</label>
+                <input name="internatInfo" defaultValue={school.internatInfo ?? ""} placeholder="napr. na internáte SOŠ v areáli" className={input} />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className={label}>Highlighty školy (zobrazujú sa v Rýchlom prehľade aj v tagoch)</label>
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {[
+                  ["hasMaturita", "maturita"],
+                  ["hasVl", "výučný list"],
+                  ["hasInternat", "internát"],
+                  ["hasCanteen", "jedáleň"],
+                  ["hasDual", "duálne vzdelávanie"],
+                  ["hasNadstavba", "nadstavbové štúdium"],
+                  ["hasNativeSpeaker", "native speaker"],
+                ].map(([name, text]) => (
+                  <label key={name} className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      name={name}
+                      defaultChecked={Boolean(school[name as keyof typeof school])}
+                      className="h-4 w-4 rounded border-slate-300"
+                    />
+                    {text}
+                  </label>
                 ))}
-              </select>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className={label}>Vyučovací jazyk</label>
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {LANGUAGE_OPTIONS.map((l) => (
+                  <label key={l.value} className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      name="languages"
+                      value={l.value}
+                      defaultChecked={school.languages.includes(l.value)}
+                      className="h-4 w-4 rounded border-slate-300"
+                    />
+                    {l.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className={label}>Cudzie jazyky (čiarkou)</label>
+                <input name="foreignLanguages" defaultValue={school.foreignLanguages.join(", ")} placeholder="anglický, nemecký, francúzsky" className={input} />
+              </div>
+              <div>
+                <label className={label}>Podporný tím (čiarkou)</label>
+                <input name="supportTeam" defaultValue={school.supportTeam.join(", ")} placeholder="školský psychológ, kariérny poradca" className={input} />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className={label}>Zameranie školy</label>
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {allTags.map((t) => (
+                  <label key={t.code} className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      name="tags"
+                      value={t.code}
+                      defaultChecked={school.tags.some((s) => s.code === t.code)}
+                      className="h-4 w-4 rounded border-slate-300"
+                    />
+                    {t.label}
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
+
+          {/* O škole */}
           <div>
-            <label className={label}>Celkovo žiakov</label>
-            <input name="totalStudents" defaultValue={school.totalStudents ?? ""} placeholder="napr. približne 550" className={input} />
-          </div>
-          <div>
-            <label className={label}>Bezbariérovosť</label>
-            <select name="accessibility" defaultValue={school.accessibility ?? "Nie"} className={input}>
-              {ACCESSIBILITY_OPTIONS.map((a) => (
-                <option key={a.value} value={a.value}>{a.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className={label}>Internát — typ</label>
-            <select name="internatType" defaultValue={school.internatType ?? ""} className={input}>
-              <option value="">— žiadny —</option>
-              {INTERNAT_OPTIONS.map((i) => (
-                <option key={i.value} value={i.value}>{i.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className={label}>Ubytovanie — doplnkový popis</label>
-            <input name="internatInfo" defaultValue={school.internatInfo ?? ""} placeholder="napr. na internáte SOŠ v areáli" className={input} />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={label}>Erasmus+ krajiny (CTRL+klik pre viac; nechaj prázdne ak žiadne)</label>
-            <select name="erasmusCountries" multiple defaultValue={school.erasmusCountries as string[]} className={input} size={5}>
-              {ERASMUS_OPTIONS.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
-          </div>
-          <div className="sm:col-span-2">
-            <label className={label}>Erasmus+ — doplnkový text (nepovinné)</label>
-            <textarea name="erasmus" defaultValue={school.erasmus ?? ""} rows={3} className={input} />
-          </div>
-          <div className="sm:col-span-2">
-            <label className={label}>Predstavenie školy</label>
+            <label className={label}>Predstavenie školy (sekcia „O škole“)</label>
             <textarea name="intro" defaultValue={school.intro ?? ""} rows={4} className={input} />
           </div>
 
-          <div className="sm:col-span-2">
-            <label className={label}>Highlighty školy (zobrazujú sa v Rýchlom prehľade aj v tagoch)</label>
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              {[
-                ["hasMaturita", "maturita"],
-                ["hasVl", "výučný list"],
-                ["hasInternat", "internát"],
-                ["hasCanteen", "jedáleň"],
-                ["hasDual", "duálne vzdelávanie"],
-                ["hasNadstavba", "nadstavbové štúdium"],
-                ["hasNativeSpeaker", "native speaker"],
-              ].map(([name, text]) => (
-                <label key={name} className="flex items-center gap-2 text-sm text-slate-700">
-                  <input
-                    type="checkbox"
-                    name={name}
-                    defaultChecked={Boolean(school[name as keyof typeof school])}
-                    className="h-4 w-4 rounded border-slate-300"
-                  />
-                  {text}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className={label}>Zameranie školy</label>
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              {allTags.map((t) => (
-                <label key={t.code} className="flex items-center gap-2 text-sm text-slate-700">
-                  <input
-                    type="checkbox"
-                    name="tags"
-                    value={t.code}
-                    defaultChecked={school.tags.some((s) => s.code === t.code)}
-                    className="h-4 w-4 rounded border-slate-300"
-                  />
-                  {t.label}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className={label}>Priestory a vybavenie</label>
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              {allPriestory.map((p) => (
-                <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700">
-                  <input
-                    type="checkbox"
-                    name="priestory"
-                    value={p.id}
-                    defaultChecked={school.priestory.some((x) => x.id === p.id)}
-                    className="h-4 w-4 rounded border-slate-300"
-                  />
-                  {p.name}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className={label}>Vyučovací jazyk</label>
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              {LANGUAGE_OPTIONS.map((l) => (
-                <label key={l.value} className="flex items-center gap-2 text-sm text-slate-700">
-                  <input
-                    type="checkbox"
-                    name="languages"
-                    value={l.value}
-                    defaultChecked={school.languages.includes(l.value)}
-                    className="h-4 w-4 rounded border-slate-300"
-                  />
-                  {l.label}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className={label}>Cudzie jazyky (čiarkou)</label>
-            <input name="foreignLanguages" defaultValue={school.foreignLanguages.join(", ")} placeholder="anglický, nemecký, francúzsky" className={input} />
-          </div>
-          <div>
-            <label className={label}>Podporný tím (čiarkou)</label>
-            <input name="supportTeam" defaultValue={school.supportTeam.join(", ")} placeholder="školský psychológ, kariérny poradca" className={input} />
-          </div>
-
-          <div className="sm:col-span-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <h3 className="mb-3 text-sm font-semibold text-slate-900">Obsah verejného profilu</h3>
+          {/* Prečo práve sem */}
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <h3 className="mb-3 text-sm font-semibold text-slate-900">Prečo práve sem</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label className={label}>Prečo práve sem (jeden dôvod na riadok)</label>
                 <textarea name="whyUs" defaultValue={school.whyUs.join("\n")} rows={4} className={input} placeholder={"Moderné odborné učebne\nIndividuálny prístup"} />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={label}>Partnerstvá a spolupráce</label>
-                <textarea name="partners" defaultValue={school.partners ?? ""} rows={3} className={input} />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={label}>Priestory a vybavenie (popis)</label>
-                <textarea name="modernization" defaultValue={school.modernization ?? ""} rows={3} className={input} />
-              </div>
-              <div>
-                <label className={label}>Športoviská (čiarkou)</label>
-                <input name="sports" defaultValue={school.sports.join(", ")} className={input} placeholder="telocvičňa, ihrisko" />
-              </div>
-              <div>
-                <label className={label}>Stravovanie (čiarkou)</label>
-                <input name="canteenOptions" defaultValue={school.canteenOptions.join(", ")} className={input} placeholder="školská jedáleň, bufet" />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={label}>Čo po škole?</label>
-                <textarea name="graduates" defaultValue={school.graduates ?? ""} rows={3} className={input} placeholder="Kde sa absolventi uplatnia alebo pokračujú v štúdiu." />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={label}>Úspechy absolventov (nepovinné)</label>
-                <textarea name="achievements" defaultValue={school.achievements ?? ""} rows={2} className={input} />
-              </div>
-              <div className="sm:col-span-2">
-                <label className={label}>Praktické vyučovanie / duál (nepovinné)</label>
-                <textarea name="practice" defaultValue={school.practice ?? ""} rows={2} className={input} />
               </div>
               <div>
                 <label className={label}>Kurzy a certifikáty (čiarkou)</label>
@@ -360,11 +291,149 @@ export default async function SchoolEditPage({
             </div>
           </div>
 
-          <div className="sm:col-span-2">
+          {/* Erasmus+ */}
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <h3 className="mb-3 text-sm font-semibold text-slate-900">Erasmus+</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className={label}>Erasmus+ krajiny (CTRL+klik pre viac; nechaj prázdne ak žiadne)</label>
+                <select name="erasmusCountries" multiple defaultValue={school.erasmusCountries as string[]} className={input} size={5}>
+                  {ERASMUS_OPTIONS.map((c) => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <label className={label}>Erasmus+ — doplnkový text (nepovinné)</label>
+                <textarea name="erasmus" defaultValue={school.erasmus ?? ""} rows={3} className={input} />
+              </div>
+            </div>
+          </div>
+
+          {/* Partnerstvá a spolupráce */}
+          <div>
+            <label className={label}>Partnerstvá a spolupráce</label>
+            <textarea name="partners" defaultValue={school.partners ?? ""} rows={3} className={input} />
+          </div>
+
+          {/* Duálne vzdelávanie */}
+          <div>
+            <label className={label}>Praktické vyučovanie / duál (nepovinné)</label>
+            <textarea name="practice" defaultValue={school.practice ?? ""} rows={2} className={input} />
+          </div>
+
+          {/* Priestory a vybavenie */}
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <h3 className="mb-3 text-sm font-semibold text-slate-900">Priestory a vybavenie</h3>
+            <div className="mb-4">
+              <label className={label}>Priestory a vybavenie (výber)</label>
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {allPriestory.map((p) => (
+                  <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700">
+                    <input
+                      type="checkbox"
+                      name="priestory"
+                      value={p.id}
+                      defaultChecked={school.priestory.some((x) => x.id === p.id)}
+                      className="h-4 w-4 rounded border-slate-300"
+                    />
+                    {p.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <label className={label}>Priestory a vybavenie (popis)</label>
+                <textarea name="modernization" defaultValue={school.modernization ?? ""} rows={3} className={input} />
+              </div>
+              <div>
+                <label className={label}>Športoviská (čiarkou)</label>
+                <input name="sports" defaultValue={school.sports.join(", ")} className={input} placeholder="telocvičňa, ihrisko" />
+              </div>
+              <div>
+                <label className={label}>Stravovanie (čiarkou)</label>
+                <input name="canteenOptions" defaultValue={school.canteenOptions.join(", ")} className={input} placeholder="školská jedáleň, bufet" />
+              </div>
+            </div>
+          </div>
+
+          {/* Úspechy absolventov */}
+          <div>
+            <label className={label}>Úspechy absolventov (nepovinné)</label>
+            <textarea name="achievements" defaultValue={school.achievements ?? ""} rows={2} className={input} />
+          </div>
+
+          {/* Čo po škole? */}
+          <div>
+            <label className={label}>Čo po škole?</label>
+            <textarea name="graduates" defaultValue={school.graduates ?? ""} rows={3} className={input} placeholder="Kde sa absolventi uplatnia alebo pokračujú v štúdiu." />
+          </div>
+
+          {/* Kontakt a sídlo — zodpovedá sekcii „Kde škola sídli“ na konci detailu */}
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <h3 className="mb-3 text-sm font-semibold text-slate-900">Kontakt a sídlo</h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label className={label}>Weby školy (jeden na riadok, bez https://)</label>
+                <textarea
+                  name="websites"
+                  defaultValue={(school.websites ?? []).join("\n")}
+                  rows={2}
+                  placeholder={"www.skola.sk\nwww.druhyweb.sk"}
+                  className={input}
+                />
+              </div>
+              <div>
+                <label className={label}>Email</label>
+                <input name="email" defaultValue={school.email ?? ""} className={input} />
+              </div>
+              <div>
+                <label className={label}>Telefón</label>
+                <input name="phone" defaultValue={school.phone ?? ""} className={input} />
+              </div>
+              <div>
+                <label className={label}>Facebook (napr. facebook.com/skola)</label>
+                <input name="facebook" defaultValue={school.facebook ?? ""} placeholder="facebook.com/skola" className={input} />
+              </div>
+              <div>
+                <label className={label}>Instagram (handle bez @, napr. skola.tt)</label>
+                <input name="instagram" defaultValue={school.instagram ?? ""} placeholder="skola.tt" className={input} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={label}>Adresa</label>
+                <input name="address" defaultValue={school.address ?? ""} className={input} />
+              </div>
+              <div className="sm:col-span-2">
+                <label className={label}>Mapa (iframe embed URL)</label>
+                <input name="mapUrl" defaultValue={school.mapUrl ?? ""} placeholder="https://www.openstreetmap.org/export/embed.html?…" className={input} />
+              </div>
+            </div>
+          </div>
+
+          <div>
             <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
               Uložiť základné údaje
             </SaveButton>
           </div>
+        </form>
+      </section>
+
+      {/* ============ DEŇ OTVORENÝCH DVERÍ (bočný panel hore) ============ */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <h2 className="mb-4 text-sm font-semibold text-slate-900">Deň otvorených dverí</h2>
+        <form action={saveDod.bind(null, school.id, school.slug)} className="flex flex-wrap items-end gap-3">
+          <div>
+            <label className={label}>Dátum</label>
+            <input name="date" type="date" defaultValue={dod ? fmtDate(dod.date) : ""} className={input} />
+          </div>
+          <div>
+            <label className={label}>Čas</label>
+            <input name="time" defaultValue={dod?.time ?? ""} placeholder="8:00 - 12:00" className={input} />
+          </div>
+          <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
+            Uložiť termín
+          </SaveButton>
         </form>
       </section>
 
@@ -579,25 +648,7 @@ export default async function SchoolEditPage({
         </section>
       )}
 
-      {/* ============ DEŇ OTVORENÝCH DVERÍ ============ */}
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="mb-4 text-sm font-semibold text-slate-900">Deň otvorených dverí</h2>
-        <form action={saveDod.bind(null, school.id, school.slug)} className="flex flex-wrap items-end gap-3">
-          <div>
-            <label className={label}>Dátum</label>
-            <input name="date" type="date" defaultValue={dod ? fmtDate(dod.date) : ""} className={input} />
-          </div>
-          <div>
-            <label className={label}>Čas</label>
-            <input name="time" defaultValue={dod?.time ?? ""} placeholder="8:00 - 12:00" className={input} />
-          </div>
-          <SaveButton className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">
-            Uložiť termín
-          </SaveButton>
-        </form>
-      </section>
-
-      {/* ============ NA STIAHNUTIE ============ */}
+      {/* ============ NA STIAHNUTIE (bočný panel dole) ============ */}
       <section className="rounded-xl border border-slate-200 bg-white p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-900">Na stiahnutie</h2>
         <ul className="mb-4 space-y-2">
