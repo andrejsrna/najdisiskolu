@@ -316,8 +316,12 @@ export default async function SchoolEditPage({
 
           {/* Duálne vzdelávanie */}
           <div>
-            <label className={label}>Praktické vyučovanie / duál (nepovinné)</label>
-            <textarea name="practice" defaultValue={school.practice ?? ""} rows={2} className={input} />
+            <label className={label}>Praktické vyučovanie (nepovinné)</label>
+            <textarea name="practice" defaultValue={school.practice ?? ""} rows={2} className={input} placeholder="kde prebieha odborná prax" />
+          </div>
+          <div>
+            <label className={label}>Duálne vzdelávanie — info (nepovinné)</label>
+            <textarea name="dualInfo" defaultValue={school.dualInfo ?? ""} rows={2} className={input} placeholder="doplnkový text o duáli" />
           </div>
 
           {/* Priestory a vybavenie */}
@@ -333,15 +337,15 @@ export default async function SchoolEditPage({
                 <input name="sports" defaultValue={school.sports.join(", ")} className={input} placeholder="telocvičňa, ihrisko" />
               </div>
               <div>
-                <label className={label}>Stravovanie (čiarkou)</label>
+                <label className={label}>Ponuka školského bufetu (čiarkou)</label>
                 <input name="canteenOptions" defaultValue={school.canteenOptions.join(", ")} className={input} placeholder="školská jedáleň, bufet" />
               </div>
             </div>
           </div>
 
-          {/* Úspechy absolventov */}
+          {/* Úspechy žiakov */}
           <div>
-            <label className={label}>Úspechy absolventov (nepovinné)</label>
+            <label className={label}>Úspechy žiakov (nepovinné)</label>
             <textarea name="achievements" defaultValue={school.achievements ?? ""} rows={2} className={input} />
           </div>
 

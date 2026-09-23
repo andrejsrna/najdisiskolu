@@ -24,7 +24,7 @@ export default async function VeltrhyPage() {
 
   const [veltrhy, dodSchools, settings] = await Promise.all([
     prisma.veltrh.findMany({
-      include: { schools: { orderBy: { name: "asc" } } },
+      include: { schools: { where: { isPublished: true }, select: { slug: true, name: true }, orderBy: { name: "asc" } } },
       orderBy: { date: "asc" },
     }),
     prisma.school.findMany({
@@ -96,6 +96,21 @@ export default async function VeltrhyPage() {
                   </div>
                   {(v.extra ?? v.description) && (
                     <div className="ex">{v.extra ?? v.description}</div>
+                  )}
+                  {v.schools.length > 0 && (
+                    <div className="ex" style={{ borderTop: v.extra ?? v.description ? undefined : "1px solid var(--line2)", paddingTop: 14, marginTop: 14 }}>
+                      <div style={{ marginBottom: 8, color: "var(--ink2)" }}>Zúčastnené školy</div>
+                      <div className="tags">
+                        {v.schools.slice(0, 6).map((s) => (
+                          <Link key={s.slug} href={`/skola/${s.slug}`} className="tag">
+                            {s.name}
+                          </Link>
+                        ))}
+                        {v.schools.length > 6 && (
+                          <span className="tag">+{v.schools.length - 6} ďalších</span>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>

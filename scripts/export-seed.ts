@@ -115,7 +115,7 @@ async function main() {
       internatType: s.internatType, erasmusCountries: s.erasmusCountries,
       hasMaturita: s.hasMaturita, hasVl: s.hasVl,
       totalStudents: s.totalStudents, photoUrl: s.photoUrl, logoUrl: s.logoUrl,
-      intro: s.intro, practice: s.practice, modernization: s.modernization, plans: s.plans,
+      intro: s.intro, practice: s.practice, dualInfo: s.dualInfo, modernization: s.modernization, plans: s.plans,
       support: s.support, achievements: s.achievements, partners: s.partners, graduates: s.graduates,
       other: s.other, otherTop: s.otherTop,
       whyUs: s.whyUs, clubs: s.clubs, sports: s.sports, canteenOptions: s.canteenOptions,

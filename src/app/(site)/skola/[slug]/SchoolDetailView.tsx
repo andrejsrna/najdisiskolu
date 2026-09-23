@@ -303,7 +303,7 @@ export function SchoolDetailView({
           )}
 
           {/* DUÁLNE VZDELÁVANIE */}
-          {(school.dualCompanies.filter(Boolean).length > 0 || school.practice) && (
+          {(school.dualCompanies.filter(Boolean).length > 0 || school.dualInfo) && (
             <>
               <div className="rule" />
               <h2 className="dh">Duálne vzdelávanie</h2>
@@ -318,12 +318,18 @@ export function SchoolDetailView({
                   </ul>
                 </>
               )}
-              {school.practice && (
-                <>
-                  <div className="lbl" style={{ marginTop: 20 }}>Pracoviská praktického vyučovania</div>
-                  <div className="txtblk" style={{ marginTop: 6, whiteSpace: "pre-line" }}>{school.practice}</div>
-                </>
+              {school.dualInfo && (
+                <div className="txtblk" style={{ marginTop: 16, whiteSpace: "pre-line" }}>{school.dualInfo}</div>
               )}
+            </>
+          )}
+
+          {/* PRAKTICKÉ VYUČOVANIE */}
+          {school.practice && (
+            <>
+              <div className="rule" />
+              <h2 className="dh">Praktické vyučovanie</h2>
+              <div className="txtblk" style={{ whiteSpace: "pre-line" }}>{school.practice}</div>
             </>
           )}
 
@@ -347,7 +353,7 @@ export function SchoolDetailView({
               )}
               {school.canteenOptions.filter(Boolean).length > 0 && (
                 <>
-                  <div className="lbl" style={{ marginTop: 20 }}>Stravovanie</div>
+                  <div className="lbl" style={{ marginTop: 20 }}>Ponuka školského bufetu</div>
                   <div className="tags">
                     {school.canteenOptions.filter(Boolean).map((x, i) => (
                       <span className="tag" key={i}>{x}</span>
@@ -362,7 +368,7 @@ export function SchoolDetailView({
           {school.achievements && (
             <div className="p-sec">
               <div className="rule" />
-              <h2 className="dh">Úspechy absolventov</h2>
+              <h2 className="dh">Úspechy žiakov</h2>
               <div className="txtblk" style={{ whiteSpace: "pre-line" }}>{school.achievements}</div>
             </div>
           )}

@@ -96,7 +96,8 @@ model School {
 
   // dlhšie texty
   intro         String?  @db.Text // p = predstavenie školy
-  practice      String?  @db.Text // prac = kde prebieha odborná prax
+  practice      String?  @db.Text // prac = kde prebieha odborná prax (praktické vyučovanie)
+  dualInfo      String?  @db.Text // info o duálnom vzdelávaní (oddelené od practice)
   modernization String?  @db.Text // mod
   plans         String?  @db.Text // plan
   support       String?  @db.Text // podp

@@ -30,7 +30,7 @@ type SeedSchool = {
   inekoKrajRank: number | null; inekoKrajOf: string | null; inekoSkRank: number | null; inekoSkOf: string | null;
   internatType: string | null; erasmusCountries: string[]; hasMaturita: boolean; hasVl: boolean;
   totalStudents: string | null; photoUrl: string | null; logoUrl: string | null;
-  intro: string | null; practice: string | null; modernization: string | null;
+  intro: string | null; practice: string | null; dualInfo: string | null; modernization: string | null;
   plans: string | null; support: string | null; achievements: string | null;
   partners: string | null; graduates: string | null; other: string | null; otherTop: string | null;
   whyUs: string[]; clubs: string[]; sports: string[]; canteenOptions: string[];
@@ -296,7 +296,7 @@ async function main() {
         internatType: s.internatType ?? null, erasmusCountries: s.erasmusCountries ?? [],
         hasMaturita: s.hasMaturita ?? false, hasVl: s.hasVl ?? false,
         totalStudents: s.totalStudents, photoUrl: s.photoUrl, logoUrl: s.logoUrl,
-        intro: s.intro, practice: s.practice, modernization: s.modernization, plans: s.plans,
+        intro: s.intro, practice: s.practice, dualInfo: s.dualInfo ?? null, modernization: s.modernization, plans: s.plans,
         support: s.support, achievements: s.achievements, partners: s.partners, graduates: s.graduates,
         other: s.other, otherTop: s.otherTop,
         whyUs: s.whyUs, clubs: s.clubs, sports: s.sports, canteenOptions: s.canteenOptions,

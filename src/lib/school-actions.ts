@@ -128,6 +128,7 @@ export async function updateSchoolBasic(
       graduates: str(formData.get("graduates")),
       achievements: str(formData.get("achievements")),
       practice: str(formData.get("practice")),
+      dualInfo: str(formData.get("dualInfo")),
       accessibility: str(formData.get("accessibility")),
       internatType: str(formData.get("internatType")),
       internatInfo: str(formData.get("internatInfo")),
