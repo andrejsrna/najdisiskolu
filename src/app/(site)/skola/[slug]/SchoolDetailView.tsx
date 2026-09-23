@@ -12,6 +12,7 @@ const fmtDate = (d: Date) =>
 
 const sklonOdbor = (n: number) => (n === 1 ? "odbor" : n < 5 ? "odbory" : "odborov");
 const ktore = (n: number) => (n === 1 ? "ktorý" : n < 5 ? "ktoré" : "ktorých");
+const sklonRok = (n: number) => (n === 1 ? "rok" : n < 5 ? "roky" : "rokov");
 
 /* HRULE je HTML string – v JSX ho musíme vyrenderovať neescapovane */
 const HandRule = () => <div dangerouslySetInnerHTML={{ __html: HRULE }} />;
@@ -233,7 +234,7 @@ export function SchoolDetailView({
                         </td>
                         <td className="c">{o.accepts ?? "—"}</td>
                         <td className="c">{o.appliedLastYear ?? "—"}</td>
-                        <td className="c">{o.length} {o.length === 1 ? "rok" : "roky"}</td>
+                        <td className="c">{o.length} {sklonRok(o.length)}</td>
                         <td className="c">{COMPLETION_LABEL[o.completion] ?? o.completion}</td>
                       </tr>
                     ))}
