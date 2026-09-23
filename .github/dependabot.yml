@@ -3,6 +3,7 @@ updates:
   # Automatické bezpečnostné aktualizácie (CVE/security advisory) pre npm
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "main"
     schedule:
       interval: "daily"
     open-pull-requests-limit: 10
@@ -11,6 +12,7 @@ updates:
       - "dependencies"
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "main"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
