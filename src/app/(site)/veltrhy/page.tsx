@@ -8,6 +8,7 @@ import {
   type VeltrhySections,
 } from "@/lib/veltrhy-content";
 import DodFilter from "./DodFilter";
+import VeltrhSchoolsList from "./VeltrhSchoolsList";
 
 export const dynamic = "force-dynamic";
 
@@ -100,16 +101,7 @@ export default async function VeltrhyPage() {
                   {v.schools.length > 0 && (
                     <div className="ex" style={{ borderTop: v.extra ?? v.description ? undefined : "1px solid var(--line2)", paddingTop: 14, marginTop: 14 }}>
                       <div style={{ marginBottom: 8, color: "var(--ink2)" }}>Zúčastnené školy</div>
-                      <div className="tags">
-                        {v.schools.slice(0, 6).map((s) => (
-                          <Link key={s.slug} href={`/skola/${s.slug}`} className="tag">
-                            {s.name}
-                          </Link>
-                        ))}
-                        {v.schools.length > 6 && (
-                          <span className="tag">+{v.schools.length - 6} ďalších</span>
-                        )}
-                      </div>
+                      <VeltrhSchoolsList schools={v.schools} />
                     </div>
                   )}
                 </div>
