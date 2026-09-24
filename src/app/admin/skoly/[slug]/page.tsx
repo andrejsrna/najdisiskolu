@@ -316,6 +316,10 @@ export default async function SchoolEditPage({
 
           {/* Duálne vzdelávanie */}
           <div>
+            <label className={label}>Zamestnávatelia v duáli (čiarkou)</label>
+            <input name="dualCompanies" defaultValue={school.dualCompanies.join(", ")} className={input} placeholder="Firma A, s.r.o., Firma B, s.r.o." />
+          </div>
+          <div>
             <label className={label}>Praktické vyučovanie (nepovinné)</label>
             <textarea name="practice" defaultValue={school.practice ?? ""} rows={2} className={input} placeholder="kde prebieha odborná prax" />
           </div>

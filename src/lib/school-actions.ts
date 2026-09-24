@@ -103,6 +103,7 @@ export async function updateSchoolBasic(
       clubs: csv("clubs"),
       sports: csv("sports"),
       canteenOptions: csv("canteenOptions"),
+      dualCompanies: csv("dualCompanies"),
       websites: String(formData.get("websites") ?? "")
         .split(/[\n,]/)
         .map((s) => s.trim().replace(/^https?:\/\//, "").replace(/\/$/, ""))
