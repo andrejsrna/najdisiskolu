@@ -22,12 +22,9 @@ export function TagListEditor({
   const commit = (next: string[]) => setItems(next);
 
   const addFromDraft = () => {
-    const parts = draft
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (!parts.length) return;
-    commit([...items, ...parts]);
+    const value = draft.trim();
+    if (!value) return;
+    commit([...items, value]);
     setDraft("");
   };
 
@@ -37,7 +34,7 @@ export function TagListEditor({
 
   return (
     <div>
-      <input type="hidden" name={name} value={items.join(", ")} />
+      <input type="hidden" name={name} value={items.join("\n")} />
       <div className="mb-2 flex flex-wrap gap-2">
         {items.map((item, idx) => (
           <span
@@ -63,12 +60,12 @@ export function TagListEditor({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === ",") {
+            if (e.key === "Enter") {
               e.preventDefault();
               addFromDraft();
             }
           }}
-          placeholder={placeholder ?? "Napíš a stlač Enter…"}
+          placeholder={placeholder ?? "Napíš celý názov (aj s čiarkou pred s.r.o.) a stlač Enter…"}
           className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
         />
         <button

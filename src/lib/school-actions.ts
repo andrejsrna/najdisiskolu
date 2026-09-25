@@ -99,6 +99,12 @@ export async function updateSchoolBasic(
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
+  // Pre polia z TagListEditor (hodnoty môžu samy obsahovať čiarku, napr. "Firma, spol. s.r.o.")
+  const lines = (k: string) =>
+    String(formData.get(k) ?? "")
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
 
   await prisma.school.update({
     where: { id: schoolId },
@@ -114,7 +120,7 @@ export async function updateSchoolBasic(
       clubs: csv("clubs"),
       sports: csv("sports"),
       canteenOptions: csv("canteenOptions"),
-      dualCompanies: csv("dualCompanies"),
+      dualCompanies: lines("dualCompanies"),
       websites: String(formData.get("websites") ?? "")
         .split(/[\n,]/)
         .map((s) => s.trim().replace(/^https?:\/\//, "").replace(/\/$/, ""))
