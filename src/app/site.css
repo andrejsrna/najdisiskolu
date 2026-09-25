@@ -1062,7 +1062,7 @@ height:80px
 color:var(--ink);text-decoration:underline
 }
 .site .phead {
-padding:42px 0 36px
+padding-top:42px;padding-bottom:36px
 }
 .site .band-mat {
 background:var(--mat)
@@ -1102,7 +1102,7 @@ height:120px;right:24px;bottom:10px
 }
 }
 .site .page {
-padding:34px 0 60px
+padding-top:34px;padding-bottom:60px
 }
 .site .page h1,
 .site .phead h1 {
