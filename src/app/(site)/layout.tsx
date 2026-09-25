@@ -3,6 +3,7 @@ import Link from "next/link";
 import { TTSK_HEADER_LOGO, TTSK_EMBLEM } from "@/lib/ttsk";
 import { Illustration } from "@/lib/illustrations";
 import { ScrollToTop } from "./ScrollToTop";
+import { MobileNav } from "./MobileNav";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
   return (
@@ -12,14 +13,17 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
         <Link href="/" className="logo" aria-label="Trnavský samosprávny kraj — Vyber si strednú">
           <span dangerouslySetInnerHTML={{ __html: TTSK_HEADER_LOGO }} />
         </Link>
-        <Link href="/">Vyber si strednú</Link>
-        <Link href="/veltrhy">Veľtrhy škôl</Link>
-        <Link href="/otazky">Otázky a odpovede</Link>
+        <div className="nav-links">
+          <Link href="/">Vyber si strednú</Link>
+          <Link href="/veltrhy">Veľtrhy škôl</Link>
+          <Link href="/otazky">Otázky a odpovede</Link>
+        </div>
         <div className="right">
           <a className="btn sm solid" href="https://eprihlasky.iedu.sk/" target="_blank" rel="noopener noreferrer">
             Prihláška →
           </a>
         </div>
+        <MobileNav />
       </nav>
 
       {children}

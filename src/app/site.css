@@ -63,7 +63,51 @@ color:#ffd9a0
 }
 .site .nav {
 display:flex;align-items:center;gap:26px;padding:14px 30px;border-bottom:2px solid var(--ink);
-    position:sticky;top:0;background:#fff;z-index:50;flex-wrap:wrap
+    position:sticky;top:0;background:#fff;z-index:50
+}
+.site .nav-links {
+display:flex;align-items:center;gap:26px
+}
+.site .nav-toggle {
+display:none;margin-left:auto;background:none;border:none;padding:8px;cursor:pointer
+}
+.site .nav-toggle-bars {
+display:flex;flex-direction:column;gap:5px;width:24px
+}
+.site .nav-toggle-bars span {
+display:block;height:2px;width:100%;background:var(--ink);border-radius:1px;
+    transition:transform .2s ease,opacity .2s ease
+}
+.site .nav-toggle-bars.open span:nth-child(1) {
+transform:translateY(7px) rotate(45deg)
+}
+.site .nav-toggle-bars.open span:nth-child(2) {
+opacity:0
+}
+.site .nav-toggle-bars.open span:nth-child(3) {
+transform:translateY(-7px) rotate(-45deg)
+}
+.site .nav-panel {
+display:none
+}
+@media(max-width:900px) {
+.site .nav-links,
+.site .nav > .right {
+display:none
+}
+.site .nav-toggle {
+display:block
+}
+.site .nav-panel.open {
+display:flex;flex-direction:column;gap:2px;position:absolute;top:100%;left:0;right:0;
+    background:#fff;border-bottom:2px solid var(--ink);padding:10px 20px 16px;box-shadow:0 8px 16px rgba(0,0,0,.08)
+}
+.site .nav-panel a {
+padding:10px 0
+}
+.site .nav-panel .btn {
+margin-top:8px;align-self:flex-start
+}
 }
 .site .logo {
 height:50px;display:flex;align-items:center;color:var(--ink);flex:none;cursor:pointer;margin-right:34px
