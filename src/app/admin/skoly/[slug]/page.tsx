@@ -15,6 +15,7 @@ import { PhotoReorder } from "./PhotoReorder";
 import { PhotoUpload } from "./PhotoUpload";
 import { SimilarSchoolsPicker } from "./SimilarSchoolsPicker";
 import { TagListEditor } from "./TagListEditor";
+import { OdborReorder } from "./OdborReorder";
 import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 import {
   updateSchoolBasic,
@@ -480,6 +481,12 @@ export default async function SchoolEditPage({
         <p className="mb-4 text-xs text-slate-500">
           Čísla „prijíma / prihlásených v lani / miest“ sú tie, čo sa v karte zobrazujú namiesto „???“.
         </p>
+
+        <OdborReorder
+          schoolId={school.id}
+          slug={school.slug}
+          odbory={school.odbory.map((o) => ({ id: o.id, code: o.code, name: o.name }))}
+        />
 
         <div className="space-y-3">
           {school.odbory.map((o) => (

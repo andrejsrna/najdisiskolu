@@ -173,6 +173,7 @@ export async function addOdbor(schoolId: string, slug: string, formData: FormDat
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return;
   const completion = String(formData.get("completion") ?? "MATURITA");
+  const maxSort = await prisma.odbor.aggregate({ where: { schoolId }, _max: { sort: true } });
   const odbor = await prisma.odbor.create({
     data: {
       schoolId,
@@ -186,6 +187,7 @@ export async function addOdbor(schoolId: string, slug: string, formData: FormDat
       appliedLastYear: num(formData.get("appliedLastYear")),
       places: num(formData.get("places")),
       employment: str(formData.get("employment")),
+      sort: (maxSort._max.sort ?? 0) + 1,
     },
   });
   await logAudit(actor, "create", "Odbor", odbor.id, name);
@@ -226,6 +228,16 @@ export async function deleteOdbor(
   const actor = await assertCanEditSchool(schoolId);
   await prisma.odbor.delete({ where: { id: odborId } });
   await logAudit(actor, "delete", "Odbor", odborId);
+  revalidateSchool(slug);
+}
+
+export async function reorderOdbory(schoolId: string, slug: string, odborIds: string[]) {
+  await assertCanEditSchool(schoolId);
+  await prisma.$transaction(
+    odborIds.map((id, index) =>
+      prisma.odbor.updateMany({ where: { id, schoolId }, data: { sort: index + 1 } }),
+    ),
+  );
   revalidateSchool(slug);
 }
 
