@@ -227,15 +227,15 @@ export function SchoolDetailView({
                   <tbody>
                     {school.odbory.map((o) => (
                       <tr key={o.id}>
-                        <td>
+                        <td data-label="Odbor">
                           <span className="kod">{o.code}</span>
                           <span className="on">{o.name}</span>
                           {o.employment && <span className="upl">Uplatníš sa ako: <b>{o.employment}</b></span>}
                         </td>
-                        <td className="c">{o.accepts ?? "—"}</td>
-                        <td className="c">{o.appliedLastYear ?? "—"}</td>
-                        <td className="c">{o.length} {sklonRok(o.length)}</td>
-                        <td className="c">{COMPLETION_LABEL[o.completion] ?? o.completion}</td>
+                        <td className="c" data-label="Prijíma">{o.accepts ?? "—"}</td>
+                        <td className="c" data-label="Uchádzačov vlani">{o.appliedLastYear ?? "—"}</td>
+                        <td className="c" data-label="Dĺžka">{o.length} {sklonRok(o.length)}</td>
+                        <td className="c" data-label="Ukončenie">{COMPLETION_LABEL[o.completion] ?? o.completion}</td>
                       </tr>
                     ))}
                   </tbody>

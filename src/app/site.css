@@ -942,6 +942,41 @@ font-weight:600;color:var(--ink)
 .site table.od .c {
 text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap
 }
+@media(max-width:640px) {
+.site .scroll {
+overflow-x:visible
+}
+.site table.od,
+.site table.od thead,
+.site table.od tbody,
+.site table.od tr,
+.site table.od td {
+display:block;width:100%
+}
+.site table.od thead {
+position:absolute;left:-9999px;top:-9999px
+}
+.site table.od tr {
+border:1px solid var(--line);border-radius:8px;margin-bottom:12px;padding:12px;overflow:hidden
+}
+.site table.od tbody tr:nth-child(even) {
+background:#fff
+}
+.site table.od td {
+padding:8px 0;border-bottom:1px solid var(--line2);text-align:left
+}
+.site table.od tr:last-child td:last-child,
+.site table.od td:last-child {
+border-bottom:none
+}
+.site table.od td[data-label]::before {
+content:attr(data-label);display:block;font-size:10.5px;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--ink2);font-weight:600;margin-bottom:4px
+}
+.site table.od td.c {
+text-align:left;white-space:normal
+}
+}
 .site .scroll {
 overflow-x:auto
 }
