@@ -407,7 +407,7 @@ padding:0 16px
 }
 }
 .site .fsec {
-padding:46px 0 40px
+padding-top:46px;padding-bottom:40px
 }
 .site .fsec h2 {
 font-size:28px;margin:0 0 7px;letter-spacing:-.024em
