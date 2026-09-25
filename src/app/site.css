@@ -419,6 +419,17 @@ padding:9px 19px;font-size:14px;font-weight:500;border:none;border-right:3px sol
 .site .tabs button:last-child {
 border-right:none
 }
+@media(max-width:640px) {
+.site .tabs {
+display:flex;flex-direction:column;width:100%
+}
+.site .tabs button {
+width:100%;border-right:none;border-bottom:3px solid var(--act);text-align:left
+}
+.site .tabs button:last-child {
+border-bottom:none
+}
+}
 .site .tabs button.on {
 background:var(--act);color:#fff
 }
