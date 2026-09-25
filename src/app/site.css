@@ -392,6 +392,12 @@ right:20px;bottom:26px;height:24%;max-width:52%
 height:88px;right:20px;top:18px
 }
 }
+@media(max-width:640px) {
+.site .band-acid > .illustration > .bgq,
+.site .band-acid > .illustration > .bga {
+display:none
+}
+}
 .site .wrap {
 max-width:1160px;margin:0 auto;padding:0 30px
 }

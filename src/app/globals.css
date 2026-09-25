@@ -17,6 +17,7 @@ body {
   margin: 0;
   background: #fff;
   color: #171717;
+  overflow-x: hidden;
 }
 
 /* Verejný web — Poppins (next/font) namiesto Google Fonts linku */
