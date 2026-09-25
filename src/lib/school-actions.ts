@@ -26,6 +26,17 @@ const str = (v: FormDataEntryValue | null): string | null => {
   const s = String(v ?? "").trim();
   return s ? s : null;
 };
+
+// Handle sociálnej siete (facebook/instagram) musí vyzerať ako handle/URL —
+// nesmie obsahovať medzery ani byť len "0"/"."/"-" apod. (poškodené dáta zo starých importov).
+const INVALID_SOCIAL_VALUES = new Set(["0", ".", "-", "n/a", "na", "nema", "neni", "žiadny", "ziadny"]);
+const socialHandle = (v: FormDataEntryValue | null): string | null => {
+  const s = str(v);
+  if (!s) return null;
+  if (/\s/.test(s)) return null;
+  if (INVALID_SOCIAL_VALUES.has(s.toLowerCase())) return null;
+  return s;
+};
 const num = (v: FormDataEntryValue | null): number | null => {
   const s = String(v ?? "").trim();
   if (!s) return null;
@@ -110,12 +121,12 @@ export async function updateSchoolBasic(
         .filter(Boolean),
       email: str(formData.get("email")),
       phone: str(formData.get("phone")),
-      facebook: str(formData.get("facebook"))
+      facebook: socialHandle(formData.get("facebook"))
         ?.replace(/^@/, "")
-        .replace(/^(https?:\/\/)?(www\.)?facebook\.com\//, ""),
-      instagram: str(formData.get("instagram"))
+        .replace(/^(https?:\/\/)?(www\.)?facebook\.com\//, "") ?? null,
+      instagram: socialHandle(formData.get("instagram"))
         ?.replace(/^@/, "")
-        .replace(/^(https?:\/\/)?(www\.)?instagram\.com\//, ""),
+        .replace(/^(https?:\/\/)?(www\.)?instagram\.com\//, "") ?? null,
       address: str(formData.get("address")),
       mapUrl: str(formData.get("mapUrl")),
       inekoKrajRank: num(formData.get("inekoKrajRank")),

@@ -46,7 +46,7 @@ export function SchoolDetailView({
   const upcomingDods = school.dods.filter((d) => d.date >= today);
   const dod = upcomingDods[0];
   const dodIcal = dod ? dod.date.toISOString().slice(0, 10).replace(/-/g, "") : "";
-  const gmapQuery = [school.address, school.name, school.city].filter(Boolean).join(", ");
+  const gmapQuery = school.address || [school.name, school.city].filter(Boolean).join(", ");
   const gmapSrc = gmapQuery
     ? `https://www.google.com/maps?q=${encodeURIComponent(gmapQuery)}&output=embed&hl=sk`
     : null;

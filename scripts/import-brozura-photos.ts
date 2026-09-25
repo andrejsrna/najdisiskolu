@@ -94,8 +94,10 @@ async function compressAndUpload(filePath: string, keyBase: string): Promise<str
 }
 
 // --- Priečinok -> slug mapovanie (35 škôl s "vyber" podpriečinkom) ---
+// POZOR: "Gymnazium Galanta Slovenske Madarske" bol vyňatý zo všeobecnej slučky nižšie —
+// priečinok v skutočnosti obsahuje fotky DVOCH škôl v jednej budove (SK aj HU gymnázium),
+// rozdelené manuálne v EXTRA_JOBS (viď nižšie).
 const FOLDER_TO_SLUG: Record<string, string> = {
-  "Gymnazium Galanta Slovenske Madarske": "gymnazium-zoltana-kodalya-s-vjm-kodaly-zoltan-gimnazium",
   "Gymnázium Armina Vamberyho s VJM Dunajska Streda": "gymnazium-armina-vamberyho-s-vjm-vambery-armin-gimnazium",
   "SOS Podnikania v remeslach a sluzbach Senica": "stredna-odborna-skola-podnikania-v-remeslach-a-sluzbach",
   "SPS Elektrotechnicka Piestany": "stredna-priemyselna-skola-elektrotechnicka",

@@ -14,6 +14,7 @@ import {
 import { PhotoReorder } from "./PhotoReorder";
 import { PhotoUpload } from "./PhotoUpload";
 import { SimilarSchoolsPicker } from "./SimilarSchoolsPicker";
+import { TagListEditor } from "./TagListEditor";
 import { SaveButton, DeleteButton } from "@/components/admin-buttons";
 import {
   updateSchoolBasic,
@@ -316,8 +317,12 @@ export default async function SchoolEditPage({
 
           {/* Duálne vzdelávanie */}
           <div>
-            <label className={label}>Zamestnávatelia v duáli (čiarkou)</label>
-            <input name="dualCompanies" defaultValue={school.dualCompanies.join(", ")} className={input} placeholder="Firma A, s.r.o., Firma B, s.r.o." />
+            <label className={label}>Zamestnávatelia v duáli</label>
+            <TagListEditor
+              name="dualCompanies"
+              initialItems={school.dualCompanies}
+              placeholder="Napíš názov firmy a stlač Enter…"
+            />
           </div>
           <div>
             <label className={label}>Praktické vyučovanie (nepovinné)</label>

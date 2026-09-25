@@ -63,7 +63,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
               </a>
               <br />
               <Link href="/admin">
-                <b>Prihlásenie pre školy →</b>
+                Administrácia
               </Link>
             </div>
           </div>
