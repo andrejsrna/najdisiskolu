@@ -594,7 +594,7 @@ export function SchoolDetailView({
       </div>
 
       {!printMode && school.similarTo.length > 0 && (
-        <div className="wrap" style={{ padding: "0 30px 56px" }}>
+        <div className="wrap similar-schools">
           {<HandRule />}
           <h2 className="dh">Podobné školy v kraji</h2>
           <p className="dl">Ak ťa zaujala táto škola, pozri sa aj na tieto.</p>
