@@ -750,6 +750,11 @@ position:absolute;right:56px;top:-45px;z-index:0;
 right:20px;top:auto;bottom:20px;height:100px;max-width:46%
 }
 }
+@media(max-width:640px) {
+.site footer > .illustration > .bgs {
+display:none
+}
+}
 .site .crumb {
 padding:15px 0;font-size:13.5px;color:var(--ink2)
 }
