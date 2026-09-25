@@ -793,7 +793,7 @@ position:absolute;right:calc(320px + 24px);top:-26px;height:175px;width:auto;
     color:var(--acid);pointer-events:none;z-index:0
 }
 .site .dcols > div:not(.side) {
-position:relative;z-index:1
+position:relative;z-index:1;min-width:0
 }
 /* DetailShoe je zabalená v <span class="illustration"><svg class="fly"/></span>.
    Výnimka z grid toku – inak by span zaberal stĺpec (1fr 320px) a rozbil layout. */
@@ -845,7 +845,7 @@ display:block;text-decoration:none
 text-decoration:underline
 }
 .site .numbers {
-display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line2);border:1px solid var(--line)
+display:grid;grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:1px;background:var(--line2);border:1px solid var(--line);min-width:0
 }
 .site .numbers {
 background:var(--ink3);border-color:var(--ink)
